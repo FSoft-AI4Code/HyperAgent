@@ -7,6 +7,7 @@ from pylsp.config.config import Config
 from server import ClientServerPair
 from pylsp.plugins.symbols import pylsp_document_symbols
 from pylsp.lsp import SymbolKind
+from pylsp.plugins.hover import pylsp_hover
 
 CALL_TIMEOUT_IN_SECONDS = 10
 
@@ -15,7 +16,7 @@ def word_to_position(source, word, line=None, offset=0):
     lines = source.splitlines()
     for i, _line in enumerate(lines):
         if word in _line:
-            return {"line": (line + offset) if line else (i + offset), "character": _line.index(word)+1} ## +1 because the position is 0-based
+            return {"line": (line + offset) if line else (i + offset), "character": lines[line].index(word)+1 if line else (_line.index(word) + 1)} ## +1 because the position is 0-based
     return None
 
 def matching_symbols(symbols, object):
@@ -97,7 +98,21 @@ class LSPToolKit:
             
         return output
     
-    def get_symbols(self, relative_path, verbose=False):
+    def get_symbols(self, relative_path, verbose=False, verbose_level=1, preview_size=1):
+        """Get all symbols in a file
+
+        Args:
+            relative_path (_type_): relavtive path to the file
+            verbose (bool, optional): verbose result as string for LLM interaction. Defaults to False.
+            verbose_level (int, optional): efficient verbose settings to save number of tokens. There're 3 levels of details.
+                1 - only functions and classes - default
+                2 - functions, classes, and methods of classes 
+                3 - functions, classes, methods of classes, and variables
+            preview_size (int, optional): only preview preview_size number of lines of definitions to save number of tokens. Defaults to 4.
+
+        Returns:
+            _type_: _description_
+        """
         uri = uris.from_fs_path(os.path.join(self.root_path, relative_path)) if "://" not in relative_path else relative_path
         doc = self.get_document(uri)
         cfg = Config(self.root_path, {}, 0, {})
@@ -107,13 +122,46 @@ class LSPToolKit:
             },
         }
         symbols = pylsp_document_symbols(cfg, doc)
+        if verbose:
+            verbose_output = []
+            for item in symbols:
+                if verbose_level == 1:
+                    if (item["kind"] == SymbolKind.Class or item["kind"] == SymbolKind.Function) and ((item["location"]["range"]["end"]["line"] - item["location"]["range"]["start"]["line"]) > 2):
+                        definition = get_text(self.get_document(item["location"]["uri"]), item["location"]["range"])
+                        preview = "\n".join(definition.split("\n")[:preview_size])
+                        cha = definition.split("\n")[0].index(item["name"])
+                        documentation = pylsp_hover(doc._config, doc, {"line": item["location"]["range"]["start"]["line"], "character": cha})["contents"]["value"]
+                        item_out = "Parent Name: " + str(item["containerName"]) + "\n" + "Name: " + str(item["name"]) + "\n" + "Type: " + str(matching_py_kind_symbol(item)) + "\n" + "Preview: " + str(preview) + "\n" + "Documentation: " + str(documentation) + "\n"
+                        verbose_output.append(item_out)
+                    
+            symbols = verbose_output
         return symbols
     
-    def get_references(self, word, relative_path, line=None, offset=0, verbose=False):
+    def get_references(self, word, relative_path, line=None, offset=0, verbose=False, context_size=10):
         uri = uris.from_fs_path(os.path.join(self.root_path, relative_path)) if "://" not in relative_path else relative_path
         doc = self.get_document(uri)
         cursor_pos = word_to_position(doc.source, word, line=line, offset=offset)
         output = pylsp_references(doc, cursor_pos, exclude_declaration=True)
+        if verbose: 
+            verbose_output = []
+            for item in [output[0]]:
+                doc_item = self.get_document(item["uri"])
+                item["range"]["start"]["line"] = max(0, item["range"]["start"]["line"] - context_size)
+                item["range"]["end"]["line"] = min(len(doc_item.lines), item["range"]["end"]["line"] + context_size)
+                item["range"]["start"]["character"] = 0
+                item["range"]["end"]["character"] = len(doc_item.lines[item["range"]["end"]["line"]-1])
+                implementation = get_text(doc_item, item["range"])
+                results = []
+                for idx, _line in enumerate(implementation.split("\n")):
+                    _line = str(idx + item["range"]["start"]["line"]) + " " + _line
+                    results.append(_line)
+                    
+                implementation = "\n".join(results)
+                
+                item["uri"] = str(item["uri"]).replace("file://" + self.root_path, "")
+                item_out = "File Name: " + str(item["uri"]) + "\n" + "Implementation: " + str(implementation) + "\n"
+                verbose_output.append(item_out)
+            output = verbose_output
         return output
 
     def shutdown(self):
@@ -123,7 +171,8 @@ class LSPToolKit:
 if __name__ == "__main__":
     test_path = "/datadrive05/huypn16/focalcoder/data/repos/repo__astropy__astropy__commit__3832210580d516365ddae1a62071001faf94d416/"
     lsp = LSPToolKit(test_path)
-    output = lsp.get_definition("__init__", "astropy/convolution/kernels.py", line=0, offset=0, verbose=True)
-    # lsp.get_symbols("astropy/convolution/kernels.py")
-    print(output)
+    output = lsp.get_definition("__init__", "astropy/convolution/kernels.py", line=None, offset=0, verbose=True)
+    output = lsp.get_references("Gaussian1DKernel", "astropy/convolution/kernels.py", line=28, offset=0, verbose=True)
+    output = lsp.get_symbols("astropy/convolution/kernels.py", verbose=True)
+    print(output[3])
     lsp.shutdown()

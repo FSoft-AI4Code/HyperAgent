@@ -1,8 +1,20 @@
+import os
 from typing import Type
 from pydantic import BaseModel, Field
 from langchain.tools import BaseTool
 import jedi
 from LSP import LSPToolKit
+from openai import OpenAI
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.text_splitter import Language
+from langchain.document_loaders.generic import GenericLoader
+from langchain.document_loaders.parsers import LanguageParser
+from tree_struct_display import DisplayablePath, tree
+from pathlib import Path
+
+python_splitter = RecursiveCharacterTextSplitter.from_language(
+    language=Language.PYTHON, chunk_size=2000, chunk_overlap=200
+)
 
 def get_code_jedi(definition, verbose=False):
     raw = definition.get_line_code(after=definition.get_definition_end_position()[0]-definition.get_definition_start_position()[0])
@@ -91,11 +103,17 @@ class CodeSearchArgs(BaseModel):
 
 class CodeSearchTool(BaseTool):
     name = "search_preliminary_inside_project"
-    description = "Useful when you want to find all matched identifiers (variable, function, class name) from a python repository, primarily used for class, function search"
+    description = """Useful when you want to find all matched identifiers (variable, function, class name) from a python repository, primarily used for class, function search. The results
+    are mixed and not sorted by any criteria. So considered using this when you want to find all possible candidates for a given name. Otherwise, consider using other tools for more precise results"""
     args_schema: Type[BaseModel] = CodeSearchArgs
+    path = ""
     
-    def _run(self, names: list[str], repo_path: str, verbose: bool = True):
-        return search_preliminary_inside_project(names, repo_path, verbose=verbose)
+    def __init__(self, path):
+        super().__init__()
+        self.path = path
+    
+    def _run(self, names: list[str], verbose: bool = True):
+        return search_preliminary_inside_project(names, repo_path=self.path, verbose=verbose)
     
     def _arun(self, names: list[str], repo_path: str):
         return NotImplementedError("Code Search Tool is not available for async run")
@@ -114,9 +132,12 @@ class GoToDefinitionTool(BaseTool):
     3    def add_member(self, id, name):
     4        self.members[id] = plt.figure() we might want to find the definition of plt.figure() invoke with params ("figure", 6, 'test.py')"""
     args_schema = GoToDefinitionArgs
+    path = ""
+    lsptoolkit: LSPToolKit = None
     
-    def __init__(self, path, *args, **kwargs):
-        super().__init__(path, *args, **kwargs)
+    def __init__(self, path):
+        super().__init__()
+        self.path = path
         self.lsptoolkit = LSPToolKit(path)
     
     
@@ -126,13 +147,129 @@ class GoToDefinitionTool(BaseTool):
     def _arun(self, word: str, line: int, relative_path: str):
         return NotImplementedError("Go To Definition Tool is not available for async run")
 
+class FindAllReferencesArgs(BaseModel):
+    word: str = Field(..., description="The name of the symbol to find all references")
+    line: int = Field(..., description="The line number of the symbol to find all references")
+    relative_path: str = Field(..., description="The relative path of the file containing the symbol to find all references")
+
 class FindAllReferencesTool(BaseTool):
     name = "find_all_references"
     description = "Useful when you want to find all references of a symbol inside a code snippet"
-    args_schema = GoToDefinitionArgs
+    args_schema = FindAllReferencesArgs
+    lsptoolkit: LSPToolKit = None
+    openai_engine: OpenAI = None
+    path = ""
     
-    def _run(self, word: str, line: int, relative_path: str):
-        return self.lsptoolkit.get_references(word, relative_path, line, verbose=True)
-
+    def __init__(self, path):
+        super().__init__()
+        self.path = path
+        self.lsptoolkit = LSPToolKit(path)
+        self.openai_engine = OpenAI(api_key="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")
+    
+    def _run(self, word: str, line: int, relative_path: str, reranking: bool = True, query: str = ""):
+        results = self.lsptoolkit.get_references(word, relative_path, line, verbose=True)
+        if reranking:
+            return self.rerank(results, query)
+        else:
+            return results[:5]
+        
     def _arun(self, word: str, line: int, relative_path: str):
         return NotImplementedError("Find All References Tool is not available for async run")
+    
+    def rerank(self, results, query):
+        for item in results[:20]:
+            item["score"] = self.similarity(query, item["implementation"])
+        results = sorted(results, key=lambda x: x["score"], reverse=True)
+        return results[:3]
+    
+    def similarity(self, query, implementation):
+        prompt = "On the scale of 1 to 10, how relevant is the query to the implementation, only output the score?\n Query: " + query + "\n Implementation: " + implementation + "\n"
+        completion = self.openai_engine.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are a programmer who is very helpful in finding relevant code snippet with the query."},
+                {"role": "user", "content": prompt}
+            ]
+        )
+        return int(completion.choices[0]["message"]["content"])
+
+class GetAllSymbolsArgs(BaseModel):
+    relative_path: str = Field(..., description="The relative path of the python file we want extract all symbols from, can not be a folder so you need to specify the file name, try to use get_tree_structure to find the file name")
+
+class GetAllSymbolsTool(BaseTool):
+    name = "get_all_symbols"
+    description = "Useful when you want to find all symbols (functions, classes) of a python file"
+    args_schema = GetAllSymbolsArgs
+    lsptoolkit: LSPToolKit = None
+    path = ""
+    
+    def __init__(self, path):
+        super().__init__()
+        self.path = path
+        self.lsptoolkit = LSPToolKit(path)
+    
+    def _run(self, relative_path: str):
+        return self.lsptoolkit.get_symbols(relative_path, verbose=True)
+    
+    def _arun(self, relative_path: str):
+        return NotImplementedError("Get All Symbols Tool is not available for async run")
+
+class GetTreeStructureArgs(BaseModel):
+    relative_path: str = Field(..., description="The relative path of the folder we want to explore")
+    level: int = Field(..., description="The level of the tree structure we want to explore, prefer to use 2 (default) for a quick overview of the folder structure then use 3 for more details")
+
+class GetTreeStructureTool(BaseTool):
+    name = "get_tree_structure"
+    description = """Useful when you want to explore the tree structure of a folder, good for initial exploration with knowing the parent folder name. Remember to provide the relative path correctly.
+    Such as if you see and want to explore config folder inside the astropy folder, you should provide the relative path as astropy/config.
+    """
+    args_schema = GetTreeStructureArgs
+    path = ""
+    
+    def __init__(self, path):
+        super().__init__()
+        self.path = path
+    
+    def _run(self, relative_path: str, level: int = 2):
+        abs_path = os.path.join(self.path, relative_path)
+        # def is_not_hidden(path):
+        #     return not path.name.startswith(".")
+        # paths = DisplayablePath.make_tree(Path(abs_path), criteria=is_not_hidden)
+        # structure_tree = ""
+        # for path in paths:
+        #     structure_tree += path.displayable() + "\n"
+        # return structure_tree
+        try:
+            output = tree(abs_path, level=level)
+            output = "The tree structure of " + relative_path + " is: \n" + output + "\nConsider using other tools to explore the content of the folder such as get_all_symbols, find_all_references, open_file, etc."
+        except: 
+            output = "Execution failed, please check the relative path again, likely the relative path lacks of parent name"
+        return output
+    
+    def _arun(self, relative_path: str):
+        return NotImplementedError("Get Tree Structure Tool is not available for async run")
+
+class OpenFileArgs(BaseModel):
+    relative_path: str = Field(..., description="The relative path of the file we want to open")
+
+class OpenFileTool(BaseTool):
+    name = "open_file"
+    description = "Useful when you want to open a file inside a repo"
+    args_schema = OpenFileArgs
+    path = ""
+    
+    def __init__(self, path):
+        super().__init__()
+        self.path = path
+    
+    def _run(self, relative_path: str):
+        abs_path = os.path.join(self.path, relative_path)
+        return "The content of " + relative_path + " is: \n" + open(abs_path, "r").read()
+    
+    def _arun(self, relative_path: str):
+        return NotImplementedError("Open File Tool is not available for async run")
+
+def main():
+    path = "/datadrive05/huypn16/focalcoder/data/repos/repo__astropy__astropy__commit__3832210580d516365ddae1a62071001faf94d416"
+    lsptoolkit = LSPToolKit(path)
+    result = lsptoolkit.get_references("Gaussian1DKernel")
