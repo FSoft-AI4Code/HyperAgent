@@ -107,6 +107,7 @@ class CodeSearchTool(BaseTool):
     are mixed and not sorted by any criteria. So considered using this when you want to find all possible candidates for a given name. Otherwise, consider using other tools for more precise results"""
     args_schema: Type[BaseModel] = CodeSearchArgs
     path = ""
+    verbose = False
     
     def __init__(self, path):
         super().__init__()
@@ -134,12 +135,12 @@ class GoToDefinitionTool(BaseTool):
     args_schema = GoToDefinitionArgs
     path = ""
     lsptoolkit: LSPToolKit = None
+    verbose = False
     
     def __init__(self, path):
         super().__init__()
         self.path = path
         self.lsptoolkit = LSPToolKit(path)
-    
     
     def _run(self, word: str, line: int, relative_path: str):
         return self.lsptoolkit.get_definition(word, relative_path, line, verbose=True)
@@ -159,6 +160,7 @@ class FindAllReferencesTool(BaseTool):
     lsptoolkit: LSPToolKit = None
     openai_engine: OpenAI = None
     path = ""
+    verbose = False
     
     def __init__(self, path):
         super().__init__()
@@ -202,6 +204,7 @@ class GetAllSymbolsTool(BaseTool):
     args_schema = GetAllSymbolsArgs
     lsptoolkit: LSPToolKit = None
     path = ""
+    verbose = False
     
     def __init__(self, path):
         super().__init__()
@@ -225,6 +228,7 @@ class GetTreeStructureTool(BaseTool):
     """
     args_schema = GetTreeStructureArgs
     path = ""
+    verbose = False
     
     def __init__(self, path):
         super().__init__()
@@ -271,5 +275,5 @@ class OpenFileTool(BaseTool):
 
 def main():
     path = "/datadrive05/huypn16/focalcoder/data/repos/repo__astropy__astropy__commit__3832210580d516365ddae1a62071001faf94d416"
-    lsptoolkit = LSPToolKit(path)
-    result = lsptoolkit.get_references("Gaussian1DKernel")
+    FindAllReferencesTool(path)
+    GetAllSymbolsTool(path)

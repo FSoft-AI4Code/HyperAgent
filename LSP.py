@@ -19,6 +19,14 @@ def word_to_position(source, word, line=None, offset=0):
             return {"line": (line + offset) if line else (i + offset), "character": lines[line].index(word)+1 if line else (_line.index(word) + 1)} ## +1 because the position is 0-based
     return None
 
+def add_num_line(source, start_line):
+    lines = source.split("\n")
+    results = []
+    for idx, _line in enumerate(lines):
+        _line = str(idx + start_line) + " " + _line
+        results.append(_line)
+    return "\n".join(results)
+
 def matching_symbols(symbols, object):
     for symbol in symbols:
         ## approximat matching only is strong enough
@@ -62,7 +70,6 @@ def test_finding_definition(pylsp, word, relative_path):
         "plugins": {"pylint": {"enabled": False, "args": [], "executable": None}}
     }
     output = pylsp_definitions(cfg, test_doc, cursor_pos)
-    print(output)
 
 class LSPToolKit:
     def __init__(self, root_path):
@@ -108,7 +115,7 @@ class LSPToolKit:
                 1 - only functions and classes - default
                 2 - functions, classes, and methods of classes 
                 3 - functions, classes, methods of classes, and variables
-            preview_size (int, optional): only preview preview_size number of lines of definitions to save number of tokens. Defaults to 4.
+            preview_size (int, optional): only preview preview_size number of lines of definitions to save number of tokens. Defaults to 1.
 
         Returns:
             _type_: _description_
@@ -130,6 +137,7 @@ class LSPToolKit:
                         definition = get_text(self.get_document(item["location"]["uri"]), item["location"]["range"])
                         preview = "\n".join(definition.split("\n")[:preview_size])
                         cha = definition.split("\n")[0].index(item["name"])
+                        preview = add_num_line(preview, item["location"]["range"]["start"]["line"])
                         documentation = pylsp_hover(doc._config, doc, {"line": item["location"]["range"]["start"]["line"], "character": cha})["contents"]["value"]
                         item_out = "Parent Name: " + str(item["containerName"]) + "\n" + "Name: " + str(item["name"]) + "\n" + "Type: " + str(matching_py_kind_symbol(item)) + "\n" + "Preview: " + str(preview) + "\n" + "Documentation: " + str(documentation) + "\n"
                         verbose_output.append(item_out)
