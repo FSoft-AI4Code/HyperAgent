@@ -106,6 +106,7 @@ class PlanSeeking(Chain):
         )
         if run_manager:
             run_manager.on_text(str(plan), verbose=self.verbose)
+        print(plan.steps)
         for step in plan.steps:
             _new_inputs = {
                 "previous_steps": self.step_container,

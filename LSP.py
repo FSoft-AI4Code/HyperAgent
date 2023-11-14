@@ -135,10 +135,14 @@ class LSPToolKit:
                 if verbose_level == 1:
                     if (item["kind"] == SymbolKind.Class or item["kind"] == SymbolKind.Function) and ((item["location"]["range"]["end"]["line"] - item["location"]["range"]["start"]["line"]) > 2):
                         definition = get_text(self.get_document(item["location"]["uri"]), item["location"]["range"])
-                        preview = "\n".join(definition.split("\n")[:preview_size])
                         cha = definition.split("\n")[0].index(item["name"])
+                        documentation = pylsp_hover(doc._config, doc, {"line": item["location"]["range"]["start"]["line"], "character": cha})["contents"]
+                        if "value" not in documentation:
+                            documentation = "None"
+                            preview = "\n".join(definition.split("\n")[:preview_size+4])
+                        else:
+                            preview = "\n".join(definition.split("\n")[:preview_size])
                         preview = add_num_line(preview, item["location"]["range"]["start"]["line"])
-                        documentation = pylsp_hover(doc._config, doc, {"line": item["location"]["range"]["start"]["line"], "character": cha})["contents"]["value"]
                         item_out = "Parent Name: " + str(item["containerName"]) + "\n" + "Name: " + str(item["name"]) + "\n" + "Type: " + str(matching_py_kind_symbol(item)) + "\n" + "Preview: " + str(preview) + "\n" + "Documentation: " + str(documentation) + "\n"
                         verbose_output.append(item_out)
                     
@@ -177,10 +181,10 @@ class LSPToolKit:
         self.client._endpoint.notify("exit", {})
 
 if __name__ == "__main__":
-    test_path = "/datadrive05/huypn16/focalcoder/data/repos/repo__astropy__astropy__commit__3832210580d516365ddae1a62071001faf94d416/"
+    test_path = "/datadrive05/huypn16/focalcoder/data/repos/repo__danswer-ai__danswer__commit__"
     lsp = LSPToolKit(test_path)
-    output = lsp.get_definition("__init__", "astropy/convolution/kernels.py", line=None, offset=0, verbose=True)
-    output = lsp.get_references("Gaussian1DKernel", "astropy/convolution/kernels.py", line=28, offset=0, verbose=True)
-    output = lsp.get_symbols("astropy/convolution/kernels.py", verbose=True)
-    print(output[3])
+    # output = lsp.get_definition("__init__", "astropy/convolution/kernels.py", line=None, offset=0, verbose=True)
+    # output = lsp.get_references("Gaussian1DKernel", "astropy/convolution/kernels.py", line=28, offset=0, verbose=True)
+    output = lsp.get_symbols("backend/danswer/danswerbot/slack/config.py", verbose=True)
+    print(output)
     lsp.shutdown()

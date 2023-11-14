@@ -11,6 +11,7 @@ from langchain.document_loaders.generic import GenericLoader
 from langchain.document_loaders.parsers import LanguageParser
 from tree_struct_display import DisplayablePath, tree
 from pathlib import Path
+from LSP import add_num_line
 
 python_splitter = RecursiveCharacterTextSplitter.from_language(
     language=Language.PYTHON, chunk_size=2000, chunk_overlap=200
@@ -57,6 +58,7 @@ def search_preliminary_inside_project(names, repo_path, num_result=2, verbose=Fa
                         "implementation": get_code_jedi(definition, verbose)
                     }
                     output_dict[name].append(extracted_definition)
+                    idx += 1
                     if idx == num_result:
                         break
             
@@ -70,6 +72,7 @@ def search_preliminary_inside_project(names, repo_path, num_result=2, verbose=Fa
                         "implementation": get_code_jedi(definition, verbose),
                     }
                     output_dict[name].append(extracted_definition)
+                    idx += 1
                     if idx == num_result:
                         break
             
@@ -82,6 +85,7 @@ def search_preliminary_inside_project(names, repo_path, num_result=2, verbose=Fa
                     "implementation": definition.description,
                 }
                 output_dict[name].append(extracted_definition)
+                idx += 1
                 if idx == num_result:
                     break
         else:
@@ -196,7 +200,7 @@ class FindAllReferencesTool(BaseTool):
         return int(completion.choices[0]["message"]["content"])
 
 class GetAllSymbolsArgs(BaseModel):
-    relative_path: str = Field(..., description="The relative path of the python file we want extract all symbols from, can not be a folder so you need to specify the file name, try to use get_tree_structure to find the file name")
+    path_to_file: str = Field(..., description="The relative path of the python file we want extract all symbols from.")
 
 class GetAllSymbolsTool(BaseTool):
     name = "get_all_symbols"
@@ -211,8 +215,15 @@ class GetAllSymbolsTool(BaseTool):
         self.path = path
         self.lsptoolkit = LSPToolKit(path)
     
-    def _run(self, relative_path: str):
-        return self.lsptoolkit.get_symbols(relative_path, verbose=True)
+    def _run(self, path_to_file: str):
+        try:
+            return self.lsptoolkit.get_symbols(path_to_file, verbose=True)
+        except IsADirectoryError:
+            return "The relative path is a folder, please specify the file path instead. Consider using get_tree_structure to find the file name"
+        except FileNotFoundError:
+            return "The file is not found, please check the path again"
+        except:
+            return "Try to open_file tool to access the file instead"
     
     def _arun(self, relative_path: str):
         return NotImplementedError("Get All Symbols Tool is not available for async run")
@@ -254,11 +265,11 @@ class GetTreeStructureTool(BaseTool):
         return NotImplementedError("Get Tree Structure Tool is not available for async run")
 
 class OpenFileArgs(BaseModel):
-    relative_path: str = Field(..., description="The relative path of the file we want to open")
+    relative_file_path: str = Field(..., description="The relative path of the file we want to open")
 
 class OpenFileTool(BaseTool):
     name = "open_file"
-    description = "Useful when you want to open a file inside a repo"
+    description = "Useful when you want to open a file inside a repo, use this tool only when it's very necessary, usually a main or server or training script. Consider combinining other alternative tools such as GetAllSymbols and CodeSearch to save the number of tokens for other cases."
     args_schema = OpenFileArgs
     path = ""
     
@@ -266,9 +277,14 @@ class OpenFileTool(BaseTool):
         super().__init__()
         self.path = path
     
-    def _run(self, relative_path: str):
-        abs_path = os.path.join(self.path, relative_path)
-        return "The content of " + relative_path + " is: \n" + open(abs_path, "r").read()
+    def _run(self, relative_file_path: str):
+        abs_path = os.path.join(self.path, relative_file_path)
+        try:
+            source = open(abs_path, "r").read()
+        except FileNotFoundError:
+            return "File not found, please check the path again"
+        source = add_num_line(source, 0)
+        return "The content of " + relative_file_path + " is: \n" + source
     
     def _arun(self, relative_path: str):
         return NotImplementedError("Open File Tool is not available for async run")

@@ -15,7 +15,7 @@ from langchain.agents.react.base import DocstoreExplorer
 from langchain.docstore.in_memory import InMemoryDocstore
 from langchain.agents import AgentType, initialize_agent, Tool
 from langchain.chat_models import ChatOpenAI
-from tools import GoToDefinitionTool, CodeSearchTool, search_preliminary_inside_project, FindAllReferencesTool, GetAllSymbolsTool, GetTreeStructureTool
+from tools import GoToDefinitionTool, CodeSearchTool, search_preliminary_inside_project, FindAllReferencesTool, GetAllSymbolsTool, GetTreeStructureTool, OpenFileTool
 from utils import clone_repo
 from langchain_experimental.plan_and_execute import (
     load_chat_planner,
@@ -55,16 +55,17 @@ def Setup(repo, commit):
     
     struct = open("struct.txt", "r").read()
     suffix = "Begin! Reminder to ALWAYS respond with a valid json blob of a single action. Use tools if necessary. Respond directly if you have gathered enough information from the repository. Format is Action:```$JSON_BLOB```then Observation:."
-    prefix = "You are an expert in programming, you're so good at code navigation inside large repository. Try to combine different tools to navigate inside the project. Some good combinations of tools could be tree explore files -> find symbols of the files. Semantic search -> exact code search -> go to definition and etc. If you know exactly the name of the symbol, you can use CodeSearchTool or if you know the line and the name of the symbol, you can use GoToDefinition tool. Respond to the human as helpfully and accurately as possible. Consider use other tools if the results returned is not cleared enough or failed for the query. You have access to the following tools:"
+    prefix = "You are an expert in programming, you're so good at code navigation inside large repository. Try to combine different tools to navigate inside the project. Some good combinations of tools could be tree explore files -> find symbols of the files. Semantic search -> exact code search -> go to definition and etc. If you know exactly the name of the symbol, you can use CodeSearchTool or if you know the line and the name of the symbol, you can use GoToDefinition tool. Try to avoid using open file tool frequently (use the get all symbols instead). Respond to the human as helpfully and accurately as possible. Consider use other tools if the results returned is not cleared enough or failed for the query. You have access to the following tools:"
     planner_prompt = (
         "Given following general information about the repository such as repository structure"
         f"{struct}"
-        "Let's first understand the problem and devise a plan to solve the problem."
+        "Let's first understand the query and devise a plan to get information from the repository to answer the query."
         " Please output the plan starting with the header 'Plan:' "
         "and then followed by a numbered list of steps. "
-        "Important! Please make the plan with the minimum number of steps required, do not include a loop of steps."
-        "to accurately complete the task. The steps should be detail enough,  the path of folder should be a relative path and correct"
-        "If the task is a question, the final step should almost always be 'Given the above steps taken, please respond to the users original question'. "
+        "Please make the plan the minimum number of steps required "
+        "to accurately complete the task. If the task is a question, "
+        "the final step should almost always be 'Given the above steps taken, "
+        "please respond to the users original question'. "
         "At the end of your plan, say '<END_OF_PLAN>'"
         "Example:\n"
         "Question: how to subclass and define a custom spherical coordinate frame?\n"
@@ -84,7 +85,7 @@ def Setup(repo, commit):
             name="Semantic Code Search",
             func=docstore.search,
             description="useful for when the query is a sentance, semantic and vague. If exact search such as code search failed after multiple tries, try this",
-        ), GetAllSymbolsTool(repo_dir), GetTreeStructureTool(repo_dir)]
+        ), GetAllSymbolsTool(repo_dir), GetTreeStructureTool(repo_dir), OpenFileTool(repo_dir)]
     
     ## Set up the planner agent 
     llm_plan = ChatOpenAI(temperature=0, model="gpt-4", openai_api_key="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")
@@ -100,10 +101,13 @@ if __name__ == "__main__":
     logger.info("Start!")
     repo = input("Enter your repo name here: ")
     commit = input("Enter your commit hash here: ")
+    # repo = "danswer-ai/danswer"
+    # commit = ""
     agent = Setup(repo, commit)
     
     logger.info("Setup done!")
     question = input("Enter your question about your repository: ")
+    # question = "what are the main components of the backend of danswer and how it works, be very specific (roles of the main classes for each component and their relationship)"
     with get_openai_callback() as cb:
         agent.run(question)
         print(f"Total Tokens: {cb.total_tokens}")
