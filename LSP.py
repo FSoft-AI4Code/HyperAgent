@@ -105,7 +105,7 @@ class LSPToolKit:
             
         return output
     
-    def get_symbols(self, relative_path, verbose=False, verbose_level=1, preview_size=1):
+    def get_symbols(self, relative_path, verbose_level=1, verbose=False, preview_size=1):
         """Get all symbols in a file
 
         Args:
@@ -132,9 +132,10 @@ class LSPToolKit:
         if verbose:
             verbose_output = []
             for item in symbols:
+                definition = get_text(self.get_document(item["location"]["uri"]), item["location"]["range"])
                 if verbose_level == 1:
-                    if (item["kind"] == SymbolKind.Class or item["kind"] == SymbolKind.Function) and ((item["location"]["range"]["end"]["line"] - item["location"]["range"]["start"]["line"]) > 2):
-                        definition = get_text(self.get_document(item["location"]["uri"]), item["location"]["range"])
+                    if (item["kind"] == SymbolKind.Class or item["kind"] == SymbolKind.Function) and ((item["location"]["range"]["end"]["line"] - item["location"]["range"]["start"]["line"]) > 2) and ("import" not in definition):
+                        
                         cha = definition.split("\n")[0].index(item["name"])
                         documentation = pylsp_hover(doc._config, doc, {"line": item["location"]["range"]["start"]["line"], "character": cha})["contents"]
                         if "value" not in documentation:
@@ -145,18 +146,34 @@ class LSPToolKit:
                         preview = add_num_line(preview, item["location"]["range"]["start"]["line"])
                         item_out = "Parent Name: " + str(item["containerName"]) + "\n" + "Name: " + str(item["name"]) + "\n" + "Type: " + str(matching_py_kind_symbol(item)) + "\n" + "Preview: " + str(preview) + "\n" + "Documentation: " + str(documentation) + "\n"
                         verbose_output.append(item_out)
-                    
+                elif verbose_level == 2:
+                    if (item["kind"] == SymbolKind.Class or item["kind"] == SymbolKind.Function or item["kind"] == SymbolKind.Method) and ((item["location"]["range"]["end"]["line"] - item["location"]["range"]["start"]["line"]) > 2) and ("import" not in definition):
+                        cha = definition.split("\n")[0].index(item["name"])
+                        documentation = pylsp_hover(doc._config, doc, {"line": item["location"]["range"]["start"]["line"], "character": cha})["contents"]
+                        if "value" not in documentation:
+                            documentation = "None"
+                            preview = "\n".join(definition.split("\n")[:preview_size+4])
+                        else:
+                            preview = "\n".join(definition.split("\n")[:preview_size])
+                        preview = add_num_line(preview, item["location"]["range"]["start"]["line"])
+                        item_out = "Parent Name: " + str(item["containerName"]) + "\n" + "Name: " + str(item["name"]) + "\n" + "Type: " + str(matching_py_kind_symbol(item)) + "\n" + "Preview: " + str(preview) + "\n" + "Documentation: " + str(documentation) + "\n"
+                        verbose_output.append(item_out)
+                        
             symbols = verbose_output
         return symbols
     
     def get_references(self, word, relative_path, line=None, offset=0, verbose=False, context_size=10):
         uri = uris.from_fs_path(os.path.join(self.root_path, relative_path)) if "://" not in relative_path else relative_path
         doc = self.get_document(uri)
-        cursor_pos = word_to_position(doc.source, word, line=line, offset=offset)
+        try:
+            cursor_pos = word_to_position(doc.source, word, line=line, offset=offset)
+        except ValueError:
+            ## LLM sometimes send the wrong line number or not aware of the line number
+            cursor_pos = word_to_position(doc.source, word, line=None, offset=offset)
         output = pylsp_references(doc, cursor_pos, exclude_declaration=True)
         if verbose: 
             verbose_output = []
-            for item in [output[0]]:
+            for item in output:
                 doc_item = self.get_document(item["uri"])
                 item["range"]["start"]["line"] = max(0, item["range"]["start"]["line"] - context_size)
                 item["range"]["end"]["line"] = min(len(doc_item.lines), item["range"]["end"]["line"] + context_size)
@@ -181,10 +198,10 @@ class LSPToolKit:
         self.client._endpoint.notify("exit", {})
 
 if __name__ == "__main__":
-    test_path = "/datadrive05/huypn16/focalcoder/data/repos/repo__danswer-ai__danswer__commit__"
+    test_path = "/datadrive05/huypn16/focalcoder/data/repos/repo__krohling__bondai__commit__"
     lsp = LSPToolKit(test_path)
     # output = lsp.get_definition("__init__", "astropy/convolution/kernels.py", line=None, offset=0, verbose=True)
     # output = lsp.get_references("Gaussian1DKernel", "astropy/convolution/kernels.py", line=28, offset=0, verbose=True)
-    output = lsp.get_symbols("backend/danswer/danswerbot/slack/config.py", verbose=True)
+    output = lsp.get_references(word="LangChainTool", relative_path="bondai/tools/langchain_tool.py", line=1, verbose=True)
     print(output)
     lsp.shutdown()

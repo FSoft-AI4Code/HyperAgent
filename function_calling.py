@@ -57,7 +57,6 @@ def run_preliminary_search(bug_report, repo_dir):
         functions=functions,
         function_call="auto",  # auto is default, but we'll be explicit
     )
-    print(response)
     response_message = response["choices"][0]["message"]
 
     # Step 2: check if GPT wanted to call a function
