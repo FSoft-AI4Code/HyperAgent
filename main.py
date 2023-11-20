@@ -27,10 +27,10 @@ logging.getLogger('pylsp').setLevel(logging.WARNING)
 
 logger = logging.getLogger(__name__)
 
-def Setup(repo, commit):
+def Setup(repo, commit, local=False):
     root_dir = "data/repos"
     gh_token = os.environ.get("GITHUB_TOKEN", None)
-    repo_dir = clone_repo(repo, commit, root_dir, gh_token, logger)
+    repo_dir = repo if local else clone_repo(repo, commit, root_dir, gh_token, logger) 
 
     python_splitter = RecursiveCharacterTextSplitter.from_language(
         language=Language.PYTHON, chunk_size=1000, chunk_overlap=200
@@ -131,58 +131,14 @@ if __name__ == "__main__":
     logger.info("Start!")
     # repo = input("Enter your repo name here: ")
     # commit = input("Enter your commit hash here: ")
-    repo = "langchain-ai/langchain"
+    # repo = "langchain-ai/langchain"
+    repo = "data/repos/FocusedCoder"
     commit = ""
-    agent = Setup(repo, commit)
+    agent = Setup(repo, commit, local=True)
     
     logger.info("Setup done!")
-    # question = input("Enter your question about your repository: ")
-    # question = "what are the main components of the backend of danswer and how it works, be very specific (roles of the main classes for each component and their relationship)"
-    question = """
-    How to add memory to SQLDatabaseChain? 
-    I want to create a chain to make query against my database. Also I want to add memory to this chain.
-    Example of dialogue I want to see:
+    question = input("Enter your question about your repository: ")
 
-    Query: Who is an owner of website with domain domain.com?
-    Answer: Boba Bobovich
-    Query: Tell me his email Answer:
-    Boba Bobovich's email is boba@boba.com
-
-    I have this code:
-
-    import os
-    from langchain import OpenAI, SQLDatabase, SQLDatabaseChain, PromptTemplate
-    from langchain.memory import ConversationBufferMemory
-
-    memory = ConversationBufferMemory()
-    db = SQLDatabase.from_uri(os.getenv("DB_URI"))
-    llm = OpenAI(temperature=0, verbose=True)
-    db_chain = SQLDatabaseChain.from_llm(llm, db, verbose=True, memory=memory)
-
-    db_chain.run("Who is owner of the website with domain https://damon.name")
-    db_chain.run("Tell me his email")
-    print(memory.load_memory_variables({}))
-
-    It gives:
-
-    > Entering new  chain...
-    Who is owner of the website with domain https://damon.name
-    SQLQuery:SELECT first_name, last_name FROM owners JOIN websites ON owners.id = websites.owner_id WHERE domain = 'https://damon.name' LIMIT 5;
-    SQLResult: [('Geo', 'Mertz')]
-    Answer:Geo Mertz is the owner of the website with domain https://damon.name.
-    > Finished chain.
-
-    > Entering new  chain...
-    Tell me his email
-    SQLQuery:SELECT email FROM owners WHERE first_name = 'Westley' AND last_name = 'Waters'
-    SQLResult: [('Ken70@hotmail.com',)]
-    Answer:Westley Waters' email is Ken70@hotmail.com.
-    > Finished chain.
-    {'history': "Human: Who is owner of the website with domain https://damon.name\nAI: Geo Mertz is the owner of the website with domain https://damon.name.\nHuman: Tell me his email\nAI: Westley Waters' email is Ken70@hotmail.com."}
-
-    Well, it saves context to memory but chain doesn't use it to give a proper answer (wrong email). How to fix it?
-
-    Also I don't want to use an agent because I want to manage to do this with a simple chain first. Tell me if it's impossible with simple chain."""
     
     with get_openai_callback() as cb:
         agent.run(question)

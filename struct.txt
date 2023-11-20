@@ -1,173 +1,29 @@
-data/repos/repo__langchain-ai__langchain__commit__
-├── CITATION.cff
-├── LICENSE
-├── MIGRATE.md
-├── Makefile
-├── README.md
-├── SECURITY.md
-├── cookbook
-│   ├── LLaMA2_sql_chat.ipynb
-│   ├── Multi_modal_RAG.ipynb
-│   ├── README.md
-│   ├── Semi_Structured_RAG.ipynb
-│   ├── Semi_structured_and_multi_modal_RAG.ipynb
-│   ├── Semi_structured_multi_modal_RAG_LLaMA2.ipynb
-│   ├── advanced_rag_eval.ipynb
-│   ├── analyze_document.ipynb
-│   ├── autogpt
-│   ├── baby_agi.ipynb
-│   ├── baby_agi_with_agent.ipynb
-│   ├── camel_role_playing.ipynb
-│   ├── causal_program_aided_language_model.ipynb
-│   ├── code-analysis-deeplake.ipynb
-│   ├── custom_agent_with_plugin_retrieval.ipynb
-│   ├── custom_agent_with_plugin_retrieval_using_plugnplai.ipynb
-│   ├── databricks_sql_db.ipynb
-│   ├── deeplake_semantic_search_over_chat.ipynb
-│   ├── elasticsearch_db_qa.ipynb
-│   ├── extraction_openai_tools.ipynb
-│   ├── fake_llm.ipynb
-│   ├── forward_looking_retrieval_augmented_generation.ipynb
-│   ├── generative_agents_interactive_simulacra_of_human_behavior.ipynb
-│   ├── gymnasium_agent_simulation.ipynb
-│   ├── hugginggpt.ipynb
-│   ├── human_input_chat_model.ipynb
-│   ├── human_input_llm.ipynb
-│   ├── hypothetical_document_embeddings.ipynb
-│   ├── learned_prompt_optimization.ipynb
-│   ├── llm_bash.ipynb
-│   ├── llm_checker.ipynb
-│   ├── llm_math.ipynb
-│   ├── llm_summarization_checker.ipynb
-│   ├── llm_symbolic_math.ipynb
-│   ├── meta_prompt.ipynb
-│   ├── multi_modal_QA.ipynb
-│   ├── multi_modal_RAG_chroma.ipynb
-│   ├── multi_modal_output_agent.ipynb
-│   ├── multi_player_dnd.ipynb
-│   ├── multiagent_authoritarian.ipynb
-│   ├── multiagent_bidding.ipynb
-│   ├── myscale_vector_sql.ipynb
-│   ├── openai_functions_retrieval_qa.ipynb
-│   ├── openai_v1_cookbook.ipynb
-│   ├── petting_zoo.ipynb
-│   ├── plan_and_execute_agent.ipynb
-│   ├── press_releases.ipynb
-│   ├── program_aided_language_model.ipynb
-│   ├── qa_citations.ipynb
-│   ├── qianfan_baidu_elasticesearch_RAG.ipynb
-│   ├── rag_fusion.ipynb
-│   ├── retrieval_in_sql.ipynb
-│   ├── rewrite.ipynb
-│   ├── sales_agent_with_context.ipynb
-│   ├── selecting_llms_based_on_context_length.ipynb
-│   ├── self_query_hotel_search.ipynb
-│   ├── smart_llm.ipynb
-│   ├── sql_db_qa.mdx
-│   ├── stepback-qa.ipynb
-│   ├── tree_of_thought.ipynb
-│   ├── twitter-the-algorithm-analysis-deeplake.ipynb
-│   ├── two_agent_debate_tools.ipynb
-│   ├── two_player_dnd.ipynb
-│   └── wikibase_agent.ipynb
-├── docker
-│   └── Dockerfile.base
-├── docs
-│   ├── README.md
-│   ├── api_reference
-│   ├── babel.config.js
-│   ├── code-block-loader.js
-│   ├── docs
-│   ├── docusaurus.config.js
-│   ├── package-lock.json
-│   ├── package.json
-│   ├── scripts
-│   ├── settings.ini
-│   ├── sidebars.js
-│   ├── src
-│   ├── static
-│   ├── vercel.json
-│   ├── vercel_build.sh
-│   └── vercel_requirements.txt
-├── libs
-│   ├── cli
-│   ├── experimental
-│   └── langchain
-├── poetry.lock
-├── poetry.toml
-├── pyproject.toml
-└── templates
-    ├── Makefile
-    ├── README.md
-    ├── anthropic-iterative-search
-    ├── basic-critique-revise
-    ├── cassandra-entomology-rag
-    ├── cassandra-synonym-caching
-    ├── chat-bot-feedback
-    ├── csv-agent
-    ├── docs
-    ├── elastic-query-generator
-    ├── extraction-anthropic-functions
-    ├── extraction-openai-functions
-    ├── guardrails-output-parser
-    ├── hybrid-search-weaviate
-    ├── hyde
-    ├── llama2-functions
-    ├── mongo-parent-document-retrieval
-    ├── neo4j-advanced-rag
-    ├── neo4j-cypher
-    ├── neo4j-cypher-ft
-    ├── neo4j-cypher-memory
-    ├── neo4j-generation
-    ├── neo4j-parent
-    ├── neo4j-vector-memory
-    ├── openai-functions-agent
-    ├── openai-functions-tool-retrieval-agent
-    ├── pii-protected-chatbot
-    ├── pirate-speak
-    ├── pirate-speak-configurable
-    ├── plate-chain
-    ├── poetry.lock
-    ├── pyproject.toml
-    ├── rag-astradb
-    ├── rag-aws-bedrock
-    ├── rag-aws-kendra
-    ├── rag-chroma
-    ├── rag-chroma-private
-    ├── rag-codellama-fireworks
-    ├── rag-conversation
-    ├── rag-conversation-zep
-    ├── rag-elasticsearch
-    ├── rag-fusion
-    ├── rag-google-cloud-vertexai-search
-    ├── rag-matching-engine
-    ├── rag-momento-vector-index
-    ├── rag-mongo
-    ├── rag-pinecone
-    ├── rag-pinecone-multi-query
-    ├── rag-pinecone-rerank
-    ├── rag-redis
-    ├── rag-self-query
-    ├── rag-semi-structured
-    ├── rag-singlestoredb
-    ├── rag-supabase
-    ├── rag-timescale-conversation
-    ├── rag-timescale-hybrid-search-time
-    ├── rag-vectara
-    ├── rag-vectara-multiquery
-    ├── rag-weaviate
-    ├── research-assistant
-    ├── retrieval-agent
-    ├── rewrite-retrieve-read
-    ├── self-query-qdrant
-    ├── self-query-supabase
-    ├── solo-performance-prompting-agent
-    ├── sql-llama2
-    ├── sql-llamacpp
-    ├── sql-ollama
-    ├── sql-pgvector
-    ├── stepback-qa-prompting
-    ├── summarize-anthropic
-    └── xml-agent
+FocusedCoder/
+├── LSP.py
+├── SWE_bench
+├── __pycache__
+│   ├── LSP.cpython-310.pyc
+│   ├── agents.cpython-310.pyc
+│   ├── server.cpython-310.pyc
+│   ├── tools.cpython-310.pyc
+│   ├── tree_struct_display.cpython-310.pyc
+│   └── utils.cpython-310.pyc
+├── agents.py
+├── check_usage.py
+├── codebase_search_agents.ipynb
+├── data
+│   └── repos
+├── deploy-sourcegraph-docker
+├── function_calling.py
+├── main.py
+├── navigator.py
+├── plan_and_execute.py
+├── server.py
+├── struct.txt
+├── tools.py
+├── trace_langchain.txt
+├── trace_langchain_include_task_formatted_tools.txt
+├── tree_struct_display.py
+└── utils.py
 
-82 directories, 88 files
+5 directories, 21 files
