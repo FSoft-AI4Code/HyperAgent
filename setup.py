@@ -12,7 +12,8 @@ setup(
         author_email="HuyPN16@fpt.com",
         description=DESCRIPTION,
         long_description=LONG_DESCRIPTION,
-        packages=find_packages(),
+        packages=find_packages(where="src"),
+        package_dir={'': 'src'},
         install_requires=["langchain", "openai"], # add any additional packages that 
         # needs to be installed along with your package. Eg: 'caer'
         

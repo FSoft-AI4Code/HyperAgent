@@ -3,15 +3,15 @@ from typing import Type
 from pydantic import BaseModel, Field
 from langchain.tools import BaseTool, Tool
 import jedi
-from llm_multilspy import LSPToolKit
+from .llm_multilspy import LSPToolKit
 from openai import OpenAI
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.document_loaders.generic import GenericLoader
 from langchain.document_loaders.parsers import LanguageParser
-from tree_struct_display import tree
-from llm_multilspy import add_num_line
+from .tree_struct_display import tree
+from .llm_multilspy import add_num_line
 import numpy as np
-from utils import identify_extension
+from .utils import identify_extension
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.vectorstores import Chroma
 

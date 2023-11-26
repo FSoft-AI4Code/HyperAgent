@@ -30,7 +30,7 @@ SOFTWARE.
 """
 
 from typing import List, Union
-import lsp_types
+from . import lsp_types
 
 class LspRequest:
     def __init__(self, send_request):

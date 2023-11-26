@@ -6,8 +6,9 @@ from pylsp.plugins.symbols import pylsp_document_symbols
 from pylsp.lsp import SymbolKind
 from pylsp.plugins.hover import pylsp_hover
 
-from repopilot.multilspy import LanguageServer
+from repopilot.multilspy import SyncLanguageServer
 from repopilot.multilspy.multilspy_config import MultilspyConfig
+from repopilot.multilspy.multilspy_logger import MultilspyLogger
 
 CALL_TIMEOUT_IN_SECONDS = 10
 
@@ -63,14 +64,16 @@ def matching_py_kind_symbol(symbol):
 class LSPToolKit:
     def __init__(self, root_path, language="python", logger=None):
         self.root_path = root_path
-        self.logger = logger
-        self.server = LanguageServer.create(MultilspyConfig(code_language=language), logger, root_path)
-    
+        self.logger = logger if logger else MultilspyLogger()
+        self.server = SyncLanguageServer.create(MultilspyConfig(code_language=language), self.logger, root_path)
+        
     def open_file(self, relative_path):
-        return self.server.open_file(relative_path)
+        with self.server.start_server():
+            result = self.server.get_open_file_text(relative_path)
+        return result
     
     def get_document(self, uri):
-        return self.server.workspace.get_document(uri)
+        return self.server.get_document(uri)
     
     def get_definition(self, word, relative_path, line=None, offset=0, verbose=False):
         uri = uris.from_fs_path(os.path.join(self.root_path, relative_path)) if "://" not in relative_path else relative_path
@@ -149,13 +152,15 @@ class LSPToolKit:
     
     def get_references(self, word, relative_path, line=None, offset=0, verbose=False, context_size=10):
         uri = uris.from_fs_path(os.path.join(self.root_path, relative_path)) if "://" not in relative_path else relative_path
-        doc = self.get_document(uri)
+        print("uri", uri)
+        doc = self.open_file(relative_path)
+        import ipdb; ipdb.set_trace()
         try:
             cursor_pos = word_to_position(doc.source, word, line=line, offset=offset)
         except ValueError:
             ## LLM sometimes send the wrong line number or not aware of the line number
             cursor_pos = word_to_position(doc.source, word, line=None, offset=offset)
-        output = self.server.request_definition(doc, cursor_pos, exclude_declaration=True)
+        output = self.server.request_references(relative_path, **cursor_pos)
         if verbose: 
             verbose_output = []
             for item in output:
@@ -178,14 +183,10 @@ class LSPToolKit:
             output = verbose_output
         return output
 
-    def shutdown(self):
-        self.client._endpoint.request("shutdown", {}).result(timeout=CALL_TIMEOUT_IN_SECONDS)
-        self.client._endpoint.notify("exit", {})
 
 if __name__ == "__main__":
     test_path = "/datadrive05/huypn16/focalcoder/data/repos/repo__krohling__bondai__commit__"
-    lsp = LSPToolKit(test_path)
+    lsp = LSPToolKit(test_path, language="python")
     output = lsp.open_file("bondai/tools/langchain_tool.py")
     output = lsp.get_references(word="LangChainTool", relative_path="bondai/tools/langchain_tool.py", line=1, verbose=True)
     print(output)
-    lsp.shutdown()
