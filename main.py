@@ -14,7 +14,7 @@ from utils import clone_repo
 from langchain_experimental.plan_and_execute import (
     load_chat_planner,
 )
-from agents import load_agent_executor, PlanSeeking
+from agents.plan_seeking import load_agent_executor, PlanSeeking
 from langchain.callbacks import get_openai_callback
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.vectorstores import Chroma

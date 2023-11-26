@@ -3,13 +3,13 @@ from typing import Type
 from pydantic import BaseModel, Field
 from langchain.tools import BaseTool
 import jedi
-from LSP import LSPToolKit
+from llm_multilspy import LSPToolKit
 from openai import OpenAI
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.text_splitter import Language
 from tree_struct_display import tree
 from pathlib import Path
-from LSP import add_num_line
+from llm_multilspy import add_num_line
 import numpy as np
 
 python_splitter = RecursiveCharacterTextSplitter.from_language(
