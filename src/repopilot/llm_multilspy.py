@@ -1,13 +1,13 @@
 import os
-from pylsp.text_edit import OverLappingTextEditException, apply_text_edits
 from pylsp.plugins.definition import pylsp_definitions
-from pylsp.plugins.references import pylsp_references
 from pylsp import uris
 from pylsp.config.config import Config
-from server import ClientServerPair
 from pylsp.plugins.symbols import pylsp_document_symbols
 from pylsp.lsp import SymbolKind
 from pylsp.plugins.hover import pylsp_hover
+
+from repopilot.multilspy import LanguageServer
+from repopilot.multilspy.multilspy_config import MultilspyConfig
 
 CALL_TIMEOUT_IN_SECONDS = 10
 
@@ -60,29 +60,14 @@ def matching_py_kind_symbol(symbol):
     elif kind == SymbolKind.Variable:
         return "Variable"
 
-def test_finding_definition(pylsp, word, relative_path):
-    ## to get a document source, test_doc.source
-    DOC_URI = uris.from_fs_path(os.path.join(test_path, relative_path))
-    test_doc = pylsp.workspace.get_document(DOC_URI)
-    cursor_pos = word_to_position(test_doc.source, word)
-    cfg = Config(pylsp.workspace.root_uri, {}, 0, {})
-    cfg._plugin_settings = {
-        "plugins": {"pylint": {"enabled": False, "args": [], "executable": None}}
-    }
-    output = pylsp_definitions(cfg, test_doc, cursor_pos)
-
 class LSPToolKit:
-    def __init__(self, root_path):
+    def __init__(self, root_path, language="python", logger=None):
         self.root_path = root_path
-        client_server_pair_obj = ClientServerPair()
-        self.client = client_server_pair_obj.client
-        self.server = client_server_pair_obj.server
-        self.client._endpoint.request(
-            "initialize",
-            {"rootPath": root_path, 
-             "initializationOptions": {},
-            },
-        ).result(timeout=CALL_TIMEOUT_IN_SECONDS)
+        self.logger = logger
+        self.server = LanguageServer.create(MultilspyConfig(code_language=language), logger, root_path)
+    
+    def open_file(self, relative_path):
+        return self.server.open_file(relative_path)
     
     def get_document(self, uri):
         return self.server.workspace.get_document(uri)
@@ -170,7 +155,7 @@ class LSPToolKit:
         except ValueError:
             ## LLM sometimes send the wrong line number or not aware of the line number
             cursor_pos = word_to_position(doc.source, word, line=None, offset=offset)
-        output = pylsp_references(doc, cursor_pos, exclude_declaration=True)
+        output = self.server.request_definition(doc, cursor_pos, exclude_declaration=True)
         if verbose: 
             verbose_output = []
             for item in output:
@@ -200,8 +185,7 @@ class LSPToolKit:
 if __name__ == "__main__":
     test_path = "/datadrive05/huypn16/focalcoder/data/repos/repo__krohling__bondai__commit__"
     lsp = LSPToolKit(test_path)
-    # output = lsp.get_definition("__init__", "astropy/convolution/kernels.py", line=None, offset=0, verbose=True)
-    # output = lsp.get_references("Gaussian1DKernel", "astropy/convolution/kernels.py", line=28, offset=0, verbose=True)
+    output = lsp.open_file("bondai/tools/langchain_tool.py")
     output = lsp.get_references(word="LangChainTool", relative_path="bondai/tools/langchain_tool.py", line=1, verbose=True)
     print(output)
     lsp.shutdown()

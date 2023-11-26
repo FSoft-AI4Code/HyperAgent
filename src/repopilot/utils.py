@@ -32,3 +32,14 @@ def clone_repo(repo, commit, root_dir, token, logger):
         )
     return root_dir + "/" + repo_dir.name
 
+def identify_extension(language):
+    if language == "python":
+        return ".py"
+    elif language == "javascript":
+        return ".js"
+    elif language == "java":
+        return ".java"
+    elif language == "csharp":
+        return ".cs"
+    elif language == "rust":
+        return ".rs"

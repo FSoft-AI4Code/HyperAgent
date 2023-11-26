@@ -1,20 +1,19 @@
 import os
 from typing import Type
 from pydantic import BaseModel, Field
-from langchain.tools import BaseTool
+from langchain.tools import BaseTool, Tool
 import jedi
 from llm_multilspy import LSPToolKit
 from openai import OpenAI
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.text_splitter import Language
+from langchain.document_loaders.generic import GenericLoader
+from langchain.document_loaders.parsers import LanguageParser
 from tree_struct_display import tree
-from pathlib import Path
 from llm_multilspy import add_num_line
 import numpy as np
-
-python_splitter = RecursiveCharacterTextSplitter.from_language(
-    language=Language.PYTHON, chunk_size=2000, chunk_overlap=200
-)
+from utils import identify_extension
+from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain.vectorstores import Chroma
 
 def get_code_jedi(definition, verbose=False):
     raw = definition.get_line_code(after=definition.get_definition_end_position()[0]-definition.get_definition_start_position()[0])
@@ -30,7 +29,7 @@ def get_code_jedi(definition, verbose=False):
             start_num_line += 1
         return "\n".join(results)
 
-def search_preliminary_inside_project(names, repo_path, num_result=2, verbose=False):
+def search_preliminary_inside_project(names, repo_path, num_result=2, verbose=False, language="python"):
     """Get all matched identifiers from a repo
     
     Args:
@@ -111,13 +110,15 @@ class CodeSearchTool(BaseTool):
     args_schema: Type[BaseModel] = CodeSearchArgs
     path = ""
     verbose = False
+    language = "python"
     
-    def __init__(self, path):
+    def __init__(self, path, language="python"):
         super().__init__()
         self.path = path
+        self.language = language
     
     def _run(self, names: list[str], verbose: bool = True):
-        return search_preliminary_inside_project(names, repo_path=self.path, verbose=verbose)
+        return search_preliminary_inside_project(names, repo_path=self.path, verbose=verbose, language=self.language)
     
     def _arun(self, names: list[str], repo_path: str):
         return NotImplementedError("Code Search Tool is not available for async run")
@@ -138,12 +139,13 @@ class GoToDefinitionTool(BaseTool):
     args_schema = GoToDefinitionArgs
     path = ""
     lsptoolkit: LSPToolKit = None
+    language = "python"
     verbose = False
     
-    def __init__(self, path):
+    def __init__(self, path, language="python"):
         super().__init__()
         self.path = path
-        self.lsptoolkit = LSPToolKit(path)
+        self.lsptoolkit = LSPToolKit(path, language)
     
     def _run(self, word: str, line: int, relative_path: str):
         return self.lsptoolkit.get_definition(word, relative_path, line, verbose=True)
@@ -164,11 +166,12 @@ class FindAllReferencesTool(BaseTool):
     openai_engine: OpenAI = None
     path = ""
     verbose = False
+    language = "python"
     
-    def __init__(self, path):
+    def __init__(self, path, language="python"):
         super().__init__()
         self.path = path
-        self.lsptoolkit = LSPToolKit(path)
+        self.lsptoolkit = LSPToolKit(path, language)
         self.openai_engine = OpenAI(api_key="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")
     
     def _run(self, word: str, line: int, relative_path: str, reranking: bool = False, query: str = ""):
@@ -214,11 +217,12 @@ class GetAllSymbolsTool(BaseTool):
     lsptoolkit: LSPToolKit = None
     path = ""
     verbose = False
+    language = "python"
     
-    def __init__(self, path):
+    def __init__(self, path, language="python"):
         super().__init__()
         self.path = path
-        self.lsptoolkit = LSPToolKit(path)
+        self.lsptoolkit = LSPToolKit(path, language)
     
     def _run(self, path_to_file: str, verbose_level: int = 1):
         try:
@@ -287,6 +291,39 @@ class OpenFileTool(BaseTool):
     def _arun(self, relative_path: str):
         return NotImplementedError("Open File Tool is not available for async run")
 
+class SemanticCodeSearchTool(Tool):
+    def __init__(self, path, language="python"):
+        """Semantic code search tool allows you to search for code using natural language. It's useful when the query is a sentance, semantic and vague. If exact search such as code search failed after multiple tries, try this
+
+        Args:
+            path (_type_): relative path to the repo
+            language (str, optional): we have 4 options: python, rust, csharp, java. Defaults to "python".
+        """
+        extension = identify_extension(language)
+        splitter = RecursiveCharacterTextSplitter.from_language(
+            language=language, chunk_size=800, chunk_overlap=200
+        )
+
+        loader = GenericLoader.from_filesystem(
+            path,
+            suffixes=[extension],
+            parser=LanguageParser(language=language, parser_threshold=500),
+        )
+        
+        documents = loader.load()
+        texts = splitter.split_documents(documents)
+        self.db = Chroma.from_documents(texts, OpenAIEmbeddings())
+        
+        def semantic_code_search(query):
+            retrieved_docs = self.db.similarity_search(query, k=3)
+            return [doc.page_content for doc in retrieved_docs]
+        
+        super().__init__(
+            name="Semantic Code Search",
+            func=semantic_code_search,
+            description="useful for when the query is a sentance, semantic and vague. If exact search such as code search failed after multiple tries, try this",
+        )
+        
 def main():
     path = "/datadrive05/huypn16/focalcoder/data/repos/repo__astropy__astropy__commit__3832210580d516365ddae1a62071001faf94d416"
     FindAllReferencesTool(path)

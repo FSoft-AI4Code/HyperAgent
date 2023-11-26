@@ -30,7 +30,7 @@ SOFTWARE.
 """
 
 from typing import List, Union
-from monitors4codegen.multilspy.lsp_protocol_handler import lsp_types
+import lsp_types
 
 class LspRequest:
     def __init__(self, send_request):

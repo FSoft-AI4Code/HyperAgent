@@ -14,7 +14,7 @@ import pathlib
 import threading
 from contextlib import asynccontextmanager, contextmanager
 from .lsp_protocol_handler.lsp_constants import LSPConstants
-from  .lsp_protocol_handler import lsp_types as LSPTypes
+from .lsp_protocol_handler import lsp_types as LSPTypes
 
 from . import multilspy_types
 from .multilspy_logger import MultilspyLogger
@@ -72,25 +72,25 @@ class LanguageServer:
         :return LanguageServer: A language specific LanguageServer instance.
         """
         if config.code_language == Language.PYTHON:
-            from monitors4codegen.multilspy.language_servers.jedi_language_server.jedi_server import (
+            from repopilot.multilspy.language_servers.jedi_language_server.jedi_server import (
                 JediServer,
             )
 
             return JediServer(config, logger, repository_root_path)
         elif config.code_language == Language.JAVA:
-            from monitors4codegen.multilspy.language_servers.eclipse_jdtls.eclipse_jdtls import (
+            from repopilot.multilspy.language_servers.eclipse_jdtls.eclipse_jdtls import (
                 EclipseJDTLS,
             )
 
             return EclipseJDTLS(config, logger, repository_root_path)
         elif config.code_language == Language.RUST:
-            from monitors4codegen.multilspy.language_servers.rust_analyzer.rust_analyzer import (
+            from repopilot.multilspy.language_servers.rust_analyzer.rust_analyzer import (
                 RustAnalyzer,
             )
 
             return RustAnalyzer(config, logger, repository_root_path)
         elif config.code_language == Language.CSHARP:
-            from monitors4codegen.multilspy.language_servers.omnisharp.omnisharp import OmniSharp
+            from repopilot.multilspy.language_servers.omnisharp.omnisharp import OmniSharp
 
             return OmniSharp(config, logger, repository_root_path)
         else:

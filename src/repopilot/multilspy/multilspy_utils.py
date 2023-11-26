@@ -14,9 +14,9 @@ import platform
 import subprocess
 from enum import Enum
 
-from monitors4codegen.multilspy.multilspy_exceptions import MultilspyException
+from repopilot.multilspy.multilspy_exceptions import MultilspyException
 from pathlib import PurePath, Path
-from monitors4codegen.multilspy.multilspy_logger import MultilspyLogger
+from repopilot.multilspy.multilspy_logger import MultilspyLogger
 
 class TextUtils:
     """
@@ -78,13 +78,8 @@ class PathUtils:
 
         This method was obtained from https://stackoverflow.com/a/61922504
         """
-        try:
-            from urllib.parse import urlparse, unquote
-            from urllib.request import url2pathname
-        except ImportError:
-            # backwards compatability
-            from urlparse import urlparse
-            from urllib import unquote, url2pathname
+        from urllib.parse import urlparse, unquote
+        from urllib.request import url2pathname
         parsed = urlparse(uri)
         host = "{0}{0}{mnt}{0}".format(os.path.sep, mnt=parsed.netloc)
         return os.path.normpath(os.path.join(host, url2pathname(unquote(parsed.path))))
