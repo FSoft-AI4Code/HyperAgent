@@ -3,7 +3,7 @@
     "processId": "os.getpid()",
     "clientInfo": {
         "name": "Visual Studio Code - Insiders",
-        "version": "1.81.0-insider"
+        "version": "1.82.0-insider"
     },
     "locale": "en",
     "rootPath": "$rootPath",

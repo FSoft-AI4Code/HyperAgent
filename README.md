@@ -8,6 +8,20 @@ RepoPilot is a multi-agent system based on Large Language Models (LLMs) designed
 
 [![Video](https://img.youtube.com/vi/JB_j6fWHwSw/0.jpg)](https://youtu.be/JB_j6fWHwSw)
 
+## Installation
+RepoPilot uses Zoekt for code search. Please install Zoekt before installing RepoPilot. Zoekt requires latest Go installation, please follow the instructions [here](https://www.linuxedo.com/2021/10/install-latest-golang-on-linux.html) to install Go.
+
+```bash
+go get github.com/sourcegraph/zoekt/
+
+# Install Zoekt Index
+go get github.com/sourcegraph/zoekt/cmd/zoekt-index
+go install github.com/sourcegraph/zoekt/cmd/zoekt-index
+# Install Zoekt Web Server
+go get github.com/sourcegraph/zoekt/cmd/zoekt-webserver
+go install github.com/sourcegraph/zoekt/cmd/zoekt-webserver
+```
+
 ## Key Features
 
 - **Codebase Exploration**: Enables developers to query about specific features or components within a codebase (e.g., asking about the login feature in a repository).
