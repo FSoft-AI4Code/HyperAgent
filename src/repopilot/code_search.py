@@ -1,6 +1,7 @@
 import logging
 from codetext.utils import parse_code
 from codetext.parser import PythonParser, CsharpParser, RustParser, JavaParser
+from repopilot.utils import add_num_line
 import os
 import jedi 
 
@@ -124,7 +125,7 @@ def search_zoekt_elements_inside_project(names, backend, num_result=2, verbose=F
                         "file": file["FileName"],
                         "name": metadata["identifier"],
                         "documentation": parser.get_docstring(func, source),
-                        "implementation": get_node_text(func.start_byte, func.end_byte, source)
+                        "implementation": add_num_line(get_node_text(func.start_byte, func.end_byte, source), func.start_point[0])
                     } 
                     search_results[name].append(result)
             for cls in class_list:
@@ -134,7 +135,7 @@ def search_zoekt_elements_inside_project(names, backend, num_result=2, verbose=F
                         "file": file["FileName"],
                         "name": metadata["identifier"],
                         "documentation": parser.get_docstring(cls, source),
-                        "implementation": get_node_text(cls.start_byte, cls.end_byte, source)
+                        "implementation": add_num_line(get_node_text(cls.start_byte, cls.end_byte, source), cls.start_point[0])
                     } 
                     search_results[name].append(result)
         

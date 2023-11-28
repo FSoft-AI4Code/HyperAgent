@@ -3,12 +3,15 @@ from repopilot.multilspy.multilspy_config import MultilspyConfig
 from repopilot.multilspy.multilspy_logger import MultilspyLogger
 from repopilot.utils import matching_kind_symbol, matching_symbols, add_num_line, get_text, word_to_position
 from repopilot.multilspy.lsp_protocol_handler.lsp_types import SymbolKind
+import logging
+
+logging.getLogger("multilspy").setLevel(logging.WARNING)
 
 class LSPToolKit:
     def __init__(self, root_path, language="python"):
         self.root_path = root_path
         self.language = language
-        self.server = SyncLanguageServer.create(MultilspyConfig(code_language="python"), MultilspyLogger(), root_path)
+        self.server = SyncLanguageServer.create(MultilspyConfig(code_language=language), MultilspyLogger(), root_path)
         
     def open_file(self, relative_path):
         with self.server.start_server():
@@ -21,7 +24,7 @@ class LSPToolKit:
         cursor_pos = word_to_position(doc, word, line=line, offset=offset)
         with self.server.start_server():
             output = self.server.request_definition(relative_path, **cursor_pos)
-        if verbose:
+        if verbose and len(output) > 0:
             symbols = self.get_symbols(output[0]["relativePath"])
             symbol = matching_symbols(symbols, output[0])
             symbol_type = matching_kind_symbol(symbol)
@@ -30,7 +33,7 @@ class LSPToolKit:
             
         return output
     
-    def get_symbols(self, relative_path, verbose_level=1, verbose=False, preview_size=1):
+    def get_symbols(self, relative_path, verbose_level=1, verbose=False, preview_size=10):
         """Get all symbols in a file
 
         Args:
@@ -47,13 +50,21 @@ class LSPToolKit:
         """
         with self.server.start_server():
             symbols = self.server.request_document_symbols(relative_path)[0]
+        source = self.open_file(relative_path)
         if verbose:
             verbose_output = []
             for item in symbols:
-                definition = get_text(self.open_file(relative_path), item["range"])
                 if verbose_level == 1:
-                    if (item["kind"] == SymbolKind.Class or item["kind"] == SymbolKind.Function) and ((item["range"]["end"]["line"] - item["range"]["start"]["line"]) > 2) and ("import" not in definition):             
-                        cha = definition.split("\n")[0].index(item["name"])
+                    definition = get_text(source, item["range"])
+                    major_symbols = [SymbolKind.Class, SymbolKind.Function, SymbolKind.Module, SymbolKind.Struct]
+                    major_symbols = [int(i) for i in major_symbols]
+                    if (item["kind"] in major_symbols):             
+                        line_has_name = 0
+                        for k in range(len(definition.split("\n"))):
+                            if item["name"] in definition.split("\n")[k]:
+                                line_has_name = k
+                        cha = definition.split("\n")[line_has_name].index(item["name"])
+                        
                         with self.server.start_server():
                             documentation = self.server.request_hover(relative_path, item["range"]["start"]["line"], cha)["contents"]
                         if "value" not in documentation:
@@ -66,8 +77,15 @@ class LSPToolKit:
                         verbose_output.append(item_out)
                         
                 elif verbose_level == 2:
-                    if (item["kind"] == SymbolKind.Class or item["kind"] == SymbolKind.Function or item["kind"] == SymbolKind.Method) and ((item["range"]["end"]["line"] - item["range"]["start"]["line"]) > 2) and ("import" not in definition):           
-                        cha = definition.split("\n")[0].index(item["name"])
+                    definition = get_text(source, item["range"])
+                    minor_symbols = [SymbolKind.Class, SymbolKind.Function, SymbolKind.Module, SymbolKind.Struct, SymbolKind.Method]
+                    minor_symbols = [int(i) for i in minor_symbols]
+                    if (item["kind"] in minor_symbols):          
+                        line_has_name = 0
+                        for k in range(len(definition.split("\n"))):
+                            if item["name"] in definition.split("\n")[k]:
+                                line_has_name = k 
+                        cha = definition.split("\n")[line_has_name].index(item["name"])
                         with self.server.start_server():
                             documentation = self.server.request_hover(relative_path, item["range"]["start"]["line"], cha)["contents"]
                         if "value" not in documentation:
@@ -115,7 +133,7 @@ class LSPToolKit:
 
 
 if __name__ == "__main__":
-    test_path = "/datadrive05/huypn16/focalcoder/data/repos/repo__krohling__bondai__commit__"
-    lsp = LSPToolKit(test_path, language="python")
-    output = lsp.get_symbols(relative_path="bondai/cli/cli_agent_wrapper.py", verbose=True)
-    output = lsp.get_references(relative_path="bondai/cli/cli_agent_wrapper.py", word="CLIAgentWrapper", verbose=True)
+    test_path = "/datadrive05/huypn16/focalcoder/data/repos/repo__karatelabs__karate__commit__"
+    lsp = LSPToolKit(test_path, language="java")
+    output = lsp.get_symbols(relative_path="karate-core/src/main/java/com/intuit/karate/Runner.java", verbose=True)
+    print(output)

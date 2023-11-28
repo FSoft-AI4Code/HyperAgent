@@ -40,8 +40,6 @@ def clone_repo(repo, commit, root_dir, token, logger):
 def identify_extension(language):
     if language == "python":
         return ".py"
-    elif language == "javascript":
-        return ".js"
     elif language == "java":
         return ".java"
     elif language == "csharp":

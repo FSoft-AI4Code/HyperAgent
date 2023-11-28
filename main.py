@@ -1,5 +1,3 @@
-import sys
-sys.path.append("/datadrive05/huypn16/focalcoder/")
 import os
 import logging
 from repopilot import RepoPilot
@@ -8,17 +6,25 @@ from langchain.callbacks.manager import get_openai_callback
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
-logging.getLogger('pylsp').setLevel(logging.WARNING)
+logging.getLogger('codetext').setLevel(logging.WARNING)
+logging.getLogger('repopilot').setLevel(logging.WARNING)
+logging.getLogger("chromadb").setLevel(logging.WARNING)
+logging.getLogger("httpx").setLevel(logging.WARNING)
+logging.getLogger("multilspy").setLevel(logging.WARNING)
 
 logger = logging.getLogger(__name__)
 
 
 if __name__ == "__main__":
     logger.info("Start!")
-    repo = input("Enter your repo name here: ")
+    api_key = os.environ.get("OPENAI_API_KEY")
+    # repo = input("Enter your repo name here: ")
+    repo = "huggingface/tokenizers"
     commit = input("Enter your commit hash here: ")
-    question = input("Enter your question about your repository: ")
-    pilot = RepoPilot(repo, commit, openai_api_key=None, local=True, language="python", clone_dir="data/repos")
+    language = input("Enter the language of the repository here: ")
+    # question = input("Enter your question about your repository: ")
+    question = "what is UnigramTrainer's role in the tokenizers repo?"
+    pilot = RepoPilot(repo, commit=commit, openai_api_key=api_key, local=False, language=language, clone_dir="data/repos")
     logger.info("Setup done!")
     
     while True:

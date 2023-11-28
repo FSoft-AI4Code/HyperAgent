@@ -1,17 +1,16 @@
 import os
+import numpy as np
 from typing import Type
 from pydantic import BaseModel, Field
 from langchain.tools import BaseTool, Tool
-from .llm_multilspy import LSPToolKit
 from openai import OpenAI
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.document_loaders.generic import GenericLoader
-from langchain.document_loaders.parsers import LanguageParser
+from repopilot.langchain_parsers.parsers import LanguageParser
 from .get_repo_struct import visualize_tree
-from .llm_multilspy import add_num_line
+from .llm_multilspy import LSPToolKit, add_num_line
 from .code_search import search_elements_inside_project
 from .zoekt.zoekt_server import ZoektServer
-import numpy as np
 from .utils import identify_extension
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.vectorstores import Chroma
@@ -30,6 +29,7 @@ class CodeSearchTool(BaseTool):
     path = ""
     verbose = False
     language = "python"
+    backend: jedi.Project | ZoektServer = None
     
     def __init__(self, path, language):
         super().__init__()
@@ -159,8 +159,8 @@ class GetAllSymbolsTool(BaseTool):
             return "The relative path is a folder, please specify the file path instead. Consider using get_tree_structure to find the file name then use this tool one file path at a time"
         except FileNotFoundError:
             return "The file is not found, please check the path again"
-        # except:
-        #     return "Try to open_file tool to access the file instead"
+        except:
+            return "File read failed, please check the path again"
     
     def _arun(self, relative_path: str):
         return NotImplementedError("Get All Symbols Tool is not available for async run")
@@ -178,7 +178,7 @@ class GetTreeStructureTool(BaseTool):
     path = ""
     verbose = False
     
-    def __init__(self, path):
+    def __init__(self, path, language):
         super().__init__()
         self.path = path
     
@@ -203,14 +203,16 @@ class OpenFileTool(BaseTool):
     args_schema = OpenFileArgs
     path = ""
     
-    def __init__(self, path):
+    def __init__(self, path, language):
         super().__init__()
         self.path = path
     
-    def _run(self, relative_file_path: str):
+    def _run(self, relative_file_path: str, max_new_line: int = 500):
         abs_path = os.path.join(self.path, relative_file_path)
         try:
             source = open(abs_path, "r").read()
+            lines = source.split("\n")
+            source = "\n".join(lines[:max_new_line]) 
         except FileNotFoundError:
             return "File not found, please check the path again"
         source = add_num_line(source, 0)
@@ -240,10 +242,10 @@ class SemanticCodeSearchTool(Tool):
         
         documents = loader.load()
         texts = splitter.split_documents(documents)
-        self.db = Chroma.from_documents(texts, OpenAIEmbeddings())
+        db = Chroma.from_documents(texts, OpenAIEmbeddings())
         
         def semantic_code_search(query):
-            retrieved_docs = self.db.similarity_search(query, k=3)
+            retrieved_docs = db.similarity_search(query, k=3)
             return [doc.page_content for doc in retrieved_docs]
         
         super().__init__(
@@ -251,8 +253,3 @@ class SemanticCodeSearchTool(Tool):
             func=semantic_code_search,
             description="useful for when the query is a sentance, semantic and vague. If exact search such as code search failed after multiple tries, try this",
         )
-        
-def main():
-    path = "/datadrive05/huypn16/focalcoder/data/repos/repo__astropy__astropy__commit__3832210580d516365ddae1a62071001faf94d416"
-    FindAllReferencesTool(path)
-    GetAllSymbolsTool(path)
