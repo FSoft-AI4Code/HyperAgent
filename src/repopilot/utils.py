@@ -4,6 +4,10 @@ import subprocess
 import os
 from repopilot.multilspy.lsp_protocol_handler.lsp_types import SymbolKind
 
+def get_env_path():
+    python_path = subprocess.check_output("which python", shell=True).strip().decode("utf-8")
+    return python_path
+
 def clone_repo(repo, commit, root_dir, token, logger):
     """
     Clones a GitHub repository to a specified directory.

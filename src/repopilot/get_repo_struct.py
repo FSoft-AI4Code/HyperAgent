@@ -81,7 +81,7 @@ class DisplayablePath(object):
 
         return ''.join(reversed(parts))
     
-def tree(dir_path: Path, level: int=-1, limit_to_directories: bool=False,
+def visualize_tree(dir_path: Path, level: int=-1, limit_to_directories: bool=False,
          length_limit: int=1000):
     """Given a directory Path object print a visual tree structure"""
     dir_path = Path(dir_path) # accept string coerceable to Path
@@ -114,6 +114,3 @@ def tree(dir_path: Path, level: int=-1, limit_to_directories: bool=False,
         print(f'... length_limit, {length_limit}, reached, counted:')
     outstring += f'\n{directories} directories' + (f', {files} files' if files else '')
     return outstring
-
-if __name__ == "__main__":
-    tree("/datadrive05/huypn16/focalcoder/data/repos/repo__astropy__astropy__commit__3832210580d516365ddae1a62071001faf94d416", level=2)

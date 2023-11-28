@@ -3,3 +3,4 @@ data/indexes/*
 repopilot.egg-info
 *__pycache__*
 src/repopilot/multilspy/language_servers/rust_analyzer/static
+.zoekt_tmp/

@@ -2,103 +2,22 @@ import os
 from typing import Type
 from pydantic import BaseModel, Field
 from langchain.tools import BaseTool, Tool
-import jedi
 from .llm_multilspy import LSPToolKit
 from openai import OpenAI
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.document_loaders.generic import GenericLoader
 from langchain.document_loaders.parsers import LanguageParser
-from .tree_struct_display import tree
+from .get_repo_struct import visualize_tree
 from .llm_multilspy import add_num_line
+from .code_search import search_elements_inside_project
+from .zoekt.zoekt_server import ZoektServer
 import numpy as np
 from .utils import identify_extension
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.vectorstores import Chroma
-
-def get_code_jedi(definition, verbose=False):
-    raw = definition.get_line_code(after=definition.get_definition_end_position()[0]-definition.get_definition_start_position()[0])
-    start_num_line = definition.get_definition_start_position()[0] - 2 # jedi start from 1
-    if not verbose:
-        return raw
-    else:
-        results = []
-        splited_raw = raw.split("\n")
-        for idx, line in enumerate(splited_raw):
-            new_line = str(start_num_line + 1) + " " + line
-            results.append(new_line)
-            start_num_line += 1
-        return "\n".join(results)
-
-def search_preliminary_inside_project(names, repo_path, num_result=2, verbose=False, language="python"):
-    """Get all matched identifiers from a repo
-    
-    Args:
-        name (str): The name of the identifier
-        repo_path (str): The path to the repo
-        
-    Returns:
-        list: A list of matched identifiers
-    """
-    output_dict = {name: [] for name in names}
-    project = jedi.Project(repo_path, environment_path="/datadrive05/huypn16/anaconda3/envs/knn-llm/bin/python3")
-    for name in names:
-        if not name.endswith(".py"):
-            class_definitions = project.search(f"class {name}", all_scopes=True)
-            function_definitions = project.search(f"def {name}", all_scopes=True)
-            variable_definitions = project.search(name, all_scopes=True)
-            idx = 0
-            for definition in class_definitions:
-                if definition.is_definition():
-                    extracted_definition = {
-                        "name": definition.name,
-                        "full_name": definition.full_name,
-                        "documentation": definition._get_docstring(),
-                        "implementation": get_code_jedi(definition, verbose)
-                    }
-                    output_dict[name].append(extracted_definition)
-                    idx += 1
-                    if idx == num_result:
-                        break
-            
-            idx = 0
-            for definition in function_definitions:
-                if definition.is_definition():
-                    extracted_definition = {
-                        "name": definition.name,
-                        "full_name": definition.full_name,
-                        "documentation": definition._get_docstring(),
-                        "implementation": get_code_jedi(definition, verbose),
-                    }
-                    output_dict[name].append(extracted_definition)
-                    idx += 1
-                    if idx == num_result:
-                        break
-            
-            idx = 0
-            for definition in variable_definitions:
-                extracted_definition = {
-                    "name": definition.name,
-                    "full_name": definition.full_name,
-                    "documentation": None,
-                    "implementation": definition.description,
-                }
-                output_dict[name].append(extracted_definition)
-                idx += 1
-                if idx == num_result:
-                    break
-        else:
-            definitions = project.search(name.replace(".py", ""))
-            for definition in definitions:
-                implementation = ""
-                with open(definition.module_path, "r") as f:
-                    implementation += f.read()
-                extracted_definition = {
-                    "name": name,
-                    "implementation": implementation
-                }
-                output_dict[name].append(extracted_definition)
-            
-    return output_dict
+from repopilot.utils import get_env_path
+import jedi
+from codetext.utils import build_language
 
 class CodeSearchArgs(BaseModel):
     names: list[str] = Field(..., description="The names of the identifiers to search")
@@ -112,15 +31,24 @@ class CodeSearchTool(BaseTool):
     verbose = False
     language = "python"
     
-    def __init__(self, path, language="python"):
+    def __init__(self, path, language):
         super().__init__()
         self.path = path
         self.language = language
+        if language != "python":
+            "Code Search Tool will switch to use Zoekt non-python search engine, this may not be accurate as Jedi"
+            self.backend = ZoektServer(language)
+            self.backend.setup_index(path)
+            build_language(language)
+
+        elif language == "python":
+            "Code Search Tool will switch to use Jedi python search engine, this provides more fine-grained results such as implementation, docstring, etc."
+            self.backend = jedi.Project(path, environment_path=get_env_path())
     
     def _run(self, names: list[str], verbose: bool = True):
-        return search_preliminary_inside_project(names, repo_path=self.path, verbose=verbose, language=self.language)
+        return search_elements_inside_project(names, self.backend, verbose=verbose, language=self.language)
     
-    def _arun(self, names: list[str], repo_path: str):
+    def _arun(self, names: list[str], verbose: bool = True):
         return NotImplementedError("Code Search Tool is not available for async run")
 
 class GoToDefinitionArgs(BaseModel):
@@ -142,7 +70,7 @@ class GoToDefinitionTool(BaseTool):
     language = "python"
     verbose = False
     
-    def __init__(self, path, language="python"):
+    def __init__(self, path, language):
         super().__init__()
         self.path = path
         self.lsptoolkit = LSPToolKit(path, language)
@@ -168,7 +96,7 @@ class FindAllReferencesTool(BaseTool):
     verbose = False
     language = "python"
     
-    def __init__(self, path, language="python"):
+    def __init__(self, path, language):
         super().__init__()
         self.path = path
         self.lsptoolkit = LSPToolKit(path, language)
@@ -257,7 +185,7 @@ class GetTreeStructureTool(BaseTool):
     def _run(self, relative_path: str, level: int = 2):
         abs_path = os.path.join(self.path, relative_path)
         try:
-            output = tree(abs_path, level=level)
+            output = visualize_tree(abs_path, level=level)
             output = "The tree structure of " + relative_path + " is: \n" + output
         except: 
             output = "Execution failed, please check the relative path again, likely the relative path lacks of prefix directory name"

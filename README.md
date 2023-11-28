@@ -21,6 +21,7 @@ go install github.com/sourcegraph/zoekt/cmd/zoekt-index
 go get github.com/sourcegraph/zoekt/cmd/zoekt-webserver
 go install github.com/sourcegraph/zoekt/cmd/zoekt-webserver
 ```
+We also need to install universal-ctags for semantic code search. Please follow the instructions [here](https://github.com/sourcegraph/sourcegraph/blob/main/doc/dev/how-to/zoekt_local_dev.md#install-ctags). Remember to set the environment variable of CTAGS `CTAGS_COMMAND=universal-ctags`.
 
 ## Key Features
 
