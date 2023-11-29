@@ -103,9 +103,14 @@ def matching_kind_symbol(symbol):
 def word_to_position(source, word, line=None, offset=0):
     """find position of a word in a source"""
     lines = source.splitlines()
-    for i, _line in enumerate(lines):
-        if word in _line:
-            return {"line": (line + offset) if line else (i + offset), "column": lines[line].index(word)+1 if line else (_line.index(word) + 1)} ## +1 because the position is 0-based
+    try:
+        for i, _line in enumerate(lines):
+            if word in _line:
+                return {"line": (line + offset) if line else (i + offset), "column": lines[line].index(word)+1 if line else (_line.index(word) + 1)} ## +1 because the position is 0-based
+    except ValueError:
+        for i, _line in enumerate(lines):
+            if word in _line:
+                return {"line": i, "column": lines[i].index(word)+1}
     return None
 
 def add_num_line(source, start_line):

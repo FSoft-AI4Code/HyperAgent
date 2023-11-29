@@ -86,6 +86,12 @@ def Setup(repo, commit, openai_api_key, local=True, language="python", clone_dir
         "1. Find the MPC.get_observations function using Code Search tool, if the results are too vauge, consider using Semantic Code Search tool\n If the results are not cleared enough, you can navigate the directory using the tree structure tool to find the related files (possibly astroquery/mpc) then use get all symbols tool to find the function"
         "2. Given the above steps taken, please respond to the users original question.\n"
         "<END_OF_PLAN>\n"
+        "Example 5:\n"
+        "Question: what does UnigramVisitor do in the textanalysis repo?\n"
+        "Plan:\n"
+        "1. Find the UnigramVisitor class using Code Search tool, if the results are too vauge, consider using Semantic Code Search tool\n If the results are not cleared enough, you can navigate the directory using the tree structure tool to find the related files (possibly textanalysis/visitor) then use get all symbols tool to find the class"
+        "2. Given the above steps taken, please respond to the users original question.\n"
+        "<END_OF_PLAN>\n"
     )
     
     ## Set up the LLM 

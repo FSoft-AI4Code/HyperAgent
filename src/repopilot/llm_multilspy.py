@@ -22,8 +22,11 @@ class LSPToolKit:
     def get_definition(self, word, relative_path, line=None, offset=0, verbose=False):
         doc = self.open_file(relative_path)
         cursor_pos = word_to_position(doc, word, line=line, offset=offset)
-        with self.server.start_server():
-            output = self.server.request_definition(relative_path, **cursor_pos)
+        if cursor_pos is not None:
+            with self.server.start_server():
+                output = self.server.request_definition(relative_path, **cursor_pos)
+        else:
+            return "The tool cannot find the word in the file"
         if verbose and len(output) > 0:
             symbols = self.get_symbols(output[0]["relativePath"])
             symbol = matching_symbols(symbols, output[0])
