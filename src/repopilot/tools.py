@@ -22,7 +22,7 @@ class CodeSearchArgs(BaseModel):
     names: list[str] = Field(..., description="The names of the identifiers to search")
 
 class CodeSearchTool(BaseTool):
-    name = "Search Identifiers inside the repo"
+    name = "code_search"
     description = """Useful when you want to find all matched identifiers (variable, function, class name) from a python repository, primarily used for class, function search. The results
     are mixed and not sorted by any criteria. So considered using this when you want to find all possible candidates for a given name. Otherwise, consider using other tools for more precise results"""
     args_schema: Type[BaseModel] = CodeSearchArgs
@@ -57,7 +57,7 @@ class GoToDefinitionArgs(BaseModel):
     relative_path: str = Field(..., description="The relative path of the file containing the symbol to search")
     
 class GoToDefinitionTool(BaseTool):
-    name = "Go to definition"
+    name = "go_to_definition"
     description = """Useful when you want to find the definition of a symbol inside a code snippet if the current context is not cleared enough such as 
     0 import matplotlib.pyplot as plt
     1 class Directory(object):
@@ -153,14 +153,13 @@ class GetAllSymbolsTool(BaseTool):
         self.lsptoolkit = LSPToolKit(path, language)
     
     def _run(self, path_to_file: str, verbose_level: int = 1):
-        try:
-            return self.lsptoolkit.get_symbols(path_to_file, verbose_level, verbose=True)
-        except IsADirectoryError:
-            return "The relative path is a folder, please specify the file path instead. Consider using get_tree_structure to find the file name then use this tool one file path at a time"
-        except FileNotFoundError:
-            return "The file is not found, please check the path again"
-        except:
-            return "File read failed, please check the path again"
+        # try:
+        return self.lsptoolkit.get_symbols(path_to_file, verbose_level, verbose=True)
+        # except IsADirectoryError:
+        #     return "The relative path is a folder, please specify the file path instead. Consider using get_tree_structure to find the file name then use this tool one file path at a time"
+        # except FileNotFoundError:
+        #     return "The file is not found, please check the path again"
+
     
     def _arun(self, relative_path: str):
         return NotImplementedError("Get All Symbols Tool is not available for async run")
@@ -253,3 +252,8 @@ class SemanticCodeSearchTool(Tool):
             func=semantic_code_search,
             description="useful for when the query is a sentance, semantic and vague. If exact search such as code search failed after multiple tries, try this",
         )
+        
+if __name__ == "__main__":
+    gst = GetAllSymbolsTool(path="data/repos/repo__aura-nw__cw-ics721__commit__", language="rust")
+    output = gst._run("contracts/ics721-base/src/lib.rs", verbose_level=2)
+    print(output)

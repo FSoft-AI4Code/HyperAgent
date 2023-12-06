@@ -18,12 +18,14 @@ logger = logging.getLogger(__name__)
 if __name__ == "__main__":
     logger.info("Start!")
     api_key = os.environ.get("OPENAI_API_KEY")
-    # repo = input("Enter your repo name here: ")
-    repo = "huggingface/tokenizers"
-    commit = input("Enter your commit hash here: ")
-    language = input("Enter the language of the repository here: ")
+    repo = "aura-nw/cw-ics721"
+    # repo = "huggingface/tokenizers"
+    commit = ""
+    language = "rust"
     # question = input("Enter your question about your repository: ")
-    question = "what is UnigramTrainer's role in the tokenizers repo?"
+    question = "what is the main flow of the project?"
+    # question = "what is UnigramTrainer's role in the tokenizers repo?"
+    #TODO: add a check for a local repo execution
     pilot = RepoPilot(repo, commit=commit, openai_api_key=api_key, local=False, language=language, clone_dir="data/repos")
     logger.info("Setup done!")
     

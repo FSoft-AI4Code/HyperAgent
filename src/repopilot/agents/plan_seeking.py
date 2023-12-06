@@ -1,6 +1,7 @@
 from typing import List
 
 from langchain.agents.agent import AgentExecutor
+from langchain.chains import LLMChain
 from langchain.agents.structured_chat.base import StructuredChatAgent
 from langchain.schema.language_model import BaseLanguageModel
 from langchain.tools import BaseTool
@@ -33,6 +34,35 @@ TASK_PREFIX = """{objective}
 
 """
 
+def load_agent_analyzer(
+    llm: BaseLanguageModel,
+    prefix: str = ANALYZER_PREFIX,
+    suffix: str = ANALYZER_SUFFIX,
+    verbose: bool = False,
+) -> ChainExecutor:
+    """
+    Load an agent analyzer.
+
+    Args:
+        llm: BaseLanguageModel
+        verbose: bool. Defaults to False.
+
+    Returns:
+        ChainExecutor
+    """
+    agent = StructuredChatAgent.from_llm_and_tools(
+        llm,
+        tools=[],
+        human_message_template=HUMAN_MESSAGE_TEMPLATE,
+        input_variables=["previous_steps", "current_step", "agent_scratchpad"],
+        prefix=prefix,
+        suffix=suffix,
+    )
+    agent_executor = AgentExecutor.from_agent_and_tools(
+        agent=agent, tools=[], verbose=verbose
+    )
+    agent_executor.handle_parsing_errors = True
+    return ChainExecutor(chain=agent_executor)
 
 def load_agent_executor(
     llm: BaseLanguageModel,
@@ -82,6 +112,7 @@ class PlanSeeking(Chain):
     """The planner to use."""
     executor: BaseExecutor
     """The executor to use."""
+    analyzer: LLMChain
     step_container: BaseStepContainer = Field(default_factory=ListStepContainer)
     """The step container to use."""
     input_key: str = "input"
@@ -106,7 +137,7 @@ class PlanSeeking(Chain):
         )
         if run_manager:
             run_manager.on_text(str(plan), verbose=self.verbose)
-        for step in plan.steps:
+        for i, step in enumerate(plan.steps):
             _new_inputs = {
                 "previous_steps": self.step_container,
                 "current_step": step,

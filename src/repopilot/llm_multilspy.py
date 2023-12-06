@@ -15,8 +15,11 @@ class LSPToolKit:
         
     def open_file(self, relative_path):
         with self.server.start_server():
-            with self.server.open_file(relative_path):
-                result = self.server.get_open_file_text(relative_path)
+            try:
+                with self.server.open_file(relative_path):
+                    result = self.server.get_open_file_text(relative_path)
+            except:
+                return "The tool cannot open the file, the file path is not correct."
         return result
     
     def get_definition(self, word, relative_path, line=None, offset=0, verbose=False):
@@ -69,7 +72,12 @@ class LSPToolKit:
                         cha = definition.split("\n")[line_has_name].index(item["name"])
                         
                         with self.server.start_server():
-                            documentation = self.server.request_hover(relative_path, item["range"]["start"]["line"], cha)["contents"]
+                            hover = self.server.request_hover(relative_path, item["range"]["start"]["line"], cha)
+                            if hover != None:
+                                documentation = hover["contents"]
+                            else:
+                                documentation = "None"
+                                
                         if "value" not in documentation:
                             documentation = "None"
                             preview = "\n".join(definition.split("\n")[:preview_size+4])
@@ -89,8 +97,13 @@ class LSPToolKit:
                             if item["name"] in definition.split("\n")[k]:
                                 line_has_name = k 
                         cha = definition.split("\n")[line_has_name].index(item["name"])
+                        
                         with self.server.start_server():
-                            documentation = self.server.request_hover(relative_path, item["range"]["start"]["line"], cha)["contents"]
+                            hover = self.server.request_hover(relative_path, item["range"]["start"]["line"], cha)
+                            if hover != None:
+                                documentation = hover["contents"]
+                            else:
+                                documentation = "None"
                         if "value" not in documentation:
                             documentation = "None"
                             preview = "\n".join(definition.split("\n")[:preview_size+4])
@@ -110,6 +123,10 @@ class LSPToolKit:
         except ValueError:
             ## LLM sometimes send the wrong line number or not aware of the line number
             cursor_pos = word_to_position(doc, word, line=None, offset=offset)
+            
+        if cursor_pos is None:
+            return "The tool cannot find the word in the file"
+        
         with self.server.start_server():
             output = self.server.request_references(relative_path, **cursor_pos)
     
@@ -136,7 +153,7 @@ class LSPToolKit:
 
 
 if __name__ == "__main__":
-    test_path = "/datadrive05/huypn16/focalcoder/data/repos/repo__karatelabs__karate__commit__"
-    lsp = LSPToolKit(test_path, language="java")
-    output = lsp.get_symbols(relative_path="karate-core/src/main/java/com/intuit/karate/Runner.java", verbose=True)
+    test_path = "/datadrive05/huypn16/focalcoder/data/repos/tokenizers"
+    lsp = LSPToolKit(test_path, language="rust")
+    output = lsp.get_references(word="RobertaProcessing", line=27, relative_path="tokenizers/src/processors/roberta.rs", verbose=True)
     print(output)
