@@ -2,6 +2,8 @@ import subprocess
 import os
 import logging
 from langchain.chat_models import ChatOpenAI
+from langchain.embeddings import OpenAIEmbeddings
+from langchain.vectorstores import Chroma
 from repopilot.tools import GoToDefinitionTool, CodeSearchTool, SemanticCodeSearchTool, FindAllReferencesTool, GetAllSymbolsTool, GetTreeStructureTool, OpenFileTool
 from repopilot.utils import clone_repo
 from langchain_experimental.plan_and_execute import load_chat_planner
@@ -84,17 +86,25 @@ def Setup(repo, commit, openai_api_key, local=True, language="python", clone_dir
         "<END_OF_PLAN>\n"
     )
     
+    suffix_analyzer = "Begin! Reminder to ALWAYS respond with a valid json blob of a single action. Use tools if necessary. Respond directly if you have gathered enough information from the repository. Format is Action:```$JSON_BLOB```then Observation:."
+    prefix_analyzer = "You are an expert in responding the user's question with useful information and necessary code snippet. You will be provided with gathered information from the repository and the query. You can use the information to respond to the query. If you need more information, you can use the search tool to gather more detailed information about the object that is mentioned in the notes. Respond to the human as helpfully and detailed as much as possible. Please consider detail information from the current notes. You have access to following semantic search tool:"
+    
     ## Set up the LLM 
     llm = ChatOpenAI(temperature=0, model="gpt-4-1106-preview", openai_api_key=openai_api_key)
 
     ## Set up the planner agent 
     llm_plan = ChatOpenAI(temperature=0, model="gpt-4", openai_api_key=openai_api_key)
+    
+    llm_analyzer = ChatOpenAI(temperature=0, model="gpt-3.5-turbo-1106")
     planner = load_chat_planner(llm_plan, system_prompt=planner_prompt)
+    
+    ## 
+    vectorstore = Chroma("langchain_store", OpenAIEmbeddings())
     
     ## Set up the executor and planner agent (the system)
     executor = load_agent_executor(llm, tools, prefix, suffix, verbose=True, include_task_in_prompt=True)
-    analyzer = load_agent_analyzer(llm, prefix, suffix, verbose=True)
-    system = PlanSeeking(planner=planner, executor=executor, analyzer=analyzer, verbose=True)
+    analyzer = load_agent_analyzer(llm_analyzer, prefix_analyzer, suffix_analyzer, vectorstore, verbose=True)
+    system = PlanSeeking(planner=planner, executor=executor, analyzer=analyzer, vectorstore=vectorstore, verbose=True)
     
     return system
 

@@ -254,6 +254,6 @@ class SemanticCodeSearchTool(Tool):
         )
         
 if __name__ == "__main__":
-    gst = GetAllSymbolsTool(path="data/repos/repo__aura-nw__cw-ics721__commit__", language="rust")
-    output = gst._run("contracts/ics721-base/src/lib.rs", verbose_level=2)
+    gst = FindAllReferencesTool(path="/datadrive05/huypn16/focalcoder/data/repos/repo__aura-nw__cw-ics721__commit__", language="rust")
+    output = gst._run(word="instantiate", line=26, relative_path="contracts/ics721-base/src/lib.rs", reranking=True)
     print(output)

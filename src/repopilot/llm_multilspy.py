@@ -3,6 +3,7 @@ from repopilot.multilspy.multilspy_config import MultilspyConfig
 from repopilot.multilspy.multilspy_logger import MultilspyLogger
 from repopilot.utils import matching_kind_symbol, matching_symbols, add_num_line, get_text, word_to_position
 from repopilot.multilspy.lsp_protocol_handler.lsp_types import SymbolKind
+from repopilot.multilspy.multilspy_exceptions import MultilspyException
 import logging
 
 logging.getLogger("multilspy").setLevel(logging.WARNING)
@@ -55,7 +56,10 @@ class LSPToolKit:
             _type_: _description_
         """
         with self.server.start_server():
-            symbols = self.server.request_document_symbols(relative_path)[0]
+            try:
+                symbols = self.server.request_document_symbols(relative_path)[0]
+            except MultilspyException:
+                return f"The tool cannot open the file, the file path {relative_path} is not correct."
         source = self.open_file(relative_path)
         if verbose:
             verbose_output = []
@@ -126,7 +130,6 @@ class LSPToolKit:
             
         if cursor_pos is None:
             return "The tool cannot find the word in the file"
-        
         with self.server.start_server():
             output = self.server.request_references(relative_path, **cursor_pos)
     
