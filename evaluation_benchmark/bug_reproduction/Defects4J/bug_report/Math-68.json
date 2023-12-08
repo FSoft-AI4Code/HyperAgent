@@ -1,0 +1,1 @@
+{"issue_id": "MATH-362", "title": "LevenbergMarquardtOptimizer ignores the VectorialConvergenceChecker parameter passed to it", "description": "\n<div class=\"user-content-block\">\n<p>LevenbergMarquardtOptimizer ignores the VectorialConvergenceChecker parameter passed to it. This makes it hard to specify custom stopping criteria for the optimizer.</p>\n</div>\n"}

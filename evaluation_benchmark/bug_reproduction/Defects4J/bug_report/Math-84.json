@@ -1,0 +1,1 @@
+{"issue_id": "MATH-283", "title": "MultiDirectional optimzation loops forver if started at the correct solution", "description": "\n<div class=\"user-content-block\">\n<p>MultiDirectional.iterateSimplex loops forever if the starting point is the correct solution.</p>\n<p>see the attached test case (testMultiDirectionalCorrectStart) as an example.</p>\n</div>\n"}

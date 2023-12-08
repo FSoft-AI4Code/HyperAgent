@@ -1,0 +1,1 @@
+{"issue_id": "510", "title": "Fix ArrayIndexOutofBoundsException found by LGTM.com", "description": "\n<p dir=\"auto\">First of all, thank you for reporting this.</p>\n<p dir=\"auto\">But would it be possible to write a test that shows how this actually works? It would be great to have a regression test, to guard against this happening in future.</p>\n"}

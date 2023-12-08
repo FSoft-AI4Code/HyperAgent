@@ -1,0 +1,1 @@
+{"issue_id": "MATH-781", "title": "SimplexSolver gives bad results", "description": "\n<div class=\"user-content-block\">\n<p>Methode SimplexSolver.optimeze(...) gives bad results with commons-math3-3.0<br/>\nin a simple test problem. It works well in commons-math-2.2. </p>\n</div>\n"}

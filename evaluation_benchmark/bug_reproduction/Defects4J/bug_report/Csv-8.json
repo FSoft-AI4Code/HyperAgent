@@ -1,0 +1,1 @@
+{"issue_id": "CSV-114", "title": "CSVFormat constructor should reject a header array with duplicate entries", "description": "\n<div class=\"user-content-block\">\n<p>CSVFormat currently accepts whatever header String[] is provided.<br/>\nIt cannot be used if there are duplicate entries so these should be rejected.</p>\n</div>\n"}

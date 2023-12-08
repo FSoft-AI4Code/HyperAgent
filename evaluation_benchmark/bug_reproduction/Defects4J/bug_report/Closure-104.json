@@ -1,0 +1,1 @@
+{"issue_id": "114", "title": "Typos in externs/html5.js", "description": "Line 354:\r\nCanvasRenderingContext2D.prototype.globalCompositingOperation;\r\n\r\nLine 366:\r\nCanvasRenderingContext2D.prototype.mitreLimit;\r\n\r\nThey should be globalCompositeOperation and miterLimit, respectively.\r\n"}

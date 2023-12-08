@@ -1,0 +1,1 @@
+{"issue_id": "251", "title": "An unnamed function statement statements should generate a parse error", "description": "An unnamed function statement statements should generate a parse error, but it does not, for example:\r\n\r\nfunction () {};\r\n\r\nNote: Unnamed function expression are legal:\r\n\r\n(function(){});\r\n\r\n\r\n\r\n"}

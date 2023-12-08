@@ -1,0 +1,1 @@
+{"issue_id": "MATH-844", "title": "\"HarmonicFitter.ParameterGuesser\" sometimes fails to return sensible values", "description": "\n<div class=\"user-content-block\">\n<p>The inner class \"ParameterGuesser\" in \"HarmonicFitter\" (package \"o.a.c.m.optimization.fitting\") fails to compute a usable guess for the \"amplitude\" parameter.</p>\n</div>\n"}

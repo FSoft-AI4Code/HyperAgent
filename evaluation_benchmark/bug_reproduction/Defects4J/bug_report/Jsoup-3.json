@@ -1,0 +1,1 @@
+{"issue_id": "21", "title": "Issue with &lt;tr&gt;", "description": "\n<p dir=\"auto\">When calling append to add a table row the resulting tr gets wrapped in a table even though I appended to an existing table.</p>\n"}

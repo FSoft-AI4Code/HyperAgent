@@ -1,0 +1,1 @@
+{"issue_id": "JXPATH-95", "title": "Comparing with NaN is incorrect", "description": "\n<div class=\"user-content-block\">\n<p>'NaN' &gt; 'NaN' is true, but should be FALSE</p>\n</div>\n"}

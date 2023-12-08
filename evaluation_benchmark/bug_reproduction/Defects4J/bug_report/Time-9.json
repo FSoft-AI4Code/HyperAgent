@@ -1,0 +1,1 @@
+{"issue_id": "43", "title": "Ensure there is a max/min valid offset", "description": "\n<p dir=\"auto\"><code class=\"notranslate\">DateTimeZone</code> does not apply a max/min value for an offset. However the parse method is limited to 23:59. Make 23:59:59.999 the maximum.</p>\n"}

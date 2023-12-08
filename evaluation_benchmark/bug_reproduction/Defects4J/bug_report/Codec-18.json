@@ -1,0 +1,1 @@
+{"issue_id": "CODEC-231", "title": "StringUtils.equals(CharSequence cs1, CharSequence cs2) can fail with String Index OBE", "description": "\n<div class=\"user-content-block\">\n<p>StringUtils.equals(CharSequence cs1, CharSequence cs2) fails with String Index OBE if the two sequences are different lengths.</p>\n</div>\n"}

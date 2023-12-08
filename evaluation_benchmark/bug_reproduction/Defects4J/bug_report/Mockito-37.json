@@ -1,0 +1,1 @@
+{"issue_id": "140", "title": "Make Mockito JUnit rule easier to use", "description": "\n<ul dir=\"auto\">\n<li>Mockito JUnit rule easier to use by avoiding the need to pass test instance</li>\n<li>Make it compatible with JUnit 4.7+ instead of 4.9+</li>\n</ul>\n"}

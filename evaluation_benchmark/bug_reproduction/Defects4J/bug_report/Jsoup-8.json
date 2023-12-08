@@ -1,0 +1,1 @@
+{"issue_id": "45", "title": "toString NPE for orphans", "description": "\n<p dir=\"auto\">I'm working on code that frequently calls 'remove' and then re-adds an element. While the element is in a detached string, toString throws something, so Eclipse prints only an 'invocation target exception.' It would be nice if this were not so.</p>\n"}

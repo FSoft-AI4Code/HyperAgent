@@ -1,0 +1,1 @@
+{"issue_id": "CSV-106", "title": "CSVFormat.format allways append null", "description": "\n<div class=\"user-content-block\">\n<p>When I now call<br/>\nCSVFormat.newFormat(';').withSkipHeaderRecord(true).withHeader(\"H1\",\"H2\").format(\"A\",\"B\")<br/>\nI get the output A;Bnull</p>\n<p>The expected output would be </p>\n<p>A;B</p>\n</div>\n"}

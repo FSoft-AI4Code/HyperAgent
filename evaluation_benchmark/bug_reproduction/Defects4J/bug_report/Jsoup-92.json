@@ -1,0 +1,1 @@
+{"issue_id": "1219", "title": "Duplicated attribute parsing problem ", "description": "\n<p dir=\"auto\">In case there is duplicated tag attribute Jsoup parses the last one, but Chrome browser takes the first one.</p>\n"}

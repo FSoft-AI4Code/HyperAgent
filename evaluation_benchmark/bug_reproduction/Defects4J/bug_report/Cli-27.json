@@ -1,0 +1,1 @@
+{"issue_id": "CLI-182", "title": "Unable to select a pure long option in a group", "description": "\n<div class=\"user-content-block\">\n<p>OptionGroup doesn't play nice with options with a long name and no short name. If the selected option hasn't a short name, group.setSelected(option) has no effect.</p>\n</div>\n"}

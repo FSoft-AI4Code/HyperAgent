@@ -1,0 +1,1 @@
+{"issue_id": "CSV-118", "title": "CSVRecord.toMap() throws NPE on formats with no headers.", "description": "\n<div class=\"user-content-block\">\n<p>The method toMap() on CSVRecord throws a NullPointerExcpetion when called on records derived using a format with no headers.</p>\n<p>The method documentation states a null map should be returned instead.</p>\n</div>\n"}

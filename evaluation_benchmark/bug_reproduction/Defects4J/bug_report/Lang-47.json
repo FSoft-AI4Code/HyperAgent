@@ -1,0 +1,1 @@
+{"issue_id": "LANG-412", "title": "StrBuilder appendFixedWidth does not handle nulls", "description": "\n<div class=\"user-content-block\">\n<p>Appending a null value with fixed width causes a null pointer exception if getNullText() has not been set.</p>\n</div>\n"}

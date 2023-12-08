@@ -1,0 +1,1 @@
+{"issue_id": "109", "title": "DocumentType.outerHtmlHead missing quote", "description": "\n<p dir=\"auto\">There's just a doublequote missing from the append sequence right before the systemId.</p>\n<p dir=\"auto\">For example:</p>\n"}

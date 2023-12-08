@@ -1,0 +1,1 @@
+{"issue_id": "LANG-587", "title": "ClassUtils.toClass(Object[]) throws NPE on null array element", "description": "\n<div class=\"user-content-block\">\n<p>see summary</p>\n</div>\n"}

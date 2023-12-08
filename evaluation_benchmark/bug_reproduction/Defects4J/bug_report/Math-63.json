@@ -1,0 +1,1 @@
+{"issue_id": "MATH-370", "title": "NaN in \"equals\" methods", "description": "\n<div class=\"user-content-block\">\n<p>In \"MathUtils\", some \"equals\" methods will return true if both argument are NaN.<br/>\nUnless I'm mistaken, this contradicts the IEEE standard.</p>\n<p>If nobody objects, I'm going to make the changes.</p>\n</div>\n"}

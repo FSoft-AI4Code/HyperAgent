@@ -1,0 +1,1 @@
+{"issue_id": "211", "title": "ArgumentCaptor no longer working for varargs", "description": "\n<p dir=\"auto\">Hi, thanks for the PR</p>\n<p dir=\"auto\">I will take a look at it soon. And probably merge it. In the mean time, git history is fine except the merge commit, can you get rid of it ?</p>\n<p dir=\"auto\">Otherwise I'll have to cherry-pick relevant commits.</p>\n"}

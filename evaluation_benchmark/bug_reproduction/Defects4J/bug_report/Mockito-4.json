@@ -1,0 +1,1 @@
+{"issue_id": "187", "title": "java.lang.ClassCastException: java.lang.Class cannot be cast to java.lang.String", "description": "\n<p dir=\"auto\">Exception throws on verifyZeroInteractions when using mock with default answer.<br/>\nchecked on versions 1.10.5-2.0.5<br/>\nall ok on 1.9.5</p>\n"}

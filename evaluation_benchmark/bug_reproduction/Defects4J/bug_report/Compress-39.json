@@ -1,0 +1,1 @@
+{"issue_id": "COMPRESS-351", "title": "Defective .zip-archive produces problematic error message", "description": "\n<div class=\"user-content-block\">\n<p>A truncated .zip-File produces an java.io.EOFException conatining a hughe amount of byte[]-data in the error-message - leading to beeps and crippeling workload in an potential console-logger.</p>\n</div>\n"}

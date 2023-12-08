@@ -1,0 +1,1 @@
+{"issue_id": "115", "title": "compiler assumes that 'arguments' can be shadowed", "description": "The code:\r\nfunction name() {\r\n   var arguments = Array.prototype.slice.call(arguments, 0);\r\n}\r\n\r\ngets compiled to:\r\nfunction name(){ var c=Array.prototype.slice.call(c,0); }\r\n\r\nThanks to tescosquirrel for the report."}

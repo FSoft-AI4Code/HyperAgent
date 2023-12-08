@@ -1,0 +1,1 @@
+{"issue_id": "CODEC-200", "title": "Base32.HEX_DECODE_TABLE contains the wrong value 32", "description": "\n<div class=\"user-content-block\">\n<p>At line 99:</p>\n<p>            25, 26, 27, 28, 29, 30, 31, 32,                                 // 50-57 O-V</p>\n<p>the value 32 should not be included. That disallows to use 'W' as padding with hex table.</p>\n</div>\n"}

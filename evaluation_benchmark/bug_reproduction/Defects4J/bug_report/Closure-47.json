@@ -1,0 +1,1 @@
+{"issue_id": "575", "title": "Original source line numbers are one-based in source maps.", "description": "Generated source line/column numbers and original column numbers are zero-based. Original source line numbers should be zero based as well."}

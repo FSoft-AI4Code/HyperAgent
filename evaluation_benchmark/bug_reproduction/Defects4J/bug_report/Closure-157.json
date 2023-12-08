@@ -1,0 +1,1 @@
+{"issue_id": "347", "title": "Numbers and quoted property names reject for get and set properties.", "description": "- Use --language_in=ECMASCRIPT5.\r\n- Note that these definitions cause parse errors:\r\n\r\nvar x = { get 'x'() { return 1 } };\r\nvar x = { get 1() { return 1 } };\r\n\r\nES5 allow these.  The Rhino parser needs to be updated."}

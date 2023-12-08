@@ -1,0 +1,1 @@
+{"issue_id": "611", "title": "Parse failed with org.jsoup.select.Selector$SelectorParseException when selector has unbalanced '(' or '[' or ')' or ']' ", "description": "\n<p dir=\"auto\">Selector I am having as following div.card-content2:has(a.subtitle[title= MySubTitle:)]) OR a.title[title=MyTitle :] ]</p>\n"}

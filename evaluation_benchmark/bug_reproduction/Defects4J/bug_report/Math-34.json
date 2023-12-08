@@ -1,0 +1,1 @@
+{"issue_id": "MATH-779", "title": "ListPopulation Iterator allows you to remove chromosomes from the population.", "description": "\n<div class=\"user-content-block\">\n<p>Calling the iterator method of ListPopulation returns an iterator of the protected modifiable list. Before returning the iterator we should wrap it in an unmodifiable list.</p>\n</div>\n"}

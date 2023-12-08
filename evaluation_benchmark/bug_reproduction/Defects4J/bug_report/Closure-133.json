@@ -1,0 +1,1 @@
+{"issue_id": "919", "title": "Exception when parsing erroneous jsdoc: /**@return {@code foo} bar   *    baz. */", "description": "The following causes an exception in JSDocInfoParser.\r\n\r\n/** \r\n * @return {@code foo} bar \r\n *    baz. */\r\nvar x;\r\n\r\n\r\n\r\nFix to follow."}

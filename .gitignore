@@ -6,4 +6,7 @@ src/repopilot/multilspy/language_servers/rust_analyzer/static
 src/repopilot/multilspy/language_servers/eclipse_jdtls/static
 src/repopilot/tree-sitter
 evaluation_benchmark/SWE_bench
+evaluation_benchmark/bug_reproduction/defects4j/*
+evaluation_benchmark/bug_reproduction/Defects4J/gen_tests/*
+evaluation_benchmark/bug_reproduction/Defects4J/repos/*
 .zoekt_tmp/

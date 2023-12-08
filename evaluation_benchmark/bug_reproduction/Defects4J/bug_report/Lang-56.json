@@ -1,0 +1,1 @@
+{"issue_id": "LANG-303", "title": "FastDateFormat.mRules is not transient or serializable", "description": "\n<div class=\"user-content-block\">\n<p>Reported by FindBugs.</p>\n<p>Either we need to make the Rule interface Serializable, or make mRules transient and add deserializing code to kick off init().</p>\n</div>\n"}

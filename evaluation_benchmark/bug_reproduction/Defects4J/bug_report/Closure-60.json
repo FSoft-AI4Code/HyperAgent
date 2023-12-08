@@ -1,0 +1,1 @@
+{"issue_id": "504", "title": "void function () {}(); wrongly identified as having no side effects", "description": "This code results in the execution of the function and should not be identified as having no side effects."}

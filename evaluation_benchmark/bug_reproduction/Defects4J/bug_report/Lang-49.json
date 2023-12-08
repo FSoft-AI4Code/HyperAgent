@@ -1,0 +1,1 @@
+{"issue_id": "LANG-380", "title": "infinite loop in Fraction.reduce when numerator == 0", "description": "\n<div class=\"user-content-block\">\n<p>Summary pretty much says it all.</p>\n</div>\n"}

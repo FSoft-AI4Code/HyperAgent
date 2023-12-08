@@ -1,0 +1,1 @@
+{"issue_id": "CLI-205", "title": "HelpFormatter.setArgName() has no effect", "description": "\n<div class=\"user-content-block\">\n<p>The default argument name set on the HelpFormatter has no effect because the Option and the OptionBuilder bring automatically a default value 'arg'.</p>\n</div>\n"}

@@ -1,0 +1,1 @@
+{"issue_id": "157", "title": "Source files should not be put in binary JAR ", "description": "\n<p dir=\"auto\">Source files (<code class=\"notranslate\">*.java</code>) should not be put into binary <code class=\"notranslate\">mockito-core.jar</code>. It stupefies Idea to show decompiled file even when source jar is available.</p>\n"}

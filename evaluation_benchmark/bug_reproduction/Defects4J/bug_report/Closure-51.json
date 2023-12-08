@@ -1,0 +1,1 @@
+{"issue_id": "582", "title": "-0.0 becomes 0 even in whitespace mode", "description": "\r\nAffects dart: http://code.google.com/p/dart/issues/detail?id=146"}

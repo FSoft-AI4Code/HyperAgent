@@ -1,0 +1,1 @@
+{"issue_id": "1128", "title": "Fix StackOverflowError on resolving types with TypeVariable recursion", "description": "\n<p dir=\"auto\">Sample failing code:<br/>\nprivate static class TestType {<br/>\nTestType&lt;? super X&gt; superType;<br/>\n}<br/>\n...<br/>\nnew Gson().getAdapter(TestType.class);</p>\n"}

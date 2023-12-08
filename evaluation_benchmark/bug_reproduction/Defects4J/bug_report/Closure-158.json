@@ -1,0 +1,1 @@
+{"issue_id": "407", "title": "Order of jscomp_error, jscomp_warning, jscomp_off flags are not preserved", "description": "&quot;off&quot; always takes precedence over &quot;warning&quot;, and &quot;warning&quot; always takes precedence over &quot;error&quot;\r\n\r\nThis should be changed so that the last arguments always has highest precedence.\r\n"}

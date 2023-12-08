@@ -1,0 +1,1 @@
+{"issue_id": "97", "title": "abs: attribute prefix does not work on Elements.attr()", "description": "\n<p dir=\"auto\">Elements.attr() iterates on its element to look for the first one with the given attrbute.</p>\n<p dir=\"auto\">If I try to get the attribute abs:href, the test element.hasAttr(\"abs:herf\") fails, and the returned value is an empty string.</p>\n"}

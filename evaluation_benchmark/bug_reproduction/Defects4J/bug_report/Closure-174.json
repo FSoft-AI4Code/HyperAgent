@@ -1,0 +1,1 @@
+{"issue_id": "1103", "title": "compiler crash on goog.scope locals", "description": "goog.provide(&quot;main&quot;);\r\ngoog.scope (function (){\r\n  var a = foo, b, c = 1;\r\n});\r\n\r\nReported by Thomas Fischer\r\n\r\nThere are 2 separate issues here: that there's an error, and that the error make the compiler crash."}

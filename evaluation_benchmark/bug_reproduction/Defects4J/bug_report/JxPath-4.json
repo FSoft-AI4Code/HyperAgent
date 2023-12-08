@@ -1,0 +1,1 @@
+{"issue_id": "JXPATH-83", "title": "JXpath automatically trims string values", "description": "\n<div class=\"user-content-block\">\n<p>When an xml contains a value with leading or trailing spaces, JXPath trims this value.<br/>\nexample: &lt;value&gt;     12324 56&lt;/value&gt; is retrieved by JXPath as : '1234 56' while I expect '     1234 56'.</p>\n</div>\n"}

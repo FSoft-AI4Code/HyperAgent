@@ -1,0 +1,1 @@
+{"issue_id": "143", "title": "Auto-identify void functions", "description": "function f() {\r\n}\r\n\r\nalert(f());\r\n\r\nshould emit a warning"}

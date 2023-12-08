@@ -2,3 +2,5 @@ pylsp
 gitpython
 langchain
 openai
+
+javalang

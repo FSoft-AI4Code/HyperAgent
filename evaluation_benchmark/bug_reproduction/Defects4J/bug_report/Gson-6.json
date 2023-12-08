@@ -1,0 +1,1 @@
+{"issue_id": "800", "title": "Fixed a regression in Gson 2.6 where Gson caused NPE if the TypeAdapt\u2026", "description": "\n<p dir=\"auto\">\u2026erFactory.create() returned null.</p>\n"}

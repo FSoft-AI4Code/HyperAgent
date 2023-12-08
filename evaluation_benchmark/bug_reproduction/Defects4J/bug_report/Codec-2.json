@@ -1,0 +1,1 @@
+{"issue_id": "CODEC-77", "title": "Base64 bug with empty input (new byte[0])", "description": "\n<div class=\"user-content-block\">\n<p>Base64.encode(new byte<span class=\"error\">[0]</span>) doesn't return an empty byte array back!  It returns CRLF.</p>\n</div>\n"}

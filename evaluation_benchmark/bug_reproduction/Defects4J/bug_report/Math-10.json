@@ -1,0 +1,1 @@
+{"issue_id": "MATH-935", "title": "DerivativeStructure.atan2(y,x) does not handle special cases properly", "description": "\n<div class=\"user-content-block\">\n<p>The four special cases +/-0 for both x and y should give the same values as Math.atan2 and FastMath.atan2. However, they give NaN for the value in all cases.</p>\n</div>\n"}

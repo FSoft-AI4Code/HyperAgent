@@ -1,0 +1,1 @@
+{"issue_id": "773", "title": "Update reader and writer for RFC 7159.", "description": "\n<p dir=\"auto\">This allows for top-level value types without the requirement of leniency.</p>\n"}

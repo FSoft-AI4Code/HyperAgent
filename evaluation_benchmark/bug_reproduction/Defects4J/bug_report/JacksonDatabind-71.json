@@ -1,0 +1,1 @@
+{"issue_id": "1506", "title": "Missing <code>KeyDeserializer</code> for <code>CharSequence</code>", "description": "\n<p dir=\"auto\">Looks like use of nominal Map key type of <code class=\"notranslate\">CharSequence</code> does not work yet (as of 2.7.8 / 2.8.6).<br/>\nThis is something that is needed to work with certain frameworks, such as Avro's generated POJOs.</p>\n"}

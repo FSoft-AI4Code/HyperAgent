@@ -1,0 +1,1 @@
+{"issue_id": "550", "title": "Please support text node selector", "description": "\n<p dir=\"auto\">Please support some kind of text node selectors. Currently it's not possible to select a sibling text node of an element without coding Java. A possible expression would be:<br/>\nELEM + :text</p>\n"}

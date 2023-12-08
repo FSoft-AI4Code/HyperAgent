@@ -1,0 +1,1 @@
+{"issue_id": "719", "title": "Fix type hierarchy adapters to do a runtime check.", "description": "\n<p dir=\"auto\">Otherwise if we have a type hierarchy adapter for Vehicle, and we<br/>\nattempt to decode a JSON string as a Car, we get the right exception<br/>\nif the JSON string is actually decoded as a Truck.</p>\n"}
