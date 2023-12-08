@@ -4,10 +4,9 @@ import argparse
 import json
 from bs4 import BeautifulSoup
 from markdownify import markdownify as md
-import re
 
 template = "Please augment the test suite in our Java software. You write a JUnit test case that reproduce the failure behavior of the bug report. {bug_report}"
-ROOT_DIR = 'evaluation_benchmark/bug_reproduction/Defects4J/'
+ROOT_DIR = 'Defects4J/'
 
 def make_input(rep_title, rep_content):
     rep_title = BeautifulSoup(rep_title.strip(), 'html.parser').get_text()
