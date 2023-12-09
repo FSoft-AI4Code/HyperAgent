@@ -4,8 +4,9 @@ import argparse
 import json
 from bs4 import BeautifulSoup
 from markdownify import markdownify as md
+from repopilot.tools import GetAllSymbolsTool
 
-template = "Please augment the test suite in our Java software. You write a JUnit test case that reproduce the failure behavior of the bug report. {bug_report}"
+template = "You write a JUnit test case that reproduce the failure behavior of the bug report. {bug_report}"
 ROOT_DIR = 'Defects4J/'
 
 def make_input(rep_title, rep_content):
@@ -40,4 +41,5 @@ if __name__ == "__main__":
     commit = ""
     repo = f"Defects4J/repos/{args.project}_{args.bug_id}"
     pilot = RepoPilot(repo, commit=commit, openai_api_key=api_key, local=True, language="java", clone_dir="data/repos")
+    
     output = query_repopilot_for_gentest(pilot, load_bug_report(args.project, args.bug_id))

@@ -370,6 +370,7 @@ class LanguageServerHandler:
             await self._send_payload(make_request(method, request_id, params))
             await request.cv.wait()
         if isinstance(request.error, Error):
+            # print(Error.to_lsp())
             raise request.error
         return request.result
 

@@ -113,6 +113,8 @@ def search_zoekt_elements_inside_project(names, backend, num_result=2, verbose=F
         zoekt_results = backend.search([f"sym:{name}" for name in names], num_result=num_result)
     for name in names:
         files = zoekt_results[f'sym:{name}']["result"]["FileMatches"]
+        if not files:
+            continue
         for file in files:
             source = open(os.path.join(backend.repo_path, file["FileName"]), "r").read()
             root_node = parse_code(source, backend.language).root_node

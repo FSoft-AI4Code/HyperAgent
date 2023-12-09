@@ -100,22 +100,25 @@ class LSPToolKit:
                         for k in range(len(definition.split("\n"))):
                             if item["name"] in definition.split("\n")[k]:
                                 line_has_name = k 
-                        cha = definition.split("\n")[line_has_name].index(item["name"])
-                        
-                        with self.server.start_server():
-                            hover = self.server.request_hover(relative_path, item["range"]["start"]["line"], cha)
-                            if hover != None:
-                                documentation = hover["contents"]
-                            else:
+                        try:
+                            cha = definition.split("\n")[line_has_name].index(item["name"])
+                            
+                            with self.server.start_server():
+                                hover = self.server.request_hover(relative_path, item["range"]["start"]["line"], cha)
+                                if hover != None:
+                                    documentation = hover["contents"]
+                                else:
+                                    documentation = "None"
+                            if "value" not in documentation:
                                 documentation = "None"
-                        if "value" not in documentation:
-                            documentation = "None"
-                            preview = "\n".join(definition.split("\n")[:preview_size+4])
-                        else:
-                            preview = "\n".join(definition.split("\n")[:preview_size])
-                        preview = add_num_line(preview, item["range"]["start"]["line"])
-                        item_out = "Name: " + str(item["name"]) + "\n" + "Type: " + str(matching_kind_symbol(item)) + "\n" + "Preview: " + str(preview) + "\n" + "Documentation: " + str(documentation) + "\n"
-                        verbose_output.append(item_out)
+                                preview = "\n".join(definition.split("\n")[:preview_size+4])
+                            else:
+                                preview = "\n".join(definition.split("\n")[:preview_size])
+                            preview = add_num_line(preview, item["range"]["start"]["line"])
+                            item_out = "Name: " + str(item["name"]) + "\n" + "Type: " + str(matching_kind_symbol(item)) + "\n" + "Preview: " + str(preview) + "\n" + "Documentation: " + str(documentation) + "\n"
+                            verbose_output.append(item_out)
+                        except ValueError:
+                            continue
                         
             symbols = verbose_output
         return symbols
