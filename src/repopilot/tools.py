@@ -17,6 +17,7 @@ from langchain.vectorstores import Chroma
 from repopilot.utils import get_env_path
 import jedi
 from codetext.utils import build_language
+from repopilot.multilspy import lsp_protocol_handler
 
 class CodeSearchArgs(BaseModel):
     names: list[str] = Field(..., description="The names of the identifiers to search")
@@ -153,13 +154,14 @@ class GetAllSymbolsTool(BaseTool):
         self.lsptoolkit = LSPToolKit(path, language)
     
     def _run(self, path_to_file: str, verbose_level: int = 1):
-        # try:
-        return self.lsptoolkit.get_symbols(path_to_file, verbose_level, verbose=True)
-        # except IsADirectoryError:
-        #     return "The relative path is a folder, please specify the file path instead. Consider using get_tree_structure to find the file name then use this tool one file path at a time"
-        # except FileNotFoundError:
-        #     return "The file is not found, please check the path again"
-
+        try:
+            return self.lsptoolkit.get_symbols(path_to_file, verbose_level, verbose=True)
+        except IsADirectoryError:
+            return "The relative path is a folder, please specify the file path instead. Consider using get_tree_structure to find the file name then use this tool one file path at a time"
+        except FileNotFoundError:
+            return "The file is not found, please check the path again"
+        except lsp_protocol_handler.server.Error:
+            return "Internal error, please use other tool"
     
     def _arun(self, relative_path: str):
         return NotImplementedError("Get All Symbols Tool is not available for async run")
@@ -254,6 +256,6 @@ class SemanticCodeSearchTool(Tool):
         )
         
 if __name__ == "__main__":
-    gst = FindAllReferencesTool(path="/datadrive05/huypn16/focalcoder/data/repos/repo__aura-nw__cw-ics721__commit__", language="rust")
-    output = gst._run(word="instantiate", line=26, relative_path="contracts/ics721-base/src/lib.rs", reranking=True)
+    gst = GetAllSymbolsTool(path="/datadrive05/huypn16/focalcoder/evaluation_benchmark/bug_reproduction/Defects4J/repos/Closure_71", language="java")
+    output = gst._run(path_to_file="src/com/google/debugging/sourcemap/Base64.java")
     print(output)

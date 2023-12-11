@@ -4,6 +4,7 @@ from repopilot.multilspy.multilspy_logger import MultilspyLogger
 from repopilot.utils import matching_kind_symbol, matching_symbols, add_num_line, get_text, word_to_position
 from repopilot.multilspy.lsp_protocol_handler.lsp_types import SymbolKind
 from repopilot.multilspy.multilspy_exceptions import MultilspyException
+from repopilot.multilspy import lsp_protocol_handler
 import logging
 
 logging.getLogger("multilspy").setLevel(logging.WARNING)
@@ -15,12 +16,16 @@ class LSPToolKit:
         self.server = SyncLanguageServer.create(MultilspyConfig(code_language=language), MultilspyLogger(), root_path)
         
     def open_file(self, relative_path):
-        with self.server.start_server():
-            try:
-                with self.server.open_file(relative_path):
-                    result = self.server.get_open_file_text(relative_path)
-            except:
-                return "The tool cannot open the file, the file path is not correct."
+        try:
+            with self.server.start_server():
+                try:
+                    with self.server.open_file(relative_path):
+                        result = self.server.get_open_file_text(relative_path)
+                except:
+                    return "The tool cannot open the file, the file path is not correct."
+        except lsp_protocol_handler.server.Error:
+            return "Error: internal server error"
+        
         return result
     
     def get_definition(self, word, relative_path, line=None, offset=0, verbose=False):
@@ -73,23 +78,26 @@ class LSPToolKit:
                         for k in range(len(definition.split("\n"))):
                             if item["name"] in definition.split("\n")[k]:
                                 line_has_name = k
-                        cha = definition.split("\n")[line_has_name].index(item["name"])
-                        
-                        with self.server.start_server():
-                            hover = self.server.request_hover(relative_path, item["range"]["start"]["line"], cha)
-                            if hover != None:
-                                documentation = hover["contents"]
-                            else:
+                        try:
+                            cha = definition.split("\n")[line_has_name].index(item["name"])
+                            
+                            with self.server.start_server():
+                                hover = self.server.request_hover(relative_path, item["range"]["start"]["line"], cha)
+                                if hover != None:
+                                    documentation = hover["contents"]
+                                else:
+                                    documentation = "None"
+                                    
+                            if "value" not in documentation:
                                 documentation = "None"
-                                
-                        if "value" not in documentation:
-                            documentation = "None"
-                            preview = "\n".join(definition.split("\n")[:preview_size+4])
-                        else:
-                            preview = "\n".join(definition.split("\n")[:preview_size])
-                        preview = add_num_line(preview, item["range"]["start"]["line"])
-                        item_out = "Name: " + str(item["name"]) + "\n" + "Type: " + str(matching_kind_symbol(item)) + "\n" + "Preview: " + str(preview) + "\n" + "Documentation: " + str(documentation) + "\n"
-                        verbose_output.append(item_out)
+                                preview = "\n".join(definition.split("\n")[:preview_size+4])
+                            else:
+                                preview = "\n".join(definition.split("\n")[:preview_size])
+                            preview = add_num_line(preview, item["range"]["start"]["line"])
+                            item_out = "Name: " + str(item["name"]) + "\n" + "Type: " + str(matching_kind_symbol(item)) + "\n" + "Preview: " + str(preview) + "\n" + "Documentation: " + str(documentation) + "\n"
+                            verbose_output.append(item_out)
+                        except ValueError:
+                            continue
                         
                 elif verbose_level == 2:
                     definition = get_text(source, item["range"])

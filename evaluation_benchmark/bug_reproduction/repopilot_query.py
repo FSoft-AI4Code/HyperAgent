@@ -6,15 +6,14 @@ from bs4 import BeautifulSoup
 from markdownify import markdownify as md
 from repopilot.tools import GetAllSymbolsTool
 
-template = "You write a JUnit test case that reproduce the failure behavior of the bug report. {bug_report}"
+template = "You need to write a JUnit test case code in java that reproduce the failure behavior of the given bug report as following: {bug_report}"
 ROOT_DIR = 'Defects4J/'
 
 def make_input(rep_title, rep_content):
     rep_title = BeautifulSoup(rep_title.strip(), 'html.parser').get_text()
     rep_content = md(rep_content.strip())
 
-    bug_report_content = f"""
-    # {rep_title}
+    bug_report_content = f"""# {rep_title}
     ## Description
     {rep_content}
     """
@@ -27,13 +26,14 @@ def load_bug_report(proj, bug_id):
     return make_input(br['title'], br['description'])
     
 def query_repopilot_for_gentest(pilot, br):
+    print(template.format(bug_report=br))
     output = pilot.query_codebase(template.format(bug_report=br))
     return output 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-p', '--project', default='Time')
-    parser.add_argument('-b', '--bug_id', type=int, default=23)
+    parser.add_argument('-b', '--bug_id', type=int, default=5)
     parser.add_argument('-o', '--out', default='output.txt')
     args = parser.parse_args()
     
