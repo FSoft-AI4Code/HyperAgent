@@ -124,6 +124,11 @@ def add_num_line(source, start_line):
 def matching_symbols(symbols, object):
     for symbol in symbols:
         ## approximat matching only is strong enough
+        if "location" not in symbol:
+            if symbol["range"]["start"]["line"] == object["range"]["start"]["line"]:
+                return symbol
+            else:
+                continue
         if symbol["location"]["range"]["start"]["line"] == object["range"]["start"]["line"]:
             return symbol
     return None

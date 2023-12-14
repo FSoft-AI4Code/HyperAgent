@@ -40,7 +40,10 @@ class LSPToolKit:
             symbols = self.get_symbols(output[0]["relativePath"])
             symbol = matching_symbols(symbols, output[0])
             symbol_type = matching_kind_symbol(symbol)
-            definition = add_num_line(get_text(self.open_file(output[0]["relativePath"]), symbol["location"]["range"]), symbol["location"]["range"]["start"]["line"])
+            if "location" not in symbol:
+                definition = add_num_line(get_text(self.open_file(output[0]["relativePath"]), symbol["range"]), symbol["range"]["start"]["line"])
+            else:
+                definition = add_num_line(get_text(self.open_file(output[0]["relativePath"]), symbol["location"]["range"]), symbol["location"]["range"]["start"]["line"])
             output = "Name: " + str(symbol["name"]) + "\n" + "Type: " + str(symbol_type) + "\n" + "Definition: " + definition
             
         return output

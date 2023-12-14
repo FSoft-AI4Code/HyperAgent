@@ -1,3 +1,5 @@
+from repopilot import RepoPilot
+
 import os
 import logging
 from repopilot import RepoPilot
@@ -28,7 +30,7 @@ if __name__ == "__main__":
     # question = "what is UnigramTrainer's role in the tokenizers repo?"
     question = "The current input is the velocity and position of the pedestrians. I want leveraging past trajectory data to predict the future trajectory of the pedestrians. Then this is used as the input of the model. How can I modify the code?"
     #TODO: add a check for a local repo execution
-    pilot = RepoPilot(repo, commit=commit, openai_api_key=api_key, local=False, language=language, clone_dir="data/repos")
+    pilot = RepoPilot(repo, commit=commit, openai_api_key=api_key, local=False, language=language, clone_dir="data/repos", save_trajectories_path="data/trajectories/python/feature_rq/drl_vo_nav")
     logger.info("Setup done!")
     
     with get_openai_callback() as cb:

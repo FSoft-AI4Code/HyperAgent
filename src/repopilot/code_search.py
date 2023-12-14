@@ -145,7 +145,6 @@ def search_zoekt_elements_inside_project(names, backend, num_result=2, verbose=F
     
 def search_elements_inside_project(names, backend, verbose, language):
     if language == "python":
-        assert backend == jedi.Project, "backend must be jedi.Project"
         return search_py_elements_inside_project(names, backend, verbose=verbose)
     else:
         return search_zoekt_elements_inside_project(names, backend, verbose=verbose)

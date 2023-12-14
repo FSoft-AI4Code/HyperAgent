@@ -64,7 +64,7 @@ class GoToDefinitionTool(BaseTool):
     1 class Directory(object):
     2
     3    def add_member(self, id, name):
-    4        self.members[id] = plt.figure() we might want to find the definition of plt.figure() invoke with params ("figure", 6, 'test.py')"""
+    4        self.members[id] = plt.figure() we might want to find the definition of plt.figure() invoke with params ("figure", 4, 'test.py')"""
     args_schema = GoToDefinitionArgs
     path = ""
     lsptoolkit: LSPToolKit = None
@@ -89,7 +89,8 @@ class FindAllReferencesArgs(BaseModel):
 
 class FindAllReferencesTool(BaseTool):
     name = "find_all_references"
-    description = "Useful when you want to find all references of a symbol inside a code snippet"
+    description = """Given a code snippet that contains target symbol, find all references of this symbol inside the project.
+    """
     args_schema = FindAllReferencesArgs
     lsptoolkit: LSPToolKit = None
     openai_engine: OpenAI = None
@@ -101,7 +102,7 @@ class FindAllReferencesTool(BaseTool):
         super().__init__()
         self.path = path
         self.lsptoolkit = LSPToolKit(path, language)
-        self.openai_engine = OpenAI(api_key="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")
+        self.openai_engine = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
     
     def _run(self, word: str, line: int, relative_path: str, reranking: bool = False, query: str = ""):
         try:
@@ -128,16 +129,17 @@ class FindAllReferencesTool(BaseTool):
         return [item["content"] for item in results[:5]]
     
     def similarity(self, query, implementation):
-        embed_query = np.array(self.openai_engine.create(input=query, model="text-embedding-ada-002"))
-        embed_implementation = np.array(self.openai_engine.create(input=implementation, model="text-embedding-ada-002"))
+        #TODO Create Embedding Response
+        embed_query = np.array(self.openai_engine.embeddings.create(input=query, model="text-embedding-ada-002").data[0].embedding)
+        embed_implementation = np.array(self.openai_engine.embeddings.create(input=implementation, model="text-embedding-ada-002").data[0].embedding)
         score = np.dot(embed_query, embed_implementation) / (np.linalg.norm(embed_query) * np.linalg.norm(embed_implementation))
         return score
 
 class GetAllSymbolsArgs(BaseModel):
     path_to_file: str = Field(..., description="The path of the python file we want extract all symbols from.")
-    verbose_level: int = Field(..., description="""verbose_level: efficient verbose settings to save number of tokens. There're 2 levels of details.
-                1 - only functions and classes - default
-                2 - functions, classes, and methods of classes """)
+    # verbose_level: int = Field(..., description="""verbose_level: efficient verbose settings to save number of tokens. There're 2 levels of details.
+    #             1 - only functions and classes - default
+    #             2 - functions, classes, and methods of classes """)
 
 class GetAllSymbolsTool(BaseTool):
     name = "get_all_symbols"
@@ -171,9 +173,8 @@ class GetTreeStructureArgs(BaseModel):
     level: int = Field(..., description="The level of the tree structure we want to explore, prefer to use 2 (default) for a quick overview of the folder structure then use 3 for more details")
 
 class GetTreeStructureTool(BaseTool):
-    name = "get_tree_structure"
+    name = "get_folder_structure"
     description = """Useful when you want to explore the tree structure of a folder, good for initial exploration with knowing the parent folder name. Remember to provide the relative path correctly.
-    Such as if you see and want to explore config folder inside the astropy folder, you should provide the relative path as astropy/config.
     """
     args_schema = GetTreeStructureArgs
     path = ""

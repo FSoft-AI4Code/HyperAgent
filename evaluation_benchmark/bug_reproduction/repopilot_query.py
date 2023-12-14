@@ -32,8 +32,8 @@ def query_repopilot_for_gentest(pilot, br):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('-p', '--project', default='Time')
-    parser.add_argument('-b', '--bug_id', type=int, default=5)
+    parser.add_argument('-p', '--project', default='Closure')
+    parser.add_argument('-b', '--bug_id', type=int, default=1)
     parser.add_argument('-o', '--out', default='output.txt')
     args = parser.parse_args()
     

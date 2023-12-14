@@ -1,7 +1,6 @@
 from typing import List
 
 from langchain.agents.agent import AgentExecutor
-from langchain.agents.structured_chat.base import StructuredChatAgent
 from langchain.schema.language_model import BaseLanguageModel
 from langchain.tools import BaseTool, Tool
 from langchain.vectorstores import Chroma
@@ -22,7 +21,7 @@ from langchain_experimental.plan_and_execute.schema import (
 )
 from langchain_experimental.pydantic_v1 import Field
 from langchain.agents.structured_chat.prompt import PREFIX, SUFFIX
-from repopilot.agents.base import ChainExecutor
+from repopilot.agents.base import ChainExecutor, StructuredChatAgent
 from langchain.schema import Document
 
 HUMAN_MESSAGE_TEMPLATE = """Previous steps: {previous_steps}
@@ -31,16 +30,48 @@ Current objective: {current_step}
 
 {agent_scratchpad}"""
 
-TASK_PREFIX = """{objective}
+TASK_PREFIX = """Human request: {objective}
 
 """
 
-ANALYZER_HUMAN_MESSAGE_TEMPLATE = """Current objective: {objective}
+ANALYZER_HUMAN_MESSAGE_TEMPLATE = """Current navigating objective: {objective}
 
 Current notes from information agent: {current_notes}
 
 {agent_scratchpad}
 """
+
+FORMAT_INSTRUCTIONS = """Use a json blob to specify a tool by providing an action key (tool name) and an action_input key (tool input).
+
+Valid "action" values: "Final Answer" or {tool_names}
+
+Provide only ONE action per $JSON_BLOB, as shown:
+
+```
+{{{{
+  "action": $TOOL_NAME,
+  "action_input": $INPUT
+}}}}
+```
+
+Follow this format:
+
+Question: input question to answer
+Thought: consider previous and subsequent steps, notes down some useful information (like code snippet) from observation
+Action:
+```
+$JSON_BLOB
+```
+Observation: action result
+... (repeat Thought/Action/Observation N times)
+Thought: I know what to respond
+Action:
+```
+{{{{
+  "action": "Final Answer",
+  "action_input": "Final response to human"
+}}}}
+```"""
 
 def load_agent_analyzer(
     llm: BaseLanguageModel,
@@ -95,6 +126,8 @@ def load_agent_executor(
     suffix: str = SUFFIX,
     verbose: bool = False,
     include_task_in_prompt: bool = False,
+    save_trajectories_path: str = "./agent_trajectories",
+    
 ) -> ChainExecutor:
     """
     Load an agent executor.
@@ -110,6 +143,7 @@ def load_agent_executor(
     """
     input_variables = ["previous_steps", "current_step", "agent_scratchpad"]
     template = HUMAN_MESSAGE_TEMPLATE
+    format_instructions = FORMAT_INSTRUCTIONS
 
     if include_task_in_prompt:
         input_variables.append("objective")
@@ -122,7 +156,9 @@ def load_agent_executor(
         input_variables=input_variables,
         prefix=prefix,
         suffix=suffix,
+        format_instructions=format_instructions,
     )
+    agent.save_trajectories_path = save_trajectories_path
     agent_executor = AgentExecutor.from_agent_and_tools(
         agent=agent, tools=tools, verbose=verbose, return_intermediate_steps=True 
     )
@@ -182,7 +218,6 @@ class PlanSeeking(Chain):
                     tool_output = "\n".join(obs_strings)
                 else:
                     tool_output = str(react_step[1])
-                    
                 vec_note = react_step[0].log + "\n" + tool_output
                 self.vectorstore.add_documents([Document(page_content=vec_note)])
                 

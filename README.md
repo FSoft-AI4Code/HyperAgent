@@ -85,3 +85,53 @@ RepoPilot is a multi-agent system that consists of three main components: the **
 - **Analysis Agent** is responsible for finally giving the user the insights and recommendations based on the query and the information stored in the working memory. The analysis agent is based on GPT-4 prompted with the query and the information stored in the working memory.
 
 
+Here is a JUnit test case that reproduces the failure behavior of the incorrect mapping of the MET time zone:
+
+```java
+import org.joda.time.DateTimeZone;
+import org.junit.Assert;
+import org.junit.Test;
+
+public class DateTimeZoneTest {
+
+    @Test
+    public void testIncorrectMETMapping() {
+        // Arrange
+        String timeZoneId = "MET"; // Middle European Time
+        String expectedZoneId = "Europe/Paris"; // Expected correct mapping for MET
+
+        // Act
+        DateTimeZone actualZone = DateTimeZone.forID(timeZoneId);
+
+        // Assert
+        Assert.assertNotEquals("Incorrect time zone mapping for MET", "Asia/Tehran", actualZone.getID());
+        Assert.assertEquals("Time zone mapping for MET should be Europe/Paris", expectedZoneId, actualZone.getID());
+    }
+}
+```
+This test case checks that the forID method does not return "Asia/Tehran" when "MET" is passed as the time zone ID. It also asserts that the correct expected mapping should be "Europe/Paris". The test will fail with the current implementation, indicating the presence of the bug.
+
+Here is a JUnit test case that reproduces the failure behavior described in the bug report:
+
+```java
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Options;
+import org.junit.Test;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
+
+public class CommandLineTest {
+
+    @Test
+    public void testHasOptionWithNullShouldNotThrowException() {
+        CommandLine cmd = new CommandLine(new Options());
+        assertFalse("hasOption should return false when passed a null argument", cmd.hasOption(null));
+    }
+
+    @Test
+    public void testHasOptionWithNullShouldThrowNullPointerException() {
+        CommandLine cmd = new CommandLine(new Options());
+        assertThrows(NullPointerException.class, () -> cmd.hasOption(null));
+    }
+}
+```
