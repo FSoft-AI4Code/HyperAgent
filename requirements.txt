@@ -7,5 +7,6 @@ vllm
 transformers
 datasets
 codetext
+Click
 jedi-language-server==0.41.1
 tqdm==4.64.1

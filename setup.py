@@ -19,9 +19,14 @@ setup(
                           "tree-sitter", 
                           "tree-sitter-languages", 
                           "vllm",
-                          "datasets"], # add any additional packages that 
+                          "datasets"
+                          "Click",
+                          "codetext"], # add any additional packages that 
         # needs to be installed along with your package. Eg: 'caer'
-        
+        entry_points='''
+            [console_scripts]
+            repopilot=cli:main
+        ''',
         keywords=['LLM', 'NLP', "Code Analysis"],
         classifiers= [
             "Development Status :: 3 - Alpha",
