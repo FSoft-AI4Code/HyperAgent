@@ -9,7 +9,7 @@
   <img alt="license" src="https://img.shields.io/badge/License-Apache%202.0-green.svg"/>
   </a>
    <a href="https://www.python.org/downloads/release/python-380/">
-  <img alt="python" src="https://img.shields.io/badge/python-3.8+-yellow.svg"/>
+  <img alt="python" src="https://img.shields.io/badge/python-3.10+-green.svg"/>
   </a> 
 
 
