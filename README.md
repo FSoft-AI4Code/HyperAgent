@@ -101,43 +101,17 @@ search_query = "Find all asynchronous functions in the codebase."
 async_functions = rp.query_codebase(search_query)
 print("Asynchronous Functions Found:")
 print(async_functions)
+
+# Example 5: Bug reproduction from Bug reports
+# User wants to generate a fail-to-pass test case from a bug report
+search_query = "Write a JUnit test case code in java that reproduce the failure behavior of the given bug report as following: {bug_report (in this case is Time 23 Defects4J)}."
+bug_reproduction = rp.query_codebase(search_query)
+print("Bug Reproduction:")
 ```
 
-## Architecture
-![RepoPilot Architecture](assets/repopilot.png)
+Here is an example of the output of the above code:
 
-RepoPilot is a multi-agent system that consists of three main components: the **Planning Agent**, the **Navigation Agent**, and the **Analysis Agent**. 
-- **Planning Agent** is responsible for understanding the user's query and determining a draft plan of action. The planning agent is based on GPT-4 prompted with a query and general information about the codebase.
-
-- **Navigation Agent** is responsible for navigating the codebase, finding relevant code snippets and storing high value information related to the query into the working memory. The navigation agent is implemented with ReAct-like architecture with dynamic backtracking as well as multi-languages language server protocol (mLSP) support to efficiently navigate inside the codebase (go-to-definition, find references, code search, semantic code search, etc).
-
-- **Analysis Agent** is responsible for finally giving the user the insights and recommendations based on the query and the information stored in the working memory. The analysis agent is based on GPT-4 prompted with the query and the information stored in the working memory.
-
-
-Here is a JUnit test case that reproduces the failure behavior of the incorrect mapping of the MET time zone:
-
-```java
-import org.joda.time.DateTimeZone;
-import org.junit.Assert;
-import org.junit.Test;
-
-public class DateTimeZoneTest {
-
-    @Test
-    public void testIncorrectMETMapping() {
-        // Arrange
-        String timeZoneId = "MET"; // Middle European Time
-        String expectedZoneId = "Europe/Paris"; // Expected correct mapping for MET
-
-        // Act
-        DateTimeZone actualZone = DateTimeZone.forID(timeZoneId);
-
-        // Assert
-        Assert.assertNotEquals("Incorrect time zone mapping for MET", "Asia/Tehran", actualZone.getID());
-        Assert.assertEquals("Time zone mapping for MET should be Europe/Paris", expectedZoneId, actualZone.getID());
-    }
-}
-```
+```bash
 This test case checks that the forID method does not return "Asia/Tehran" when "MET" is passed as the time zone ID. It also asserts that the correct expected mapping should be "Europe/Paris". The test will fail with the current implementation, indicating the presence of the bug.
 
 Here is a JUnit test case that reproduces the failure behavior described in the bug report:
@@ -164,3 +138,16 @@ public class CommandLineTest {
     }
 }
 ```
+
+
+## Architecture
+![RepoPilot Architecture](assets/repopilot.png)
+
+RepoPilot is a multi-agent system that consists of three main components: the **Planning Agent**, the **Navigation Agent**, and the **Analysis Agent**. 
+- **Planning Agent** is responsible for understanding the user's query and determining a draft plan of action. The planning agent is based on GPT-4 prompted with a query and general information about the codebase.
+
+- **Navigation Agent** is responsible for navigating the codebase, finding relevant code snippets and storing high value information related to the query into the working memory. The navigation agent is implemented with ReAct-like architecture with dynamic backtracking as well as multi-languages language server protocol (mLSP) support to efficiently navigate inside the codebase (go-to-definition, find references, code search, semantic code search, etc).
+
+- **Analysis Agent** is responsible for finally giving the user the insights and recommendations based on the query and the information stored in the working memory. The analysis agent is based on GPT-4 prompted with the query and the information stored in the working memory.
+
+
