@@ -1,4 +1,33 @@
-# RepoPilot - A Next-Generation Coding Assistant for Codebase Exploration and Analysis
+    
+<p align="center">
+    <br>
+    <img src="assets/logo_1.svg" width="500"/>
+    <br>
+<p>
+<div align="center">
+  <a href="https://opensource.org/license/apache-2-0/">
+  <img alt="license" src="https://img.shields.io/badge/License-Apache%202.0-green.svg"/>
+  </a>
+   <a href="https://www.python.org/downloads/release/python-380/">
+  <img alt="python" src="https://img.shields.io/badge/python-3.8+-yellow.svg"/>
+  </a> 
+
+
+    
+# RepoPilot: A Multi-Agent Library to Explore Your Codebase
+
+<!-- 
+[![Code License](https://img.shields.io/badge/Code%20License-Apache_2.0-green.svg)](https://github.com/bdqnghi/CodeTF_personal/blob/main/LICENSE)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/release/python-390/)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black) -->
+ </div>   
+    
+## Table of Contents
+  - [Introduction](#introduction)
+  - [Installation](#installation-guide)
+  - [Getting Started](#getting-started)
+  - [Ethical and Responsible Use](#ethical-and-responsible-use) 
+  - [License](#license)
 
 ## Overview
 
