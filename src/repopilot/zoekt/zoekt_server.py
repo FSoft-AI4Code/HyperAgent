@@ -7,6 +7,25 @@ import os
 import signal
 
 class ZoektServer:
+    """
+    Represents a Zoekt server for indexing and searching repositories.
+
+    Args:
+        language (str): The language of the repositories to be indexed.
+
+    Attributes:
+        index_path (str): The path to the Zoekt index.
+        zoekt_server (subprocess.Popen): The subprocess representing the Zoekt web server.
+        repo_path (str): The path to the repository.
+        language (str): The language of the repositories.
+
+    Methods:
+        setup_index: Sets up the index for the repository.
+        start_server: Starts the Zoekt web server.
+        search: Performs a search on the Zoekt server.
+
+    """
+
     def __init__(self, language):
         self.index_path = None
         self.zoekt_server = None
@@ -14,6 +33,14 @@ class ZoektServer:
         self.language = language
     
     def setup_index(self, repo_path, index_path=".zoekt_tmp"):
+        """
+        Sets up the index for the repository.
+
+        Args:
+            repo_path (str): The path to the repository.
+            index_path (str, optional): The path to the index directory. Defaults to ".zoekt_tmp".
+
+        """
         zoekt_index_repo_path = f"{index_path}/{repo_path.split('/')[-1]}"
         self.repo_path = repo_path
         self.index_path = zoekt_index_repo_path
@@ -30,6 +57,13 @@ class ZoektServer:
     
     @contextmanager
     def start_server(self):
+        """
+        Starts the Zoekt web server.
+
+        Yields:
+            ZoektServer: The current instance of the ZoektServer class.
+
+        """
         self.zoekt_server = subprocess.Popen(
             f"$GOPATH/bin/zoekt-webserver -listen :6070 -index {self.index_path}",
             shell=True,
@@ -55,6 +89,17 @@ class ZoektServer:
                 
                 
     def search(self, names, num_result=2):
+        """
+        Performs a search on the Zoekt server.
+
+        Args:
+            names (list): A list of names to search for.
+            num_result (int, optional): The number of search results to retrieve. Defaults to 2.
+
+        Returns:
+            dict: A dictionary containing the search results for each name.
+
+        """
         url = "http://localhost:6070/search"
         search_results = {name: [] for name in names}
         for name in names:
@@ -70,11 +115,3 @@ class ZoektServer:
                 search_results[name] = results
 
         return search_results
-    
-if __name__ == "__main__":
-    repo_path = "data/repos/repo__astropy__astropy__commit__bc80072326ba18732aa12eff11d5d76dcdd3e6d0"
-    zs = ZoektServer()
-    zs.setup_index(repo_path)
-    with zs.start_server() as server:
-        search_results = server.search(["sym:Kernel1D"], num_result=2)
-    print(search_results)

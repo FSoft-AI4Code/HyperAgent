@@ -200,9 +200,3 @@ class LSPToolKit:
             references_output = detailed_output
         return references_output
 
-
-if __name__ == "__main__":
-    test_path = "/datadrive05/huypn16/focalcoder/data/repos/tokenizers"
-    lsp = LSPToolKit(test_path, language="rust")
-    output = lsp.get_references(word="RobertaProcessing", line=27, relative_path="tokenizers/src/processors/roberta.rs", verbose=True)
-    print(output)

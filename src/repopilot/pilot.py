@@ -4,7 +4,7 @@ import logging
 from langchain.chat_models import ChatOpenAI
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.vectorstores import Chroma
-from repopilot.tools import GoToDefinitionTool, CodeSearchTool, SemanticCodeSearchTool, FindAllReferencesTool, GetAllSymbolsTool, GetTreeStructureTool, OpenFileTool
+from repopilot.tools import tool_classes
 from repopilot.utils import clone_repo
 from langchain_experimental.plan_and_execute import load_chat_planner
 from repopilot.agents.plan_seeking import load_agent_navigator, load_agent_analyzer, PlanSeeking
@@ -34,7 +34,7 @@ def Setup(
     examples: List[Mapping[str, Any]] = example_qa,
     save_trajectories_path: Optional[str] = None,
     headers: Optional[Mapping[str, Any]] = None,
-    local_agent: bool = False
+    local_agent: bool = True
 ) -> PlanSeeking:
     
     gh_token = os.environ.get("GITHUB_TOKEN", None)
@@ -45,8 +45,6 @@ def Setup(
         os.makedirs(save_trajectories_path)
 
     tools = []
-    tool_classes = [CodeSearchTool, SemanticCodeSearchTool, GoToDefinitionTool, FindAllReferencesTool, GetAllSymbolsTool, GetTreeStructureTool, OpenFileTool]
-
     for tool_class in tool_classes:
         tools.append(tool_class(repo_dir, language=language))
 
@@ -56,10 +54,9 @@ def Setup(
     formatted_tools = "\n".join(tool_strings)
 
     struct = subprocess.check_output(["tree", "-L","2", "-d", repo_dir]).decode("utf-8")
-
-    ## Set up the LLM
+    # Set up the LLM
     if local_agent:
-        llm = VLLM(model="model/mistral_repopilot/full_model",
+        llm = VLLM(model="model/codellama_repopilot/full_model",
             trust_remote_code=True,  
             max_new_tokens=1500,
             top_k=9,
@@ -70,14 +67,20 @@ def Setup(
     else:
         llm = ChatOpenAI(temperature=0, model="gpt-4-1106-preview", openai_api_key=openai_api_key)
 
-    ## Set up the planner agent 
+    # Set up the planner agent 
     llm_plan = ChatOpenAI(temperature=0, model="gpt-4", openai_api_key=openai_api_key)
     llm_analyzer = ChatOpenAI(temperature=0, model="gpt-4-1106-preview")
-    planner = load_chat_planner(llm_plan, system_prompt=planner_prompt.PLANNER_TEMPLATE.format(struct=struct, formatted_tools=formatted_tools, examples=examples))
-    
-    ## Set up the vectorstore for analyzer's memory
+    planner = load_chat_planner(
+        llm=llm_plan, 
+        system_prompt=planner_prompt.PLANNER_TEMPLATE.format(
+            struct=struct, 
+            formatted_tools=formatted_tools, 
+            examples=examples
+        )
+    )
+    # Set up the vectorstore for analyzer's memory
     vectorstore = Chroma("langchain_store", OpenAIEmbeddings())  
-    ## Set up the executor and planner agent (the system)
+    # Set up the executor and planner agent (the system)
     navigator = load_agent_navigator(llm, 
         tools, 
         navigator_prompt.PREFIX, 
@@ -98,7 +101,6 @@ def Setup(
         vectorstore=vectorstore, 
         verbose=True
     )
-    
     return system
 
 class RepoPilot:

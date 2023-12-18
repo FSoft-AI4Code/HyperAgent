@@ -1,4 +1,3 @@
-# Builds GPU docker image of PyTorch
 # Uses multi-staged approach to reduce size
 # Stage 1
 # Use base conda image to reduce time
@@ -12,8 +11,8 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists*
 
 # Install Go
-RUN wget https://dl.google.com/go/go1.17.2.linux-amd64.tar.gz
-RUN tar -xvf go1.17.2.linux-amd64.tar.gz
+RUN wget https://dl.google.com/go/go1.21.3.linux-amd64.tar.gz
+RUN tar -xvf go1.21.3.linux-amd64.tar.gz
 RUN mv go /usr/local
 
 ENV GOROOT=/usr/local/go
@@ -21,15 +20,12 @@ ENV GOPATH=$HOME/go
 ENV PATH=$GOPATH/bin:$GOROOT/bin:$PATH
 
 # Install Zoekt
-RUN go get github.com/sourcegraph/zoekt/
-RUN go get github.com/sourcegraph/zoekt/cmd/zoekt-index
-RUN go install github.com/sourcegraph/zoekt/cmd/zoekt-index
-RUN go get github.com/sourcegraph/zoekt/cmd/zoekt-webserver
-RUN go install github.com/sourcegraph/zoekt/cmd/zoekt-webserver
+RUN go install github.com/sourcegraph/zoekt/cmd/zoekt-index@latest
+RUN go install github.com/sourcegraph/zoekt/cmd/zoekt-webserver@latest
 
 # Install universal-ctags for semantic code search
 RUN apt-get update && \
-    apt-get install -y autoconf pkg-config && \
+    apt-get install -y autoconf pkg-config gcc libjansson-dev make && \
     git clone https://github.com/universal-ctags/ctags.git && \
     cd ctags && \
     ./autogen.sh && \
@@ -61,12 +57,6 @@ COPY requirements.txt .
 SHELL ["/bin/bash", "-c"]
 RUN source activate repopilot && \ 
     python3 -m pip install --no-cache-dir -r requirements.txt
-
-# Install apt libs
-RUN apt-get update && \
-    apt-get install -y curl git wget && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists*
 
 COPY . /repopilot
 WORKDIR /repopilot

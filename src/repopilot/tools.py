@@ -247,7 +247,9 @@ class SemanticCodeSearchTool(Tool):
             func=semantic_code_search,
             description="useful for when the query is a sentance, semantic and vague. If exact search such as code search failed after multiple tries, try this",
         )
-        
+
+tool_classes = [CodeSearchTool, SemanticCodeSearchTool, GoToDefinitionTool, FindAllReferencesTool, GetAllSymbolsTool, GetTreeStructureTool, OpenFileTool]
+
 if __name__ == "__main__":
     gst = GoToDefinitionTool(path="/datadrive05/huypn16/focalcoder/data/repos/repo__TempleRAIL__drl_vo_nav__commit__", language="python")
     output = gst._run(word="TrackPed", line=20, relative_path="drl_vo/src/track_ped_pub.py")

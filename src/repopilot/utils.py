@@ -38,6 +38,15 @@ def clone_repo(repo, commit, root_dir, token, logger):
     return root_dir + "/" + repo_dir.name
 
 def identify_extension(language):
+    """
+    Identify the file extension based on the given programming language.
+
+    Args:
+        language (str): The programming language.
+
+    Returns:
+        str: The file extension corresponding to the programming language.
+    """
     if language == "python":
         return ".py"
     elif language == "java":
@@ -48,6 +57,15 @@ def identify_extension(language):
         return ".rs"
 
 def matching_kind_symbol(symbol):
+    """
+    Returns the string representation of the symbol kind.
+
+    Args:
+        symbol (dict): The symbol object.
+
+    Returns:
+        str: The string representation of the symbol kind.
+    """
     kind = symbol["kind"]
     if kind == SymbolKind.File:
         return "File"
@@ -101,7 +119,20 @@ def matching_kind_symbol(symbol):
         return "Unknown"
     
 def word_to_position(source: str, word: str, line: None|int|list = None, offset: int = 0):
-    """find position of a word in a source"""
+    """
+    Find the position of a word in a source.
+
+    Args:
+        source (str): The source string to search in.
+        word (str): The word to find the position of.
+        line (None|int|list, optional): The line number(s) to search in. Defaults to None.
+        offset (int, optional): The offset to adjust the line number(s) by. Defaults to 0.
+
+    Returns:
+        dict: A dictionary containing the line and column position of the word.
+              The line position is 0-based, while the column position is 1-based.
+              Returns None if the word is not found.
+    """
     if isinstance(line, list):
         line = line[0]
     lines = source.splitlines()
@@ -116,6 +147,16 @@ def word_to_position(source: str, word: str, line: None|int|list = None, offset:
     return None
 
 def add_num_line(source: str, start_line: int):
+    """
+    Add line numbers to each line of the source code.
+
+    Args:
+        source (str): The source code as a string.
+        start_line (int): The starting line number.
+
+    Returns:
+        str: The source code with line numbers added.
+    """
     lines = source.split("\n")
     results = []
     for idx, _line in enumerate(lines):
@@ -124,6 +165,16 @@ def add_num_line(source: str, start_line: int):
     return "\n".join(results)
 
 def matching_symbols(symbols, object):
+    """
+    Find a matching symbol based on line range.
+
+    Args:
+        symbols (list): List of symbols to search through.
+        object (dict): The object to match against.
+
+    Returns:
+        dict or None: The matching symbol if found, None otherwise.
+    """
     for symbol in symbols:
         ## approximat matching only is strong enough
         if "location" not in symbol:
@@ -136,7 +187,27 @@ def matching_symbols(symbols, object):
     return None
 
 def get_text(doc, range):
+    """
+    Retrieves the text within the specified range in the given document.
+
+    Args:
+        doc (str): The document to extract text from.
+        range (dict): The range object specifying the start and end positions.
+
+    Returns:
+        str: The extracted text within the specified range.
+    """
     return doc[offset_at_position(doc, range["start"]):offset_at_position(doc, range["end"])]
 
 def offset_at_position(doc, position):
+    """
+    Calculates the offset at a given position in a document.
+
+    Args:
+        doc (str): The document content.
+        position (dict): The position object containing the line and character.
+
+    Returns:
+        int: The offset at the given position.
+    """
     return position["character"] + len("".join(doc.splitlines(True)[: position["line"]]))
