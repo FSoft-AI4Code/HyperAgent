@@ -5,6 +5,7 @@ from repopilot.utils import matching_kind_symbol, matching_symbols, add_num_line
 from repopilot.multilspy.lsp_protocol_handler.lsp_types import SymbolKind
 from repopilot.multilspy.multilspy_exceptions import MultilspyException
 from repopilot.multilspy import lsp_protocol_handler
+from concurrent.futures import ThreadPoolExecutor
 import logging
 
 logging.getLogger("multilspy").setLevel(logging.WARNING)
@@ -48,16 +49,11 @@ class LSPToolKit:
             
         return output
     
-    def get_symbols(self, relative_path, verbose_level=1, verbose=False, preview_size=10):
+    def get_symbols(self, relative_path, preview_size=10):
         """Get all symbols in a file
 
         Args:
             relative_path (_type_): relavtive path to the file
-            verbose (bool, optional): verbose result as string for LLM interaction. Defaults to False.
-            verbose_level (int, optional): efficient verbose settings to save number of tokens. There're 3 levels of details.
-                1 - only functions and classes - default
-                2 - functions, classes, and methods of classes 
-                3 - functions, classes, methods of classes, and variables
             preview_size (int, optional): only preview preview_size number of lines of definitions to save number of tokens. Defaults to 1.
 
         Returns:
@@ -69,69 +65,37 @@ class LSPToolKit:
             except MultilspyException:
                 return f"The tool cannot open the file, the file path {relative_path} is not correct."
         source = self.open_file(relative_path)
-        if verbose:
-            verbose_output = []
+        verbose_output = []
+        with self.server.start_server():
             for item in symbols:
-                if verbose_level == 1:
-                    definition = get_text(source, item["range"])
-                    major_symbols = [SymbolKind.Class, SymbolKind.Function, SymbolKind.Module, SymbolKind.Struct]
-                    major_symbols = [int(i) for i in major_symbols]
-                    if (item["kind"] in major_symbols):             
-                        line_has_name = 0
-                        for k in range(len(definition.split("\n"))):
-                            if item["name"] in definition.split("\n")[k]:
-                                line_has_name = k
-                        try:
-                            cha = definition.split("\n")[line_has_name].index(item["name"])
-                            
-                            with self.server.start_server():
-                                hover = self.server.request_hover(relative_path, item["range"]["start"]["line"], cha)
-                                if hover != None:
-                                    documentation = hover["contents"]
-                                else:
-                                    documentation = "None"
-                                    
-                            if "value" not in documentation:
-                                documentation = "None"
-                                preview = "\n".join(definition.split("\n")[:preview_size+4])
-                            else:
-                                preview = "\n".join(definition.split("\n")[:preview_size])
-                            preview = add_num_line(preview, item["range"]["start"]["line"])
-                            item_out = "Name: " + str(item["name"]) + "\n" + "Type: " + str(matching_kind_symbol(item)) + "\n" + "Preview: " + str(preview) + "\n" + "Documentation: " + str(documentation) + "\n"
-                            verbose_output.append(item_out)
-                        except ValueError:
-                            continue
-                        
-                elif verbose_level == 2:
-                    definition = get_text(source, item["range"])
-                    minor_symbols = [SymbolKind.Class, SymbolKind.Function, SymbolKind.Module, SymbolKind.Struct, SymbolKind.Method]
-                    minor_symbols = [int(i) for i in minor_symbols]
-                    if (item["kind"] in minor_symbols):          
-                        line_has_name = 0
-                        for k in range(len(definition.split("\n"))):
-                            if item["name"] in definition.split("\n")[k]:
-                                line_has_name = k 
-                        try:
-                            cha = definition.split("\n")[line_has_name].index(item["name"])
-                            
-                            with self.server.start_server():
-                                hover = self.server.request_hover(relative_path, item["range"]["start"]["line"], cha)
-                                if hover != None:
-                                    documentation = hover["contents"]
-                                else:
-                                    documentation = "None"
-                            if "value" not in documentation:
-                                documentation = "None"
-                                preview = "\n".join(definition.split("\n")[:preview_size+4])
-                            else:
-                                preview = "\n".join(definition.split("\n")[:preview_size])
-                            preview = add_num_line(preview, item["range"]["start"]["line"])
-                            item_out = "Name: " + str(item["name"]) + "\n" + "Type: " + str(matching_kind_symbol(item)) + "\n" + "Preview: " + str(preview) + "\n" + "Documentation: " + str(documentation) + "\n"
-                            verbose_output.append(item_out)
-                        except ValueError:
-                            continue
-                        
-            symbols = verbose_output
+                definition = get_text(source, item["range"])
+                major_symbols = [SymbolKind.Class, SymbolKind.Function, SymbolKind.Struct]
+                major_symbols = [int(i) for i in major_symbols]
+                if (item["kind"] in major_symbols):             
+                    line_has_name = 0
+                    for k in range(len(definition.split("\n"))):
+                        if item["name"] in definition.split("\n")[k]:
+                            line_has_name = k
+                    try:
+                        cha = definition.split("\n")[line_has_name].index(item["name"])
+                        hover = self.server.request_hover(relative_path, item["range"]["start"]["line"], cha)
+                        if hover != None:
+                            documentation = hover["contents"]
+                        else:
+                            documentation = "None"
+                                
+                        if "value" not in documentation:
+                            documentation = "None"
+                            preview = "\n".join(definition.split("\n")[:preview_size+4])
+                        else:
+                            preview = "\n".join(definition.split("\n")[:preview_size])
+                        preview = add_num_line(preview, item["range"]["start"]["line"])
+                        item_out = "Name: " + str(item["name"]) + "\n" + "Type: " + str(matching_kind_symbol(item)) + "\n" + "Preview: " + str(preview) + "\n" + "Documentation: " + str(documentation) + "\n"
+                        verbose_output.append(item_out)
+                    except ValueError:
+                        pass
+                          
+        symbols = [sym for sym in verbose_output if sym is not None]
         return symbols
     
     def get_references(self, word, relative_path, line=None, offset=0, verbose=False, context_size=10):

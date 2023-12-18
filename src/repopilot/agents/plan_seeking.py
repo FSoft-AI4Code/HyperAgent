@@ -36,8 +36,8 @@ TASK_PREFIX = """Human request: {objective}
 
 ANALYZER_HUMAN_MESSAGE_TEMPLATE = """Current navigating objective: {objective}
 
-Current notes from information agent: {current_notes}
-
+Current notes from information agent: ##{current_notes}
+## Agent scratchpad:o
 {agent_scratchpad}
 """
 
@@ -117,6 +117,7 @@ def load_agent_analyzer(
         verbose=verbose, 
         return_intermediate_steps=False
     )
+    # agent_analyzer.handle_parsing_errors = True
     return ChainExecutor(chain=agent_analyzer)
 
 def load_agent_executor(

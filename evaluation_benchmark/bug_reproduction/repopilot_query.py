@@ -32,14 +32,14 @@ def query_repopilot_for_gentest(pilot, br):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('-p', '--project', default='Closure')
-    parser.add_argument('-b', '--bug_id', type=int, default=1)
+    parser.add_argument('-p', '--project', default='Cli')
+    parser.add_argument('-b', '--bug_id', type=int, default=4)
     parser.add_argument('-o', '--out', default='output.txt')
     args = parser.parse_args()
     
     api_key = os.environ.get("OPENAI_API_KEY")
     commit = ""
     repo = f"Defects4J/repos/{args.project}_{args.bug_id}"
-    pilot = RepoPilot(repo, commit=commit, openai_api_key=api_key, local=True, language="java", clone_dir="data/repos")
+    pilot = RepoPilot(repo, commit=commit, openai_api_key=api_key, local=True, language="java", clone_dir="data/repos", save_trajectories_path="/datadrive05/huypn16/focalcoder/data/trajectories/java/bug_reproduction/Cli_4")
     
     output = query_repopilot_for_gentest(pilot, load_bug_report(args.project, args.bug_id))

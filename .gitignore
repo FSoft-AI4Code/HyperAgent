@@ -10,3 +10,7 @@ evaluation_benchmark/bug_reproduction/defects4j/*
 evaluation_benchmark/bug_reproduction/Defects4J/gen_tests/*
 evaluation_benchmark/bug_reproduction/Defects4J/repos/*
 .zoekt_tmp/
+dist/*
+wandb/
+model/
+data/repos/*

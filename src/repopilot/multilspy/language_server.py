@@ -577,7 +577,8 @@ class LanguageServer:
         
         ret: List[multilspy_types.UnifiedSymbolInformation] = []
         l_tree = None
-        assert isinstance(response, list)
+        if not isinstance(response, list):
+            return [], None
         for item in response:
             assert isinstance(item, dict)
             assert LSPConstants.NAME in item

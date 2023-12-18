@@ -10,7 +10,6 @@ from langchain_experimental.plan_and_execute import load_chat_planner
 from repopilot.agents.plan_seeking import load_agent_executor, load_agent_analyzer, PlanSeeking
 from repopilot.prompts.general_qa import example_qa
 from langchain.llms import VLLM
-from langchain_google_genai import ChatGoogleGenerativeAI
 import re
 
 logging.basicConfig(
@@ -20,7 +19,36 @@ logging.getLogger('pylsp').setLevel(logging.WARNING)
 
 logger = logging.getLogger(__name__)
 
-def Setup(repo, commit, openai_api_key, local=True, language="python", clone_dir="data/repos", examples=example_qa, save_trajectories_path=None):
+from langchain.llms.base import LLM
+from typing import Optional, List, Mapping, Any
+
+class CustomLLM(LLM):
+
+    import langchain
+    llm: langchain.chat_models.ChatOpenAI
+
+    @property
+    def _llm_type(self) -> str:
+        return "custom"
+
+    def _call(self, prompt: str, stop: Optional[List[str]] = None) -> str:
+
+        reply = self.llm(prompt)
+
+        f = open('calls.log', 'a')
+
+        f.write('<request>\n')
+        f.write(prompt)
+        f.write('</request>\n')
+
+        f.write('<response>\n')
+        f.write(reply)
+        f.write('</response>\n')
+        f.close()
+
+        return reply
+
+def Setup(repo, commit, openai_api_key, local=True, language="python", clone_dir="data/repos", examples=example_qa, save_trajectories_path=None, headers=None):
     gh_token = os.environ.get("GITHUB_TOKEN", None)
     repo_dir = repo if local else clone_repo(repo, commit, clone_dir, gh_token, logger) 
     ## Repo dir
@@ -65,16 +93,16 @@ def Setup(repo, commit, openai_api_key, local=True, language="python", clone_dir
     prefix_analyzer = "You are an expert in responding the user's question with useful information and necessary code snippet. You will be provided with gathered information from the repository and the query. You can use the information to respond to the query. If you need more information, you can use the search tool to gather more detailed information about the object that is mentioned in the notes. Respond to the human as helpfully and detailed as much as possible. Please consider detail information from the current notes. You have access to following semantic search tool:"
     
     ## Set up the LLM 
-    llm = ChatOpenAI(temperature=0, model="gpt-4-1106-preview", openai_api_key=openai_api_key)
-    # llm = VLLM(model="deepseek-ai/deepseek-llm-67b-chat",
-    #        trust_remote_code=True,  # mandatory for hf models
-    #        max_new_tokens=1500,
-    #        top_k=15,
-    #        top_p=0.95,
-    #        temperature=0.2,
-    #        tensor_parallel_size=2 # for distributed inference
-    # )
-    # llm = ChatGoogleGenerativeAI(model="gemini-pro")
+    # llm = ChatOpenAI(temperature=0, model="gpt-4-1106-preview", openai_api_key=openai_api_key)
+    llm = VLLM(model="model/mistral_repopilot/full_model",
+           trust_remote_code=True,  # mandatory for hf models
+           max_new_tokens=1500,
+           top_k=9,
+           top_p=0.95,
+           temperature=0.1,
+           tensor_parallel_size=2 # for distributed inference
+    )
+    # llm = CustomLLM(llm=llm)
 
     ## Set up the planner agent 
     llm_plan = ChatOpenAI(temperature=0, model="gpt-4", openai_api_key=openai_api_key)
@@ -93,14 +121,14 @@ def Setup(repo, commit, openai_api_key, local=True, language="python", clone_dir
     return system
 
 class RepoPilot:
-    def __init__(self, local_path, openai_api_key=None, local=True, commit=None, language="python", clone_dir="data/repos", examples=example_qa, save_trajectories_path=None):
+    def __init__(self, local_path, openai_api_key=None, local=True, commit=None, language="python", clone_dir="data/repos", examples=example_qa, save_trajectories_path=None, headers=None):
         self.local_path = local_path
         self.openai_api_key = openai_api_key
         self.language = language
         openai_api_key = os.environ.get("OPENAI_API_KEY", None)
         if openai_api_key is None:
             raise ValueError("Please provide an OpenAI API key.")
-        self.system = Setup(self.local_path, commit, openai_api_key, local=local, language=language, clone_dir=clone_dir, examples=examples, save_trajectories_path=save_trajectories_path)
+        self.system = Setup(self.local_path, commit, openai_api_key, local=local, language=language, clone_dir=clone_dir, examples=examples, save_trajectories_path=save_trajectories_path, headers=headers)
     
     def query_codebase(self, query):
         result = self.system.run(query)

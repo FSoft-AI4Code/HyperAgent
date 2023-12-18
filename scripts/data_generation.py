@@ -4,6 +4,7 @@ import os
 import logging
 from repopilot import RepoPilot
 from langchain.callbacks.manager import get_openai_callback
+from langchain.utilities.portkey import Portkey
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
@@ -21,16 +22,15 @@ if __name__ == "__main__":
     logger.info("Start!")
     api_key = os.environ.get("OPENAI_API_KEY")
     # repo = "aura-nw/cw-ics721"
-    # repo = "huggingface/tokenizers"
-    repo = "TempleRAIL/drl_vo_nav"
-    commit = ""
+    repo = "huggingface/peft"
+    # repo = "TempleRAIL/drl_vo_nav"
+    commit = "ee6f6dcee70b6e3626518816e8f0116c7083fe6f"
     language = "python"
     # question = input("Enter your question about your repository: ")
     # question = "what is the main flow of the project?"
-    # question = "what is UnigramTrainer's role in the tokenizers repo?"
-    question = "The current input is the velocity and position of the pedestrians. I want leveraging past trajectory data to predict the future trajectory of the pedestrians. Then this is used as the input of the model. How can I modify the code?"
+    question = """How to add new memory efficient fine-tuning technique to the project?"""
     #TODO: add a check for a local repo execution
-    pilot = RepoPilot(repo, commit=commit, openai_api_key=api_key, local=False, language=language, clone_dir="data/repos", save_trajectories_path="data/trajectories/python/feature_rq/drl_vo_nav")
+    pilot = RepoPilot(repo, commit=commit, openai_api_key=api_key, local=False, language=language, clone_dir="data/repos", save_trajectories_path=f"data/trajectories/{language}/feature_rq/{repo}")
     logger.info("Setup done!")
     
     with get_openai_callback() as cb:

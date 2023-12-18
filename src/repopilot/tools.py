@@ -137,9 +137,7 @@ class FindAllReferencesTool(BaseTool):
 
 class GetAllSymbolsArgs(BaseModel):
     path_to_file: str = Field(..., description="The path of the python file we want extract all symbols from.")
-    # verbose_level: int = Field(..., description="""verbose_level: efficient verbose settings to save number of tokens. There're 2 levels of details.
-    #             1 - only functions and classes - default
-    #             2 - functions, classes, and methods of classes """)
+    preview_size: int = Field(..., description="The number of lines of the definition to preview, useful when the definition is too long and we want to save number of tokens, default by 5")
 
 class GetAllSymbolsTool(BaseTool):
     name = "get_all_symbols"
@@ -155,9 +153,9 @@ class GetAllSymbolsTool(BaseTool):
         self.path = path
         self.lsptoolkit = LSPToolKit(path, language)
     
-    def _run(self, path_to_file: str, verbose_level: int = 1):
+    def _run(self, path_to_file: str, preview_size: int = 5):
         try:
-            return self.lsptoolkit.get_symbols(path_to_file, verbose_level, verbose=True)
+            return self.lsptoolkit.get_symbols(path_to_file, preview_size=preview_size)
         except IsADirectoryError:
             return "The relative path is a folder, please specify the file path instead. Consider using get_tree_structure to find the file name then use this tool one file path at a time"
         except FileNotFoundError:
@@ -220,8 +218,6 @@ class OpenFileTool(BaseTool):
         source = add_num_line(source, 0)
         return "The content of " + relative_file_path + " is: \n" + source
     
-    def _arun(self, relative_path: str):
-        return NotImplementedError("Open File Tool is not available for async run")
 
 class SemanticCodeSearchTool(Tool):
     def __init__(self, path, language="python"):
@@ -257,6 +253,6 @@ class SemanticCodeSearchTool(Tool):
         )
         
 if __name__ == "__main__":
-    gst = GetAllSymbolsTool(path="/datadrive05/huypn16/focalcoder/evaluation_benchmark/bug_reproduction/Defects4J/repos/Closure_71", language="java")
-    output = gst._run(path_to_file="src/com/google/debugging/sourcemap/Base64.java")
+    gst = GetAllSymbolsTool(path="/datadrive05/huypn16/focalcoder/data/repos/repo__vllm-project__vllm__commit__", language="python")
+    output = gst._run(path_to_file="vllm/core/__init__.py", verbose_level=1)
     print(output)
