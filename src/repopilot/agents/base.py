@@ -28,29 +28,6 @@ import os
 import json
 
 HUMAN_MESSAGE_TEMPLATE = "{input}\n\n{agent_scratchpad}"
-
-class ChainExecutor(BaseExecutor):
-    """Chain executor."""
-
-    chain: Chain
-    """The chain to use."""
-
-    def step(
-        self, inputs: dict, callbacks: Callbacks = None, **kwargs: Any
-    ) -> StepResponse:
-        """Take step."""
-        response = self.chain(inputs, callbacks=callbacks)
-        if "intermediate_steps" in response:
-            return StepResponse(response=response["output"]), response["intermediate_steps"]
-        else:
-            return StepResponse(response=response["output"])
-
-    async def astep(
-        self, inputs: dict, callbacks: Callbacks = None, **kwargs: Any
-    ) -> StepResponse:
-        """Take step."""
-        response = await self.chain.arun(**inputs, callbacks=callbacks)
-        return StepResponse(response=response)
     
 class StructuredChatAgent(Agent):
     """Structured Chat Agent."""
@@ -107,12 +84,11 @@ class StructuredChatAgent(Agent):
         input_prompt = self.llm_chain.prep_prompts(input_list=[full_inputs])
         full_output = self.llm_chain.predict(callbacks=callbacks, **full_inputs)
         if self.save_trajectories_path is not None:
-            self.save_trajectories(full_inputs, full_output, input_prompt)
+            self.save_trajectories(full_output, input_prompt)
         return self.output_parser.parse(full_output)
 
     def save_trajectories(
         self,
-        full_input: dict,
         full_output: dict,
         prompt: str = None,
     ):

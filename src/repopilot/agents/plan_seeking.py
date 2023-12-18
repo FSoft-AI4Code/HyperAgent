@@ -120,7 +120,7 @@ def load_agent_analyzer(
     # agent_analyzer.handle_parsing_errors = True
     return ChainExecutor(chain=agent_analyzer)
 
-def load_agent_executor(
+def load_agent_navigator(
     llm: BaseLanguageModel,
     tools: List[BaseTool],
     prefix: str = PREFIX,
@@ -171,7 +171,7 @@ class PlanSeeking(Chain):
 
     planner: BasePlanner
     """The planner to use."""
-    executor: BaseExecutor
+    navigator: BaseExecutor
     """The executor to use."""
     analyzer: BaseExecutor
     step_container: BaseStepContainer = Field(default_factory=ListStepContainer)
@@ -208,7 +208,7 @@ class PlanSeeking(Chain):
                 "objective": inputs[self.input_key],
             }
             new_inputs = {**_new_inputs, **inputs}          
-            response, intermediate_steps = self.executor.step(
+            response, intermediate_steps = self.navigator.step(
                 new_inputs,
                 callbacks=run_manager.get_child() if run_manager else None,
             )
@@ -262,7 +262,7 @@ class PlanSeeking(Chain):
                 "objective": inputs[self.input_key],
             }
             new_inputs = {**_new_inputs, **inputs}
-            response = await self.executor.astep(
+            response = await self.navigator.astep(
                 new_inputs,
                 callbacks=run_manager.get_child() if run_manager else None,
             )

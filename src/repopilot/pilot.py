@@ -7,48 +7,24 @@ from langchain.vectorstores import Chroma
 from repopilot.tools import GoToDefinitionTool, CodeSearchTool, SemanticCodeSearchTool, FindAllReferencesTool, GetAllSymbolsTool, GetTreeStructureTool, OpenFileTool
 from repopilot.utils import clone_repo
 from langchain_experimental.plan_and_execute import load_chat_planner
-from repopilot.agents.plan_seeking import load_agent_executor, load_agent_analyzer, PlanSeeking
+from repopilot.agents.plan_seeking import load_agent_navigator, load_agent_analyzer, PlanSeeking
 from repopilot.prompts.general_qa import example_qa
+from repopilot.prompts import analyzer as analyzer_prompt
+from repopilot.prompts import planner as planner_prompt
+from repopilot.prompts import navigator as navigator_prompt
 from langchain.llms import VLLM
 import re
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
-logging.getLogger('pylsp').setLevel(logging.WARNING)
 
 logger = logging.getLogger(__name__)
 
 from langchain.llms.base import LLM
 from typing import Optional, List, Mapping, Any
 
-class CustomLLM(LLM):
-
-    import langchain
-    llm: langchain.chat_models.ChatOpenAI
-
-    @property
-    def _llm_type(self) -> str:
-        return "custom"
-
-    def _call(self, prompt: str, stop: Optional[List[str]] = None) -> str:
-
-        reply = self.llm(prompt)
-
-        f = open('calls.log', 'a')
-
-        f.write('<request>\n')
-        f.write(prompt)
-        f.write('</request>\n')
-
-        f.write('<response>\n')
-        f.write(reply)
-        f.write('</response>\n')
-        f.close()
-
-        return reply
-
-def Setup(repo, commit, openai_api_key, local=True, language="python", clone_dir="data/repos", examples=example_qa, save_trajectories_path=None, headers=None):
+def Setup(repo, commit, openai_api_key, local=True, language="python", clone_dir="data/repos", examples=example_qa, save_trajectories_path=None, headers=None, local_agent=False):
     gh_token = os.environ.get("GITHUB_TOKEN", None)
     repo_dir = repo if local else clone_repo(repo, commit, clone_dir, gh_token, logger) 
     ## Repo dir
@@ -73,50 +49,33 @@ def Setup(repo, commit, openai_api_key, local=True, language="python", clone_dir
     
     ## Get the repo structure
     struct = subprocess.check_output(["tree", "-L", "2", "-d", repo_dir]).decode("utf-8")
-    suffix = "Begin! Reminder to ALWAYS respond with a valid json blob of a single action. Use tools if necessary. Respond directly if you have gathered enough information from the repository. Format is Action:```$JSON_BLOB```then Observation:."
-    prefix = "You are an expert in programming, you're so good at code navigation inside large repository. Try to combine different tools to seek related information to the query inside the project. Some good combinations of tools could be get_folder_structure -> find symbols of each file inside the directory. Semantic search -> exact code search -> go to definition and etc. If you know exactly the name of the symbol, you can use code_search tool or if you know the line and the name of the symbol, you can use go_to_definition tool. Try to avoid using open_file tool frequently (use the get all symbols instead). Respond to the human as helpfully and accurately as possible. Consider use other tools if the results returned is not cleared enough or failed for the query. You have access to the following tools:"
-    planner_prompt = f"""
-        Given following general information about the repository such as repository structure
-        {struct}
-        and given following tools:
-        "{formatted_tools}
-        Let's first understand the query and devise a plan to seek the useful information from the repository to answer the query.
-        Please output the plan starting with the header 'Plan:' and then followed by a numbered list of steps. "
-        <Important!>Please make the plan the minimum number of steps required (no more than 4 steps), nomarlly 2-3 steps are enough. The step should hint which set of tools to be used to accurately complete the task. If the information in the query is uncleared, consider use get tree structure to get overview folder structure then exlpore.
-        At the end of your plan, say '<END_OF_PLAN>'. If the question only cares about some specific, simple information, you can generate 2 steps plan, the first step is to find the information using semantic code search 
-        and the second step is to respond to the question."
-        "Example:\n"
-        {examples}
-    """
-    
-    suffix_analyzer = "Begin! Reminder to ALWAYS respond with a valid json blob of a single action. Use tools if necessary. Respond directly if you have gathered enough information from the repository. Format is Action:```$JSON_BLOB```then Observation:."
-    prefix_analyzer = "You are an expert in responding the user's question with useful information and necessary code snippet. You will be provided with gathered information from the repository and the query. You can use the information to respond to the query. If you need more information, you can use the search tool to gather more detailed information about the object that is mentioned in the notes. Respond to the human as helpfully and detailed as much as possible. Please consider detail information from the current notes. You have access to following semantic search tool:"
-    
-    ## Set up the LLM 
-    # llm = ChatOpenAI(temperature=0, model="gpt-4-1106-preview", openai_api_key=openai_api_key)
-    llm = VLLM(model="model/mistral_repopilot/full_model",
-           trust_remote_code=True,  # mandatory for hf models
-           max_new_tokens=1500,
-           top_k=9,
-           top_p=0.95,
-           temperature=0.1,
-           tensor_parallel_size=2 # for distributed inference
-    )
-    # llm = CustomLLM(llm=llm)
+
+    ## Set up the LLM
+    if local_agent:
+        llm = VLLM(model="model/mistral_repopilot/full_model",
+            trust_remote_code=True,  # mandatory for hf models
+            max_new_tokens=1500,
+            top_k=9,
+            top_p=0.95,
+            temperature=0.1,
+            tensor_parallel_size=2 # for distributed inference
+        )
+    else:
+        llm = ChatOpenAI(temperature=0, model="gpt-4-1106-preview", openai_api_key=openai_api_key)
 
     ## Set up the planner agent 
     llm_plan = ChatOpenAI(temperature=0, model="gpt-4", openai_api_key=openai_api_key)
     
     llm_analyzer = ChatOpenAI(temperature=0, model="gpt-4-1106-preview")
-    planner = load_chat_planner(llm_plan, system_prompt=planner_prompt)
+    planner = load_chat_planner(llm_plan, system_prompt=planner_prompt.PLANNER_TEMPLATE.format(struct=struct, formatted_tools=formatted_tools, examples=examples))
     
-    ## 
+    ## Set up the vectorstore for analyzer's memory
     vectorstore = Chroma("langchain_store", OpenAIEmbeddings())
     
     ## Set up the executor and planner agent (the system)
-    executor = load_agent_executor(llm, tools, prefix, suffix, verbose=True, include_task_in_prompt=True, save_trajectories_path=save_trajectories_path)
-    analyzer = load_agent_analyzer(llm_analyzer, prefix_analyzer, suffix_analyzer, vectorstore, verbose=True)
-    system = PlanSeeking(planner=planner, executor=executor, analyzer=analyzer, vectorstore=vectorstore, verbose=True)
+    navigator = load_agent_navigator(llm, tools, navigator_prompt.PREFIX, navigator_prompt.SUFFIX, verbose=True, include_task_in_prompt=True, save_trajectories_path=save_trajectories_path)
+    analyzer = load_agent_analyzer(llm_analyzer, analyzer_prompt.PREFIX, analyzer_prompt.SUFFIX, vectorstore, verbose=True)
+    system = PlanSeeking(planner=planner, navigator=navigator, analyzer=analyzer, vectorstore=vectorstore, verbose=True)
     
     return system
 

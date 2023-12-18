@@ -14,18 +14,13 @@ logging.getLogger("multilspy").setLevel(logging.WARNING)
 
 logger = logging.getLogger(__name__)
 
-
 if __name__ == "__main__":
     logger.info("Start!")
     api_key = os.environ.get("OPENAI_API_KEY")
-    # repo = "aura-nw/cw-ics721"
-    # repo = "huggingface/tokenizers"
     repo = "TempleRAIL/drl_vo_nav"
     commit = ""
     language = "python"
-    # question = input("Enter your question about your repository: ")
-    # question = "what is the main flow of the project?"
-    # question = "what is UnigramTrainer's role in the tokenizers repo?"
+    question = input("Enter your question about your repository: ")
     question = "The current input is the velocity and position of the pedestrians. I want leveraging past trajectory data to predict the future trajectory of the pedestrians. Then this is used as the input of the model. How can I modify the code?"
     #TODO: add a check for a local repo execution
     pilot = RepoPilot(repo, commit=commit, openai_api_key=api_key, local=False, language=language, clone_dir="data/repos")
