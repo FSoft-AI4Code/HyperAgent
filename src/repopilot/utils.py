@@ -100,8 +100,10 @@ def matching_kind_symbol(symbol):
     else:
         return "Unknown"
     
-def word_to_position(source, word, line=None, offset=0):
+def word_to_position(source: str, word: str, line: None|int|list = None, offset: int = 0):
     """find position of a word in a source"""
+    if isinstance(line, list):
+        line = line[0]
     lines = source.splitlines()
     try:
         for i, _line in enumerate(lines):
@@ -113,7 +115,7 @@ def word_to_position(source, word, line=None, offset=0):
                 return {"line": i, "column": lines[i].index(word)+1}
     return None
 
-def add_num_line(source, start_line):
+def add_num_line(source: str, start_line: int):
     lines = source.split("\n")
     results = []
     for idx, _line in enumerate(lines):

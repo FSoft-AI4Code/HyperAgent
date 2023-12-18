@@ -115,9 +115,6 @@ class FindAllReferencesTool(BaseTool):
             return self.rerank(results, query)
         else:
             return results[:5]
-        
-    def _arun(self, word: str, line: int, relative_path: str):
-        return NotImplementedError("Find All References Tool is not available for async run")
     
     def rerank(self, results, query):
         reranked_results = []
@@ -128,8 +125,7 @@ class FindAllReferencesTool(BaseTool):
         results = sorted(reranked_results, key=lambda x: x["score"], reverse=True)
         return [item["content"] for item in results[:5]]
     
-    def similarity(self, query, implementation):
-        #TODO Create Embedding Response
+    def similarity(self, query: str, implementation):
         embed_query = np.array(self.openai_engine.embeddings.create(input=query, model="text-embedding-ada-002").data[0].embedding)
         embed_implementation = np.array(self.openai_engine.embeddings.create(input=implementation, model="text-embedding-ada-002").data[0].embedding)
         score = np.dot(embed_query, embed_implementation) / (np.linalg.norm(embed_query) * np.linalg.norm(embed_implementation))
@@ -253,6 +249,6 @@ class SemanticCodeSearchTool(Tool):
         )
         
 if __name__ == "__main__":
-    gst = GetAllSymbolsTool(path="/datadrive05/huypn16/focalcoder/data/repos/repo__vllm-project__vllm__commit__", language="python")
-    output = gst._run(path_to_file="vllm/core/__init__.py", verbose_level=1)
+    gst = GoToDefinitionTool(path="/datadrive05/huypn16/focalcoder/data/repos/repo__TempleRAIL__drl_vo_nav__commit__", language="python")
+    output = gst._run(word="TrackPed", line=20, relative_path="drl_vo/src/track_ped_pub.py")
     print(output)

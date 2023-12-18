@@ -38,7 +38,7 @@ class LSPToolKit:
         else:
             return "The tool cannot find the word in the file"
         if verbose and len(output) > 0:
-            symbols = self.get_symbols(output[0]["relativePath"])
+            symbols = self.get_symbols(output[0]["relativePath"], verbose=False)
             symbol = matching_symbols(symbols, output[0])
             symbol_type = matching_kind_symbol(symbol)
             if "location" not in symbol:
@@ -49,7 +49,7 @@ class LSPToolKit:
             
         return output
     
-    def get_symbols(self, relative_path, preview_size=10):
+    def get_symbols(self, relative_path, preview_size=10, verbose=True):
         """Get all symbols in a file
 
         Args:
@@ -64,6 +64,8 @@ class LSPToolKit:
                 symbols = self.server.request_document_symbols(relative_path)[0]
             except MultilspyException:
                 return f"The tool cannot open the file, the file path {relative_path} is not correct."
+        if not verbose:
+            return symbols
         source = self.open_file(relative_path)
         verbose_output = []
         with self.server.start_server():
