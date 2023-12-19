@@ -41,6 +41,6 @@ This Python script automates the process of analyzing and extracting dependencie
 1. Place the `swe-bench-dev.json` file in the same directory as the script. This file should contain the repositories to be analyzed:
 2. Run this script
 ```bash
-python dependency_analysis_tool.py
+extract_feature_components_from_useage.py
 ```
 3. The script outputs the dependencies in a structured JSON format (file_dependencies.json).
