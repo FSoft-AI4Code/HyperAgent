@@ -44,13 +44,15 @@ RepoPilot uses Zoekt for code search. Please install Zoekt before installing Rep
 go get github.com/sourcegraph/zoekt/
 
 # Install Zoekt Index
-go get github.com/sourcegraph/zoekt/cmd/zoekt-index
 go install github.com/sourcegraph/zoekt/cmd/zoekt-index
 # Install Zoekt Web Server
-go get github.com/sourcegraph/zoekt/cmd/zoekt-webserver
 go install github.com/sourcegraph/zoekt/cmd/zoekt-webserver
 ```
-We also need to install universal-ctags for semantic code search. Please follow the instructions [here](https://github.com/sourcegraph/sourcegraph/blob/main/doc/dev/how-to/zoekt_local_dev.md#install-ctags). Remember to set the environment variable of CTAGS `CTAGS_COMMAND=universal-ctags`.
+We also need to install universal-ctags for semantic code search. Please follow the instructions [here](https://github.com/sourcegraph/sourcegraph/blob/main/doc/dev/how-to/zoekt_local_dev.md#install-ctags). Remember to set the environment variable of CTAGS `CTAGS_COMMAND=universal-ctags`. Finally, we can install RepoPilot.
+
+```bash
+pip3 install -e .
+```
 
 ## Key Features
 
@@ -139,6 +141,23 @@ public class CommandLineTest {
 }
 ```
 
+## CLI Usage
+
+```bash
+usage: repopilot [--help] [command: setup, query]
+```
+
+### Setup
+
+```bash
+usage: repopilot setup [--help] [--local / --remote] [-c=commit_hash] [--repo_path=path_to_local_repo/remote_host:path_to_remote_repo] [--local_agent=True/False: use gpt-4 or mixtral] [--lang]
+```
+
+### Query
+
+```bash
+usage: repopilot query [--help] [--query=query] [server_id]
+```
 
 ## Architecture
 ![RepoPilot Architecture](assets/repopilot.png)

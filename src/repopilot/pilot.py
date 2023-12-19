@@ -1,9 +1,12 @@
 import subprocess
 import os
 import logging
+import re
+from typing import Optional, List, Mapping, Any
 from langchain.chat_models import ChatOpenAI
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.vectorstores import Chroma
+from langchain.llms import VLLM
 from repopilot.tools import tool_classes
 from repopilot.utils import clone_repo
 from langchain_experimental.plan_and_execute import load_chat_planner
@@ -12,17 +15,12 @@ from repopilot.prompts.general_qa import example_qa
 from repopilot.prompts import analyzer as analyzer_prompt
 from repopilot.prompts import planner as planner_prompt
 from repopilot.prompts import navigator as navigator_prompt
-from langchain.llms import VLLM
-import re
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
 
 logger = logging.getLogger(__name__)
-
-from langchain.llms.base import LLM
-from typing import Optional, List, Mapping, Any
 
 def Setup(
     repo: str,
