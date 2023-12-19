@@ -147,7 +147,7 @@ class LSPToolKit:
         file_path: str,
         line_number: int = None,
         offset_value: int = 0,
-        is_verbose: bool = False,
+        verbose: bool = False,
         context_limit: int = 10
     ) -> str:
         """
@@ -159,7 +159,7 @@ class LSPToolKit:
             file_path (str): Path of the file in which to search the identifier.
             line_number (int, optional): Line number to start the search from. Defaults to None.
             offset_value (int, optional): The number of positions to ignore from the start of the line. Defaults to 0.
-            is_verbose (bool, optional): If set to True, detailed output will be returned. Defaults to False.
+            verbose (bool, optional): If set to True, detailed output will be returned. Defaults to False.
             context_limit (int, optional): Defines the number of lines to print before and after the matched line in verbose mode. Defaults to 10.
 
         Returns:
@@ -179,7 +179,7 @@ class LSPToolKit:
         with self.server.start_server():
             references_output = self.server.request_references(file_path, **cursor_position)
 
-        if is_verbose:
+        if verbose:
             detailed_output = []
             for reference_item in references_output:
                 document_item = self.open_file(reference_item["relativePath"])

@@ -3,22 +3,26 @@ from typing import Dict
 from repopilot.agents.plan_seeking import PlanSeeking
 from fastapi.responses import JSONResponse
 import uvicorn
+from pydantic import BaseModel
+import threading
+
+class Query(BaseModel):
+    query: str
 
 app = FastAPI()
 
-global systems 
+def serve(system: PlanSeeking, port: int):
+    global SYSTEM
+    SYSTEM = system
+    # we need to run the server in a separate thread, otherwise it will block the main thread which contains the query function
+    thread = threading.Thread(target=uvicorn.run, args=(app,), kwargs={"host": "0.0.0.0", "port": port})
+    thread.start()
 
-@app.post("/{server_id}/query")
-async def query_system(server_id: str, body: Dict[str, str]):
-    system = systems.get(server_id)
-    if not system:
+@app.post("/query")
+async def query_system(query: Query):
+    if not SYSTEM:
         return JSONResponse(status_code=404, content={"message": "System not found"})
-    query = body.get('query')
-    if not query:
+    if not query.query:
         return JSONResponse(status_code=400, content={"message": "Query not provided"})
-    result = system.query_codebase(query)
+    result = SYSTEM.run(query.query)
     return {"result": result}
-
-def serve(system: PlanSeeking, server_id: str):
-    systems[server_id] = system
-    uvicorn.run(app, host="0.0.0.0", port=8000)
