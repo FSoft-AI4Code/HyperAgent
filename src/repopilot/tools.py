@@ -395,7 +395,7 @@ class SemanticCodeSearchTool(Tool):
         
         documents = loader.load()
         texts = splitter.split_documents(documents)
-        db = Chroma.from_documents(texts, OpenAIEmbeddings())
+        db = Chroma.from_documents(texts, OpenAIEmbeddings(disallowed_special=()))
         
         def semantic_code_search(query):
             retrieved_docs = db.similarity_search(query, k=3)

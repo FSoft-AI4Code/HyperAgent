@@ -80,7 +80,7 @@ def Setup(
         **planner_input
     )
     # Set up the vectorstore for analyzer's memory
-    vectorstore = Chroma("langchain_store", OpenAIEmbeddings())  
+    vectorstore = Chroma("langchain_store", OpenAIEmbeddings(disallowed_special=()))  
     # Set up the executor and planner agent (the system)
     navigator = load_agent_navigator(llm, 
         tools, 
