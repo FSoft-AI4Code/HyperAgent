@@ -20,7 +20,7 @@ if __name__ == "__main__":
     repo = "TempleRAIL/drl_vo_nav"
     commit = ""
     language = "python"
-    question = input("Enter your question about your repository: ")
+    # question = input("Enter your question about your repository: ")
     question = "The current input is the velocity and position of the pedestrians. I want leveraging past trajectory data to predict the future trajectory of the pedestrians. Then this is used as the input of the model. How can I modify the code?"
     #TODO: add a check for a local repo execution
     pilot = RepoPilot(repo, commit=commit, openai_api_key=api_key, local=False, language=language, clone_dir="data/repos")

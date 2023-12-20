@@ -9,8 +9,9 @@ from langchain.vectorstores import Chroma
 from langchain.llms import VLLM
 from repopilot.tools import tool_classes
 from repopilot.utils import clone_repo
-from langchain_experimental.plan_and_execute import load_chat_planner
+from repopilot.agents.planner import load_chat_planner
 from repopilot.agents.plan_seeking import load_agent_navigator, load_agent_analyzer, PlanSeeking
+from repopilot.agents.adaptive_plan_seeking import AdaptivePlanSeeking
 from repopilot.prompts.general_qa import example_qa
 from repopilot.prompts import analyzer as analyzer_prompt
 from repopilot.prompts import planner as planner_prompt
@@ -32,7 +33,7 @@ def Setup(
     examples: List[Mapping[str, Any]] = example_qa,
     save_trajectories_path: Optional[str] = None,
     headers: Optional[Mapping[str, Any]] = None,
-    local_agent: bool = True
+    local_agent: bool = False
 ) -> PlanSeeking:
     
     gh_token = os.environ.get("GITHUB_TOKEN", None)
@@ -66,15 +67,17 @@ def Setup(
         llm = ChatOpenAI(temperature=0, model="gpt-4-1106-preview", openai_api_key=openai_api_key)
 
     # Set up the planner agent 
+    planner_input = {
+        "examples": examples,
+        "formatted_tools": formatted_tools,
+        "struct": struct,
+    }
     llm_plan = ChatOpenAI(temperature=0, model="gpt-4", openai_api_key=openai_api_key)
     llm_analyzer = ChatOpenAI(temperature=0, model="gpt-4-1106-preview")
     planner = load_chat_planner(
         llm=llm_plan, 
-        system_prompt=planner_prompt.PLANNER_TEMPLATE.format(
-            struct=struct, 
-            formatted_tools=formatted_tools, 
-            examples=examples
-        )
+        type="adaptive",
+        **planner_input
     )
     # Set up the vectorstore for analyzer's memory
     vectorstore = Chroma("langchain_store", OpenAIEmbeddings())  
@@ -93,7 +96,9 @@ def Setup(
         vectorstore, 
         verbose=True
     )
-    system = PlanSeeking(planner=planner, 
+    # seeking_algorithm = PlanSeeking 
+    seeking_algorithm = AdaptivePlanSeeking
+    system = seeking_algorithm(planner=planner, 
         navigator=navigator, 
         analyzer=analyzer, 
         vectorstore=vectorstore, 
