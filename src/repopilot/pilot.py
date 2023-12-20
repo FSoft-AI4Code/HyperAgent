@@ -35,7 +35,6 @@ def Setup(
     headers: Optional[Mapping[str, Any]] = None,
     local_agent: bool = False
 ) -> PlanSeeking:
-    
     gh_token = os.environ.get("GITHUB_TOKEN", None)
     repo_dir = clone_repo(repo, commit, clone_dir, gh_token, logger) if not local else repo
     repo_dir = os.path.join(os.getcwd(), repo_dir)
@@ -48,25 +47,27 @@ def Setup(
         tools.append(tool_class(repo_dir, language=language))
 
     print("Tools initialized!")
-            
+
     tool_strings = [f"{tool.name}: {tool.description}, args: {re.sub('}', '}}}}', re.sub('{', '{{{{', str(tool.args)))}" for tool in tools]
     formatted_tools = "\n".join(tool_strings)
 
     struct = subprocess.check_output(["tree", "-L","2", "-d", repo_dir]).decode("utf-8")
+
     # Set up the LLM
     if local_agent:
-        llm = VLLM(model="model/codellama_repopilot/full_model",
-            trust_remote_code=True,  
+        llm = VLLM(
+            model="model/codellama_repopilot/full_model",
+            trust_remote_code=True,
             max_new_tokens=1500,
             top_k=9,
             top_p=0.95,
             temperature=0.1,
-            tensor_parallel_size=2 # for distributed inference
+            tensor_parallel_size=2  # for distributed inference
         )
     else:
         llm = ChatOpenAI(temperature=0, model="gpt-4-1106-preview", openai_api_key=openai_api_key)
 
-    # Set up the planner agent 
+    # Set up the planner agent
     planner_input = {
         "examples": examples,
         "formatted_tools": formatted_tools,
@@ -75,47 +76,75 @@ def Setup(
     llm_plan = ChatOpenAI(temperature=0, model="gpt-4", openai_api_key=openai_api_key)
     llm_analyzer = ChatOpenAI(temperature=0, model="gpt-4-1106-preview")
     planner = load_chat_planner(
-        llm=llm_plan, 
+        llm=llm_plan,
         type="adaptive",
         **planner_input
     )
+
     # Set up the vectorstore for analyzer's memory
-    vectorstore = Chroma("langchain_store", OpenAIEmbeddings(disallowed_special=()))  
+    vectorstore = Chroma("langchain_store", OpenAIEmbeddings(disallowed_special=()))
+
     # Set up the executor and planner agent (the system)
-    navigator = load_agent_navigator(llm, 
-        tools, 
-        navigator_prompt.PREFIX, 
-        navigator_prompt.SUFFIX, 
-        verbose=True, 
-        include_task_in_prompt=True, 
+    navigator = load_agent_navigator(
+        llm,
+        tools,
+        navigator_prompt.PREFIX,
+        navigator_prompt.SUFFIX,
+        verbose=True,
+        include_task_in_prompt=True,
         save_trajectories_path=save_trajectories_path
     )
-    analyzer = load_agent_analyzer(llm_analyzer, 
-        analyzer_prompt.PREFIX, 
-        analyzer_prompt.SUFFIX, 
-        vectorstore, 
+    analyzer = load_agent_analyzer(
+        llm_analyzer,
+        analyzer_prompt.PREFIX,
+        analyzer_prompt.SUFFIX,
+        vectorstore,
         verbose=True
     )
-    # seeking_algorithm = PlanSeeking 
+
+    # seeking_algorithm = PlanSeeking
     seeking_algorithm = AdaptivePlanSeeking
-    system = seeking_algorithm(planner=planner, 
-        navigator=navigator, 
-        analyzer=analyzer, 
-        vectorstore=vectorstore, 
+    system = seeking_algorithm(
+        planner=planner,
+        navigator=navigator,
+        analyzer=analyzer,
+        vectorstore=vectorstore,
         verbose=True
     )
     return system
 
+
 class RepoPilot:
-    def __init__(self, local_path, openai_api_key=None, local=True, commit=None, language="python", clone_dir="data/repos", examples=example_qa, save_trajectories_path=None, headers=None):
+    def __init__(
+        self,
+        local_path,
+        openai_api_key=None,
+        local=True,
+        commit=None,
+        language="python",
+        clone_dir="data/repos",
+        examples=example_qa,
+        save_trajectories_path=None,
+        headers=None
+    ):
         self.local_path = local_path
         self.openai_api_key = openai_api_key
         self.language = language
         openai_api_key = os.environ.get("OPENAI_API_KEY", None)
         if openai_api_key is None:
             raise ValueError("Please provide an OpenAI API key.")
-        self.system = Setup(self.local_path, commit, openai_api_key, local=local, language=language, clone_dir=clone_dir, examples=examples, save_trajectories_path=save_trajectories_path, headers=headers)
-    
+        self.system = Setup(
+            self.local_path,
+            commit,
+            openai_api_key,
+            local=local,
+            language=language,
+            clone_dir=clone_dir,
+            examples=examples,
+            save_trajectories_path=save_trajectories_path,
+            headers=headers
+        )
+
     def query_codebase(self, query):
         result = self.system.run(query)
         return result
