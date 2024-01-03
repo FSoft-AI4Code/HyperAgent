@@ -66,7 +66,7 @@ def setup(
     repo_dir = clone_repo(repo_path, commit, clone_dir, gh_token, logger) if not is_local else repo_path
     repo_dir = os.path.join(os.getcwd(), repo_dir)
     console.info("Setting up LLM...")
-    if local_agent:
+    if local_agent != "None":
         def run_cmd():
             with open(os.devnull, 'w') as devnull:
                 env = os.environ.copy()
@@ -122,7 +122,7 @@ def query(
     formatted_tools = "\n".join(tool_strings)
 
     struct = subprocess.check_output(["tree", "-L","2", "-d", necessary_infos["repo_dir"]]).decode("utf-8")
-    if necessary_infos["local_agent"]:
+    if necessary_infos["local_agent"] and necessary_infos["local_agent"] != "None":
         llm = VLLMOpenAI(
             openai_api_key="EMPTY",
             openai_api_base=f"http://localhost:{DEFAULT_VLLM_PORT}/v1",
@@ -183,6 +183,7 @@ def query(
             break
         console.gap()
         response = system(query)
+        response = response["output"].response
         console.info(response)
     
 app.add_typer(setup_app, name="setup")

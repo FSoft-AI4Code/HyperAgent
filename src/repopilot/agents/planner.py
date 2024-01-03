@@ -63,7 +63,7 @@ def load_chat_planner(
             formatted_tools=kwargs["formatted_tools"], 
             examples=kwargs["examples"]
         )
-        ChatPromptTemplate.from_messages(
+        prompt_template = ChatPromptTemplate.from_messages(
             [
                 SystemMessage(content=system_prompt),
                 HumanMessagePromptTemplate.from_template("{input}"),

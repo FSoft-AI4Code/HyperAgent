@@ -28,7 +28,7 @@ from .multilspy_utils import PathUtils, FileUtils, TextUtils
 from pathlib import PurePath
 from typing import AsyncIterator, Iterator, List, Dict, Union, Tuple
 from .type_helpers import ensure_all_methods_implemented
-
+import concurrent
 
 @dataclasses.dataclass
 class LSPFileBuffer:
@@ -801,7 +801,11 @@ class SyncLanguageServer:
 
         :return None
         """
-        result = asyncio.run_coroutine_threadsafe(
+        future = asyncio.run_coroutine_threadsafe(
             self.language_server.request_hover(relative_file_path, line, column), self.loop
-        ).result()
+        )
+        try:
+            result = future.result(timeout=1)
+        except concurrent.futures.TimeoutError:
+            return None
         return result
