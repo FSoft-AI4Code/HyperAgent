@@ -1,6 +1,7 @@
 import subprocess
 from pathlib import Path
 import requests
+from typing import Optional
 from contextlib import contextmanager
 import time
 import os
@@ -26,13 +27,13 @@ class ZoektServer:
 
     """
 
-    def __init__(self, language):
-        self.index_path = None
+    def __init__(self, language, repo_path:Optional[str]=None, index_path:Optional[str]=None):
+        self.index_path = index_path
         self.zoekt_server = None
-        self.repo_path = None
+        self.repo_path = repo_path
         self.language = language
     
-    def setup_index(self, repo_path, index_path=".zoekt_tmp"):
+    def setup_index(self, repo_path:str, root_index_path:str="/tmp/zoekt_tmp", index_path:Optional[str]=None):
         """
         Sets up the index for the repository.
 
@@ -41,7 +42,7 @@ class ZoektServer:
             index_path (str, optional): The path to the index directory. Defaults to ".zoekt_tmp".
 
         """
-        zoekt_index_repo_path = f"{index_path}/{repo_path.split('/')[-1]}"
+        zoekt_index_repo_path = f"{root_index_path}/{repo_path.split('/')[-1]}" if not index_path else index_path
         self.repo_path = repo_path
         self.index_path = zoekt_index_repo_path
         if not Path(zoekt_index_repo_path).is_dir():

@@ -22,5 +22,5 @@ setup(
                           "chromadb",
                           "tiktoken"], # add any additional packages that 
         # needs to be installed along with your package. Eg: 'caer'
-        entry_points={"console_scripts": ['repopilot = repopilot.cli:main',],},
+        entry_points={"console_scripts": ['repopilot = repopilot.cli.cli:app',],},
 )

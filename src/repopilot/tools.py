@@ -1,6 +1,6 @@
 import os
 import numpy as np
-from typing import Type, List
+from typing import Type, List, Optional
 from pydantic import BaseModel, Field
 from langchain.tools import BaseTool, Tool
 from openai import OpenAI
@@ -16,8 +16,10 @@ from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.vectorstores import Chroma
 from repopilot.utils import get_env_path
 import jedi
+import uuid
 from codetext.utils import build_language
 from repopilot.multilspy import lsp_protocol_handler
+from repopilot.constants import SEMANTIC_CODE_SEARCH_DB_PATH
 
 class CodeSearchArgs(BaseModel):
     names: list[str] = Field(..., description="The names of the identifiers to search")
@@ -57,15 +59,20 @@ class CodeSearchTool(BaseTool):
     language = "python"
     backend: jedi.Project | ZoektServer = None
     
-    def __init__(self, path: str, language: str):
+    def __init__(self, path: str, language: str, index_path: Optional[str] = None, build: bool = False):
         super().__init__()
         self.path = path
         self.language = language
         if language != "python":
             "Code Search Tool will switch to use Zoekt non-python search engine, this may not be accurate as Jedi"
-            self.backend = ZoektServer(language)
-            self.backend.setup_index(path)
-            build_language(language)
+            if build:
+                if not os.path.exists(index_path):
+                    os.makedirs(index_path)
+                self.backend = ZoektServer(language)
+                self.backend.setup_index(path, index_path=index_path)
+                build_language(language)
+            else:
+                self.backend = ZoektServer(language, repo_path=path, index_path=index_path)
 
         elif language == "python":
             "Code Search Tool will switch to use Jedi python search engine, this provides more fine-grained results such as implementation, docstring, etc."
@@ -122,7 +129,7 @@ class GoToDefinitionTool(BaseTool):
         self.path = path
         self.lsptoolkit = LSPToolKit(path, language)
     
-    def _run(self, word: str, line: int, relative_path: str):
+    def _run(self, word: str, line: int, relative_path: str, verbose: bool = True):
         """
         Runs the tool to find the definition of a symbol.
 
@@ -130,12 +137,13 @@ class GoToDefinitionTool(BaseTool):
             word (str): The symbol to find the definition of.
             line (int): The line number of the symbol in the code snippet.
             relative_path (str): The relative path of the code snippet.
-
+            verbose (bool, optional): Whether to display verbose output. Defaults to True.
+            
         Returns:
             str: The definition of the symbol.
 
         """
-        return self.lsptoolkit.get_definition(word, relative_path, line, verbose=True)
+        return self.lsptoolkit.get_definition(word, relative_path, line, verbose=verbose)
 
 
 class FindAllReferencesArgs(BaseModel):
@@ -375,27 +383,35 @@ class OpenFileTool(BaseTool):
     
 
 class SemanticCodeSearchTool(Tool):
-    def __init__(self, path, language="python"):
+    def __init__(self, path, language:str="python", db_path: Optional[str] = None, build: bool = False):
         """Semantic code search tool allows you to search for code using natural language. It's useful when the query is a sentance, semantic and vague. If exact search such as code search failed after multiple tries, try this
 
         Args:
             path (_type_): relative path to the repo
             language (str, optional): we have 4 options: python, rust, csharp, java. Defaults to "python".
         """
-        extension = identify_extension(language)
-        splitter = RecursiveCharacterTextSplitter.from_language(
-            language=language, chunk_size=800, chunk_overlap=200
-        )
-
-        loader = GenericLoader.from_filesystem(
-            path,
-            suffixes=[extension],
-            parser=LanguageParser(language=language, parser_threshold=500),
-        )
-        
-        documents = loader.load()
-        texts = splitter.split_documents(documents)
-        db = Chroma.from_documents(texts, OpenAIEmbeddings(disallowed_special=()))
+        if db_path == None:
+            # randomize db_path
+            db_path = os.path.join(SEMANTIC_CODE_SEARCH_DB_PATH, str(uuid.uuid4()))
+        if not os.path.exists(db_path):
+            os.makedirs(db_path)
+        if build:
+            extension = identify_extension(language)
+            splitter = RecursiveCharacterTextSplitter.from_language(
+                language=language, chunk_size=800, chunk_overlap=200
+            )
+            loader = GenericLoader.from_filesystem(
+                path,
+                suffixes=[extension],
+                parser=LanguageParser(language=language, parser_threshold=500),
+            )
+            
+            documents = loader.load()
+            texts = splitter.split_documents(documents)
+            db = Chroma.from_documents(texts, OpenAIEmbeddings(disallowed_special=()), persist_directory=db_path)
+            db.persist()
+        else:
+            db = Chroma(persist_directory=db_path, embedding_function=OpenAIEmbeddings(disallowed_special=()))
         
         def semantic_code_search(query):
             retrieved_docs = db.similarity_search(query, k=3)
@@ -410,6 +426,6 @@ class SemanticCodeSearchTool(Tool):
 tool_classes = [CodeSearchTool, SemanticCodeSearchTool, GoToDefinitionTool, FindAllReferencesTool, GetAllSymbolsTool, GetTreeStructureTool, OpenFileTool]
 
 if __name__ == "__main__":
-    gst = GoToDefinitionTool(path="/datadrive05/huypn16/focalcoder/data/repos/repo__TempleRAIL__drl_vo_nav__commit__", language="python")
-    output = gst._run(word="TrackPed", line=20, relative_path="drl_vo/src/track_ped_pub.py")
+    gst = GoToDefinitionTool(path="/datadrive05/huypn16/focalcoder", language="python")
+    output = gst._run(word="RecursiveCharacterTextSplitter.from_language", line=386, relative_path="src/repopilot/tools.py")
     print(output)

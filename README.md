@@ -147,18 +147,37 @@ public class CommandLineTest {
 usage: repopilot [--help] [command: setup, query]
 ```
 
-### Setup
-
-```bash
-usage: repopilot setup [--help] [--local / --remote] [-c=commit_hash] [--repo_path=path_to_local_repo/remote_host:path_to_remote_repo] [--local_agent=True/False: use gpt-4 or mixtral] [--lang]
-```
+### Setup 
+Usage: repopilot setup [OPTIONS] REPO_PATH [ARGS]...          
+```bash                                                        
+╭─ Arguments ──────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ *    repo_path      TEXT  The path to the repository to set up. [default: None] [required]                       │                                                                                           
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ *  --repository-name        TEXT  The name of the repository. [default: None] [required]                         │                                                                                           
+│ *  --language               TEXT  The programming language of the repository. [default: None] [required]         │                                                                                           
+│    --commit                 TEXT  The commit to set up.                                                          │                                                                                           
+│    --local-agent            TEXT  local agent path [default: model/mistral-7B]                                   │                                                                                           
+│    --devices                TEXT  devices to use for inference [default: 0]                                      │
+│    --clone-dir              TEXT  The directory to clone the repository to. [default: data/repos]                │
+│    --gh-token               TEXT  The GitHub token to use for cloning private repositories. [default: ""]        │
+│    --help                         Show this message and exit.                                                    │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+                                                                                                                                               
+``` 
 
 ### Query
-
-```bash
-usage: repopilot query [--help] [--query=query] [server_id]
+Usage: repopilot query [OPTIONS] REPO_PATH [ARGS]...          
+```bash                                            
+╭─ Arguments ─────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ *    repository_name      TEXT  The name of the repository to query. [default: None] [required]                 │                                                                                       
+╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ───────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ --planner-type                  TEXT  The type of planner to use. [default: adaptive]                           │                                                                                            
+│ --save-trajectories-path        TEXT  The path to save the trajectories to. [default: None]                     │                                                                                            
+│ --help                                Show this message and exit.                                               │                                                                                            
+╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
 ```
-
 ## Architecture
 ![RepoPilot Architecture](assets/repopilot.png)
 

@@ -408,6 +408,8 @@ class LanguageServer:
                 PurePath(os.path.relpath(new_item["absolutePath"], self.repository_root_path))
             )
             ret.append(multilspy_types.Location(**new_item))
+        elif response is None:
+            return []
         else:
             assert False, f"Unexpected response from Language Server: {response}"
 

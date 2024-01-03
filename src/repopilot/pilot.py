@@ -7,15 +7,15 @@ from langchain.chat_models import ChatOpenAI
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.vectorstores import Chroma
 from langchain.llms import VLLM
-from repopilot.tools import tool_classes
-from repopilot.utils import clone_repo
+from repopilot.tools import tool_classes, SemanticCodeSearchTool
+from repopilot.utils import clone_repo, check_local_or_remote
 from repopilot.agents.planner import load_chat_planner
 from repopilot.agents.plan_seeking import load_agent_navigator, load_agent_analyzer, PlanSeeking
 from repopilot.agents.adaptive_plan_seeking import AdaptivePlanSeeking
 from repopilot.prompts.general_qa import example_qa
 from repopilot.prompts import analyzer as analyzer_prompt
-from repopilot.prompts import planner as planner_prompt
 from repopilot.prompts import navigator as navigator_prompt
+from repopilot.constants import DEFAULT_PLANNER_TYPE, DEFAULT_LOCAL_AGENT
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
@@ -23,20 +23,21 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
+# TODO: Add a function to load the db from a path``
 def Setup(
     repo: str,
     commit: str,
     openai_api_key: str,
-    local: bool = True,
     language: str = "python",
     clone_dir: str = "data/repos",
     examples: List[Mapping[str, Any]] = example_qa,
     save_trajectories_path: Optional[str] = None,
-    headers: Optional[Mapping[str, Any]] = None,
-    local_agent: bool = False
+    db_path: Optional[str] = None,  
+    local_agent: bool = False,
+    planner_type: str = DEFAULT_PLANNER_TYPE
 ) -> PlanSeeking:
     gh_token = os.environ.get("GITHUB_TOKEN", None)
-    repo_dir = clone_repo(repo, commit, clone_dir, gh_token, logger) if not local else repo
+    repo_dir = clone_repo(check_local_or_remote(repo), commit, clone_dir, gh_token, logger)
     repo_dir = os.path.join(os.getcwd(), repo_dir)
 
     if save_trajectories_path and not os.path.exists(save_trajectories_path):
@@ -44,7 +45,10 @@ def Setup(
 
     tools = []
     for tool_class in tool_classes:
-        tools.append(tool_class(repo_dir, language=language))
+        if issubclass(tool_class, SemanticCodeSearchTool):
+            tools.append(tool_class(repo_dir, language=language, db_path=db_path))
+        else:
+            tools.append(tool_class(repo_dir, language=language))
 
     print("Tools initialized!")
 
@@ -56,7 +60,7 @@ def Setup(
     # Set up the LLM
     if local_agent:
         llm = VLLM(
-            model="model/codellama_repopilot/full_model",
+            model=DEFAULT_LOCAL_AGENT,
             trust_remote_code=True,
             max_new_tokens=1500,
             top_k=9,
@@ -77,7 +81,7 @@ def Setup(
     llm_analyzer = ChatOpenAI(temperature=0, model="gpt-4-1106-preview")
     planner = load_chat_planner(
         llm=llm_plan,
-        type="adaptive",
+        type=planner_type,
         **planner_input
     )
 
@@ -103,7 +107,7 @@ def Setup(
     )
 
     # seeking_algorithm = PlanSeeking
-    seeking_algorithm = AdaptivePlanSeeking
+    seeking_algorithm = AdaptivePlanSeeking if planner_type == "adaptive" else PlanSeeking
     system = seeking_algorithm(
         planner=planner,
         navigator=navigator,
@@ -117,9 +121,8 @@ def Setup(
 class RepoPilot:
     def __init__(
         self,
-        local_path,
+        repo_path,
         openai_api_key=None,
-        local=True,
         commit=None,
         language="python",
         clone_dir="data/repos",
@@ -127,17 +130,16 @@ class RepoPilot:
         save_trajectories_path=None,
         headers=None
     ):
-        self.local_path = local_path
+        self.repo_path = repo_path
         self.openai_api_key = openai_api_key
         self.language = language
         openai_api_key = os.environ.get("OPENAI_API_KEY", None)
         if openai_api_key is None:
             raise ValueError("Please provide an OpenAI API key.")
         self.system = Setup(
-            self.local_path,
+            self.repo_path,
             commit,
             openai_api_key,
-            local=local,
             language=language,
             clone_dir=clone_dir,
             examples=examples,

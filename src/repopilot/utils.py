@@ -2,8 +2,28 @@ from pathlib import Path
 from git import Repo
 import subprocess
 import os
+from urllib.parse import urlparse
+import socketserver
 from repopilot.multilspy.lsp_protocol_handler.lsp_types import SymbolKind
+import json
 
+def find_free_port():
+    with socketserver.TCPServer(("localhost", 0), None) as s:
+        free_port = s.server_address[1]
+    return free_port
+
+def check_local_or_remote(path: str):
+    # Check if link is a valid folder path
+    if os.path.isdir(path):
+        return (True, path)
+    # Check if link is a valid URL
+    try:
+        result = urlparse(path)
+        if all([result.scheme, result.netloc, result.path]) and 'github.com' in result.netloc:
+            return (False, "/".join(result.split('/')[-2:]))
+    except:
+        raise ValueError("Please provide a valid folder path or GitHub URL.")
+    
 def get_env_path():
     python_path = subprocess.check_output("which python", shell=True).strip().decode("utf-8")
     return python_path
@@ -211,3 +231,9 @@ def offset_at_position(doc, position):
         int: The offset at the given position.
     """
     return position["character"] + len("".join(doc.splitlines(True)[: position["line"]]))
+
+def save_infos_to_folder(infos_dict, name, folder):
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+    with open(folder + "/" + name + ".json", "w") as f:
+        json.dump(infos_dict, f, indent=4)

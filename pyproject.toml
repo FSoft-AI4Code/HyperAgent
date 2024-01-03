@@ -16,7 +16,7 @@ classifiers = [
    "Operating System :: OS Independent",
 ]
 [project.scripts]
-repopilot = "repopilot.cli:main"
+repopilot = "repopilot.cli.cli:app"
 
 [project.urls]
 Homepage = "https://github.com/FSoft-AI4Code/RepoPilot"
