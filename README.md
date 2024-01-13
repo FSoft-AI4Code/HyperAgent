@@ -35,7 +35,7 @@ RepoPilot is a multi-agent system based on Large Language Models (LLMs) designed
 
 **RepoPilot Demo:**
 
-[![Video](https://img.youtube.com/vi/JB_j6fWHwSw/0.jpg)](https://youtu.be/JB_j6fWHwSw)
+[![Video](https://img.youtube.com/vi/5Wm4oVZ6pjs/sddefault.jpg)](https://youtu.be/5Wm4oVZ6pjs)
 
 ## Installation
 RepoPilot uses Zoekt for code search. Please install Zoekt before installing RepoPilot. Zoekt requires latest Go installation, please follow the instructions [here](https://www.linuxedo.com/2021/10/install-latest-golang-on-linux.html) to install Go.
@@ -111,36 +111,6 @@ bug_reproduction = rp.query_codebase(search_query)
 print("Bug Reproduction:")
 ```
 
-Here is an example of the output of the above code:
-
-```bash
-This test case checks that the forID method does not return "Asia/Tehran" when "MET" is passed as the time zone ID. It also asserts that the correct expected mapping should be "Europe/Paris". The test will fail with the current implementation, indicating the presence of the bug.
-
-Here is a JUnit test case that reproduces the failure behavior described in the bug report:
-
-```java
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.Options;
-import org.junit.Test;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThrows;
-
-public class CommandLineTest {
-
-    @Test
-    public void testHasOptionWithNullShouldNotThrowException() {
-        CommandLine cmd = new CommandLine(new Options());
-        assertFalse("hasOption should return false when passed a null argument", cmd.hasOption(null));
-    }
-
-    @Test
-    public void testHasOptionWithNullShouldThrowNullPointerException() {
-        CommandLine cmd = new CommandLine(new Options());
-        assertThrows(NullPointerException.class, () -> cmd.hasOption(null));
-    }
-}
-```
-
 ## CLI Usage
 
 ```bash
@@ -179,7 +149,11 @@ Usage: repopilot query [OPTIONS] REPO_PATH [ARGS]...
 ╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
 ```
 ## Architecture
-![RepoPilot Architecture](assets/repopilot.png)
+<p align="center">
+    <br>
+    <img src="assets/RepoPilot.svg" width="500"/>
+    <br>
+<p>
 
 RepoPilot is a multi-agent system that consists of three main components: the **Planning Agent**, the **Navigation Agent**, and the **Analysis Agent**. 
 - **Planning Agent** is responsible for understanding the user's query and determining a draft plan of action. The planning agent is based on GPT-4 prompted with a query and general information about the codebase.

@@ -74,13 +74,15 @@ class LSPToolKit:
         if verbose and len(output) > 0:
             symbols = self.get_symbols(output[0]["relativePath"], verbose=False)
             symbol = matching_symbols(symbols, output[0])
+            if symbol is None:
+                return "Please try again with semantic or code search tool"
             symbol_type = matching_kind_symbol(symbol)
             if "location" not in symbol:
                 definition = add_num_line(get_text(self.open_file(output[0]["relativePath"]), symbol["range"]), symbol["range"]["start"]["line"])
             else:
                 definition = add_num_line(get_text(self.open_file(output[0]["relativePath"]), symbol["location"]["range"]), symbol["location"]["range"]["start"]["line"])
             output = "Name: " + str(symbol["name"]) + "\n" + "Type: " + str(symbol_type) + "\n" + "Definition: " + definition
-
+        
         return output
     
     def get_symbols(self, file_path: str, preview_size: int = 10, verbose: bool = True) -> list:

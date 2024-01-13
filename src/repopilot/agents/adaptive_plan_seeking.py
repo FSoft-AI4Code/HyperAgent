@@ -36,12 +36,12 @@ class AdaptivePlanSeeking(PlanSeeking):
                 callbacks=run_manager.get_child() if run_manager else None,
             )
             for j, react_step in enumerate(intermediate_steps):
-                current_notes += f"\n\nStep: {step.value}\n\nSubstep:{j}\n\nObservation: {react_step[0].log}"
                 if isinstance(react_step[1], list):
                     obs_strings = [str(x) for x in react_step[1]]
                     tool_output = "\n".join(obs_strings)
                 else:
                     tool_output = str(react_step[1])
+                current_notes += f"\n\nStep: {step.value}\n\nSubstep:{j}\n\Thought: {react_step[0].log.split('Action:')[0]}\nOutput: {tool_output}\n\n"
                 vec_note = react_step[0].log + "\n" + tool_output
                 self.vectorstore.add_documents([Document(page_content=vec_note)])
                 

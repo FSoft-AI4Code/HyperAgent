@@ -28,14 +28,15 @@ import json
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
-
+logging.getLogger("httpx").setLevel(logging.CRITICAL)
+logging.getLogger("chromadb").setLevel(logging.CRITICAL)
+logging.getLogger('multilspy').setLevel(logging.CRITICAL)
 logger = logging.getLogger(__name__)
-logging.getLogger("httpx").setLevel(logging.WARNING)
-logging.getLogger("chromadb").setLevel(logging.WARNING)
 
 app = Typer(add_completion=False)
 setup_app = Typer()
 query_app = Typer()
+list_app = Typer()
 config_app = Typer(add_completion=False, no_args_is_help=True)
 config_dir = Path(user_config_dir("repopilot"))
 console = Console(history_dir=config_dir / "history")
@@ -98,11 +99,20 @@ def setup(
     save_infos_to_folder(necessary_infos, repository_name, DEFAULT_WORKDIR_CLI)
     console.info("Your repository is indexed!")
 
+@list_app.callback(invoke_without_command=True)
+def list():
+    console.info("Listing repos...")
+    for file in os.listdir(DEFAULT_WORKDIR_CLI):
+        if file.endswith(".json"):
+            console.info2(file[:-5])
+
 @query_app.callback(invoke_without_command=True)
 def query(
     repository_name: Annotated[str, Argument(..., help="The name of the repository to query.")],
     planner_type: Annotated[str, Option("--planner-type", help="The type of planner to use.")]=DEFAULT_PLANNER_TYPE,
     save_trajectories_path: Annotated[Optional[str], Option("--save-trajectories-path", help="The path to save the trajectories to.")]=None,
+    type_agent: Annotated[Optional[str], Option("--type-agent", help="The type of agent to use.")]="gpt-4",
+    verbose: Annotated[Optional[int], Option("--verbose", help="Verbose level")]=1,
 ):  
     tools = []
     openai_api_key = read_key(console)
@@ -122,12 +132,12 @@ def query(
     formatted_tools = "\n".join(tool_strings)
 
     struct = subprocess.check_output(["tree", "-L","2", "-d", necessary_infos["repo_dir"]]).decode("utf-8")
-    if necessary_infos["local_agent"] and necessary_infos["local_agent"] != "None":
+    if type_agent == "local":
         llm = VLLMOpenAI(
             openai_api_key="EMPTY",
             openai_api_base=f"http://localhost:{DEFAULT_VLLM_PORT}/v1",
             model_name=necessary_infos["local_agent"],
-            max_tokens=1500,
+            max_tokens=3000,
             top_p=0.95,
             temperature=0.1,
         )
@@ -156,8 +166,8 @@ def query(
         tools,
         navigator_prompt.PREFIX,
         navigator_prompt.SUFFIX,
-        verbose=True,
-        include_task_in_prompt=True,
+        verbose=verbose,
+        include_task_in_prompt=False,
         save_trajectories_path=save_trajectories_path
     )
     analyzer = load_agent_analyzer(
@@ -175,7 +185,7 @@ def query(
         navigator=navigator,
         analyzer=analyzer,
         vectorstore=vectorstore,
-        verbose=True
+        verbose=verbose
     )
     while True:
         query = console.prompt("Your query: ")
@@ -188,3 +198,4 @@ def query(
     
 app.add_typer(setup_app, name="setup")
 app.add_typer(query_app, name="query")
+app.add_typer(list_app, name="list")

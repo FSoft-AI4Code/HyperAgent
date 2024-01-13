@@ -449,7 +449,8 @@ class LanguageServer:
             )
 
         ret: List[multilspy_types.Location] = []
-        assert isinstance(response, list)
+        if not isinstance(response, list):
+            ret = []
         for item in response:
             assert isinstance(item, dict)
             assert LSPConstants.URI in item

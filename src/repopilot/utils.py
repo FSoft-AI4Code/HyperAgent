@@ -6,6 +6,12 @@ from urllib.parse import urlparse
 import socketserver
 from repopilot.multilspy.lsp_protocol_handler.lsp_types import SymbolKind
 import json
+import difflib
+
+def find_most_matched_string(word_list, target):
+    # Get close matches; n=1 ensures only the top match is returned
+    matches = difflib.get_close_matches(target, word_list, n=1)
+    return matches[0] if matches else None
 
 def find_free_port():
     with socketserver.TCPServer(("localhost", 0), None) as s:
@@ -20,7 +26,7 @@ def check_local_or_remote(path: str):
     try:
         result = urlparse(path)
         if all([result.scheme, result.netloc, result.path]) and 'github.com' in result.netloc:
-            return (False, "/".join(result.split('/')[-2:]))
+            return (False, result.path[1:])
     except:
         raise ValueError("Please provide a valid folder path or GitHub URL.")
     
@@ -237,3 +243,12 @@ def save_infos_to_folder(infos_dict, name, folder):
         os.makedirs(folder)
     with open(folder + "/" + name + ".json", "w") as f:
         json.dump(infos_dict, f, indent=4)
+
+def get_file_paths_recursive(directory):
+    file_paths = []
+    for root, dirs, files in os.walk(directory):
+        for file in files:
+            # Construct the file path
+            file_path = os.path.join(root, file)
+            file_paths.append(file_path)
+    return file_paths

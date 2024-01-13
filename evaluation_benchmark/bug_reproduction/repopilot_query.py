@@ -4,20 +4,15 @@ import argparse
 import json
 from bs4 import BeautifulSoup
 from markdownify import markdownify as md
-from repopilot.tools import GetAllSymbolsTool
+from repopilot.prompts.bug_reproduction import example_br
 
-template = "You need to write a JUnit test case code in java that reproduce the failure behavior of the given bug report as following: {bug_report}"
+template = "Provide a hypothetical JUnit test case based on the description of the bug report. (without looking at the test folder or avaiable test files) that reproduce the failure behavior of the given bug report as following: \n```{bug_report}```"
 ROOT_DIR = 'Defects4J/'
 
 def make_input(rep_title, rep_content):
     rep_title = BeautifulSoup(rep_title.strip(), 'html.parser').get_text()
     rep_content = md(rep_content.strip())
-
-    bug_report_content = f"""# {rep_title}
-    ## Description
-    {rep_content}
-    """
-
+    bug_report_content = f"# Bug title\n{rep_title}\n## Description\n{rep_content}"
     return bug_report_content
 
 def load_bug_report(proj, bug_id):
@@ -33,13 +28,18 @@ def query_repopilot_for_gentest(pilot, br):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('-p', '--project', default='Cli')
-    parser.add_argument('-b', '--bug_id', type=int, default=4)
+    parser.add_argument('-b', '--bug_id', type=int, default=1)
     parser.add_argument('-o', '--out', default='output.txt')
     args = parser.parse_args()
     
     api_key = os.environ.get("OPENAI_API_KEY")
     commit = ""
     repo = f"Defects4J/repos/{args.project}_{args.bug_id}"
-    pilot = RepoPilot(repo, commit=commit, openai_api_key=api_key, local=True, language="java", clone_dir="data/repos", save_trajectories_path="/datadrive05/huypn16/focalcoder/data/trajectories/java/bug_reproduction/Cli_4")
+    pilot = RepoPilot(repo, 
+        commit=commit, 
+        openai_api_key=api_key, 
+        language="java", 
+        clone_dir="data/repos", 
+        examples=example_br)
     
     output = query_repopilot_for_gentest(pilot, load_bug_report(args.project, args.bug_id))

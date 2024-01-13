@@ -26,6 +26,9 @@ class Console:
 
     def info(self, text):
         self._console.print(f"[blue]{text}[/blue]")
+    
+    def info2(self, text):
+        self._console.print(f"[cyan]{text}[/cyan]")
 
     def warning(self, text):
         self._console.print(f"[yellow]{text}[/yellow]")

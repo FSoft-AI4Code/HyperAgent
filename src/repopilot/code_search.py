@@ -71,7 +71,7 @@ def get_code_jedi(definition: jedi.Script, verbose: bool=False) -> str:
             start_num_line += 1
         return "\n".join(results)
 
-def search_py_elements_inside_project(names, backend, num_result=2, verbose=False):
+def search_py_elements_inside_project(names, backend, num_result=5, verbose=False):
     """Get all matched identifiers from a repo
     
     Args:

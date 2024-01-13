@@ -11,7 +11,7 @@ from .get_repo_struct import visualize_tree
 from .llm_multilspy import LSPToolKit, add_num_line
 from .code_search import search_elements_inside_project
 from .zoekt.zoekt_server import ZoektServer
-from .utils import identify_extension
+from .utils import identify_extension, get_file_paths_recursive, find_most_matched_string
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.vectorstores import Chroma
 from repopilot.utils import get_env_path
@@ -189,6 +189,11 @@ class FindAllReferencesTool(BaseTool):
         try:
             results = self.lsptoolkit.get_references(word, relative_path, line, verbose=True)
         except FileNotFoundError:
+            abs_path = os.path.join(self.path, relative_path)
+            all_paths = get_file_paths_recursive(self.path)
+            most_matched = find_most_matched_string(all_paths, abs_path)
+            relative_path = most_matched.replace(self.path, "")
+            results = self.lsptoolkit.get_references(word, relative_path, line, verbose=True)
             return "The file is not found, please check the path again, may lack of prefix directory name"
         except IsADirectoryError:
             return "The relative path is a folder, please specify the file path instead. Consider using get_tree_structure to find the file name then use this tool one file path at a time"
@@ -424,8 +429,3 @@ class SemanticCodeSearchTool(Tool):
         )
 
 tool_classes = [CodeSearchTool, SemanticCodeSearchTool, GoToDefinitionTool, FindAllReferencesTool, GetAllSymbolsTool, GetTreeStructureTool, OpenFileTool]
-
-if __name__ == "__main__":
-    gst = GoToDefinitionTool(path="/datadrive05/huypn16/focalcoder", language="python")
-    output = gst._run(word="RecursiveCharacterTextSplitter.from_language", line=386, relative_path="src/repopilot/tools.py")
-    print(output)

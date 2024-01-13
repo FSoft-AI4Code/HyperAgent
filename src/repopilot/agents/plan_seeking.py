@@ -1,6 +1,5 @@
 from typing import List
 
-from langchain.agents.agent import AgentExecutor
 from langchain.schema.language_model import BaseLanguageModel
 from langchain.tools import BaseTool, Tool
 from langchain.vectorstores import Chroma
@@ -22,6 +21,7 @@ from langchain_experimental.plan_and_execute.schema import (
 from langchain_experimental.pydantic_v1 import Field
 from langchain.agents.structured_chat.prompt import PREFIX, SUFFIX
 from repopilot.agents.base import ChainExecutor, StructuredChatAgent
+from repopilot.agents.agent_executor import AgentExecutor
 from langchain.schema import Document
 
 HUMAN_MESSAGE_TEMPLATE = """Previous steps: {previous_steps}
@@ -102,6 +102,7 @@ def load_agent_analyzer(
             name="Relevant Information Search",
             func=semantic_search,
             description="useful to get the detailed code implementation of objects mentioned in the notes")]
+    tools = []
     
     agent = StructuredChatAgent.from_llm_and_tools(
         llm, 
@@ -125,7 +126,7 @@ def load_agent_navigator(
     tools: List[BaseTool],
     prefix: str = PREFIX,
     suffix: str = SUFFIX,
-    verbose: bool = False,
+    verbose: int = 1,
     include_task_in_prompt: bool = False,
     save_trajectories_path: str = "./agent_trajectories",
     
@@ -194,13 +195,17 @@ class PlanSeeking(Chain):
         inputs: Dict[str, Any],
         run_manager: Optional[CallbackManagerForChainRun] = None,
     ) -> Dict[str, Any]:
+        verbose_langchain = True if self.verbose > 0 else False
         current_notes = ""
         plan = self.planner.plan(
             inputs,
             callbacks=run_manager.get_child() if run_manager else None,
         )
         if run_manager:
-            run_manager.on_text(str(plan), verbose=self.verbose)
+            plan_str = ""
+            for i, step in enumerate(plan.steps):
+                plan_str += f"Step {i}: {step.value}\n"
+            run_manager.on_text(plan_str, verbose=verbose_langchain)
         for i, step in enumerate(plan.steps):
             _new_inputs = {
                 "previous_steps": self.step_container,
@@ -213,26 +218,20 @@ class PlanSeeking(Chain):
                 callbacks=run_manager.get_child() if run_manager else None,
             )
             for j, react_step in enumerate(intermediate_steps):
-                current_notes += f"\n\nStep: {step.value}\n\nSubstep:{j}\n\nObservation: {react_step[0].log}"
                 if isinstance(react_step[1], list):
                     obs_strings = [str(x) for x in react_step[1]]
                     tool_output = "\n".join(obs_strings)
                 else:
                     tool_output = str(react_step[1])
+                current_notes += f"\n\nStep: {step.value}\n\nSubstep:{j}\n\Thought: {react_step[0].log.split('Action:')[0]}\nOutput: {tool_output}\n\n"
                 vec_note = react_step[0].log + "\n" + tool_output
                 self.vectorstore.add_documents([Document(page_content=vec_note)])
-                
+            early_exit = "Final Answer" in response.response or "final answer" in response.response or "Solved" in response.response or "solved" in response.response
             current_notes += f"Response for step {i}: {response.response}"
-            
-            if run_manager:
-                run_manager.on_text(
-                    f"*****\n\nStep: {step.value}", verbose=self.verbose
-                )
-                run_manager.on_text(
-                    f"\n\nResponse: {response.response}", verbose=self.verbose
-                )
             self.step_container.add_step(step, response)
-        
+            if early_exit:
+                break
+                
         ## Run the analyzer
         analyzer_inputs = {
             "current_notes": current_notes,
@@ -243,35 +242,3 @@ class PlanSeeking(Chain):
             callbacks=run_manager.get_child() if run_manager else None,
         )
         return {self.output_key: answer}
-
-    async def _acall(
-        self,
-        inputs: Dict[str, Any],
-        run_manager: Optional[AsyncCallbackManagerForChainRun] = None,
-    ) -> Dict[str, Any]:
-        plan = await self.planner.aplan(
-            inputs,
-            callbacks=run_manager.get_child() if run_manager else None,
-        )
-        if run_manager:
-            await run_manager.on_text(str(plan), verbose=self.verbose)
-        for step in plan.steps:
-            _new_inputs = {
-                "previous_steps": self.step_container,
-                "current_step": step,
-                "objective": inputs[self.input_key],
-            }
-            new_inputs = {**_new_inputs, **inputs}
-            response = await self.navigator.astep(
-                new_inputs,
-                callbacks=run_manager.get_child() if run_manager else None,
-            )
-            if run_manager:
-                await run_manager.on_text(
-                    f"*****\n\nStep: {step.value}", verbose=self.verbose
-                )
-                await run_manager.on_text(
-                    f"\n\nResponse: {response.response}", verbose=self.verbose
-                )
-            self.step_container.add_step(step, response)
-        return {self.output_key: self.step_container.get_final_response()}
