@@ -162,4 +162,4 @@ RepoPilot is a multi-agent system that consists of three main components: the **
 - **Analysis Agent** is responsible for finally giving the user the insights and recommendations based on the query and the information stored in the working memory. The analysis agent is based on GPT-4 prompted with the query and the information stored in the working memory.
 
 ## Acknowledgements
-We would like to thank the development of [Multiplspy](https://github.com/microsoft/monitors4codegen) and [Supporting Multiple languages chunking](https://github.com/langchain-ai/langchain/pull/13318) for the multi-language support of the navigation agent.
+We would like to thank the development of [Multiplspy](https://github.com/microsoft/monitors4codegen), [Supporting Multiple languages chunking](https://github.com/langchain-ai/langchain/pull/13318) and [codetext parser](https://github.com/FSoft-AI4Code/CodeText-parser) for the multi-language support of the navigation agent.
