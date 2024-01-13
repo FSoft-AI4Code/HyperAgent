@@ -23,11 +23,10 @@
  </div>   
     
 ## Table of Contents
-  - [Introduction](#introduction)
-  - [Installation](#installation-guide)
-  - [Getting Started](#getting-started)
-  - [Ethical and Responsible Use](#ethical-and-responsible-use) 
-  - [License](#license)
+  - [Introduction](#overview)
+  - [Installation](#installation)
+  - [Getting Started](#use-cases) 
+  - [Architecture](#architecture)
 
 ## Overview
 
@@ -55,7 +54,7 @@ pip3 install -e .
 ```
 
 ## Key Features
-
+- **Multi-lingual Support**: Supports multiple programming languages, including Java, Python, Rust and C#.
 - **Codebase Exploration**: Enables developers to query about specific features or components within a codebase (e.g., asking about the login feature in a repository).
 - **Impact Analysis**: Assesses the potential impact of changes in the codebase, providing a holistic view of how modifications may affect the overall project.
 - **Actionable Insight**s: Provides recommendations and executes predefined actions based on the analysis of queries and codebase status.
@@ -162,4 +161,5 @@ RepoPilot is a multi-agent system that consists of three main components: the **
 
 - **Analysis Agent** is responsible for finally giving the user the insights and recommendations based on the query and the information stored in the working memory. The analysis agent is based on GPT-4 prompted with the query and the information stored in the working memory.
 
-
+## Acknowledgements
+We would like to thank the development of [Multiplspy](https://github.com/microsoft/monitors4codegen) and [Supporting Multiple languages chunking](https://github.com/langchain-ai/langchain/pull/13318) for the multi-language support of the navigation agent.
