@@ -36,8 +36,8 @@
 RepoPilot is a multi-agent system based on Large Language Models (LLMs) designed to assist developers in navigating and understanding codebases. It serves as a next-generation coding assistant, offering insights and actions based on the analysis of the entire code repository.
 
 **RepoPilot Demo:**
-
-[![Video](https://github.com/FSoft-AI4Code/RepoPilot/assets/51882888/2080f305-0bd1-4994-b017-b65e591af402)
+#### Demo: Real Github Issue QA on Huggingface/PEFT
+https://github.com/FSoft-AI4Code/RepoPilot/assets/51882888/2080f305-0bd1-4994-b017-b65e591af402
 
 ## Installation
 RepoPilot uses Zoekt for code search. Please install Zoekt before installing RepoPilot. Zoekt requires latest Go installation, please follow the instructions [here](https://www.linuxedo.com/2021/10/install-latest-golang-on-linux.html) to install Go.
