@@ -13,6 +13,9 @@
   </a> 
 
 
+
+
+
     
 # RepoPilot: A Multi-Agent Library to Explore Your Codebase
 
@@ -34,7 +37,7 @@ RepoPilot is a multi-agent system based on Large Language Models (LLMs) designed
 
 **RepoPilot Demo:**
 
-[![Video](https://img.youtube.com/vi/5Wm4oVZ6pjs/sddefault.jpg)](https://youtu.be/5Wm4oVZ6pjs)
+[![Video](https://github.com/FSoft-AI4Code/RepoPilot/assets/51882888/2080f305-0bd1-4994-b017-b65e591af402)
 
 ## Installation
 RepoPilot uses Zoekt for code search. Please install Zoekt before installing RepoPilot. Zoekt requires latest Go installation, please follow the instructions [here](https://www.linuxedo.com/2021/10/install-latest-golang-on-linux.html) to install Go.
