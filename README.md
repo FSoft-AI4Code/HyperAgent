@@ -151,7 +151,7 @@ Usage: repopilot query [OPTIONS] REPO_PATH [ARGS]...
 ## Architecture
 <p align="center">
     <br>
-    <img src="assets/RepoPilot.svg" width="750"/>
+    <img src="assets/RepoPilot.svg" width="850"/>
     <br>
 <p>
 
