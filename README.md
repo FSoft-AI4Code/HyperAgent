@@ -12,12 +12,13 @@
   <img alt="python" src="https://img.shields.io/badge/python-3.10+-green.svg"/>
   </a> 
 
-
+<a href="">Technical Report (to appear)</a>,
+<a href="">Examples</a>,
 
 
 
     
-# RepoPilot: A Multi-Agent Library to Explore Your Codebase
+# RepoPilot: Multi-Agent Coding Assistant that Understand Your Codebase
 
 <!-- 
 [![Code License](https://img.shields.io/badge/Code%20License-Apache_2.0-green.svg)](https://github.com/bdqnghi/CodeTF_personal/blob/main/LICENSE)
@@ -27,15 +28,37 @@
     
 ## Table of Contents
   - [Introduction](#overview)
-  - [Installation](#installation)
-  - [Getting Started](#use-cases) 
+  - [Architecture](#architecture)
+  - [Quick Demo](#quick-demo) 
   - [Architecture](#architecture)
 
 ## Overview
 
-RepoPilot is a multi-agent system based on Large Language Models (LLMs) designed to assist developers in navigating and understanding codebases. It serves as a next-generation coding assistant, offering insights and actions based on the analysis of the entire code repository.
+RepoPilot is a one-stop Python library that revolutionizes the way developers interact with and understand their codebases. Utilizing advanced Large Language Models (LLMs), RepoPilot acts as a multi-agent system, offering a next-generation **coding assistant** for comprehensive codebase exploration and impact analysis.
+Designed for developers who seek deeper insights into their projects, RepoPilot simplifies complex code analysis tasks, making it an indispensable tool for modern software development.
 
-**RepoPilot Demo:**
+Key Features
+- Whole Repository Understanding: Unlike other coding assistants, RepoPilot is engineered to grasp the full context of your entire codebase, enabling a more comprehensive analysis and more accurate recommendations.
+- Natural Language Queries: Interact with your codebase using conversational queries. Ask RepoPilot about specific features, code impacts, and more, just like talking to an AI assistant.
+- Codebase Exploration and Analysis: Delve into your codebase with ease. Understand how particular features are implemented and assess the impact of potential changes.
+Actionable Insights and Recommendations: Get practical suggestions and automated actions based on RepoPilot's deep understanding of your code.
+- Seamless Integration: Integrate RepoPilot into your existing development workflow with its Python API, allowing for flexible and powerful code interactions.
+
+## Architecture
+<p align="center">
+    <br>
+    <img src="assets/RepoPilot.svg" width="950"/>
+    <br>
+<p>
+
+RepoPilot is a multi-agent system that consists of three main components: the **Planning Agent**, the **Navigation Agent**, and the **Analysis Agent**. 
+- **Planning Agent** is responsible for understanding the user's query and determining a draft plan of action. The planning agent is based on GPT-4 prompted with a query and general information about the codebase. 
+
+- **Navigation Agent** is responsible for navigating the codebase, finding relevant code snippets and storing high value information related to the query into the working memory. The navigation agent is implemented with ReAct-like architecture with dynamic backtracking as well as multi-languages language server protocol (mLSP) support to efficiently navigate inside the codebase (go-to-definition, find references, code search, semantic code search, etc).
+
+- **Analysis Agent** is responsible for finally giving the user the insights and recommendations based on the query and the information stored in the working memory. The analysis agent is based on GPT-4 prompted with the query and the information stored in the working memory.
+
+**Quick Demo:**
 #### Demo: Real Github Issue QA on Huggingface/PEFT
 https://github.com/FSoft-AI4Code/RepoPilot/assets/51882888/2080f305-0bd1-4994-b017-b65e591af402
 
@@ -53,22 +76,10 @@ go install github.com/sourcegraph/zoekt/cmd/zoekt-webserver
 We also need to install universal-ctags for semantic code search. Please follow the instructions [here](https://github.com/sourcegraph/sourcegraph/blob/main/doc/dev/how-to/zoekt_local_dev.md#install-ctags). Remember to set the environment variable of CTAGS `CTAGS_COMMAND=universal-ctags`. Finally, we can install RepoPilot.
 
 ```bash
-pip3 install -e .
+pip3 install repopilot
 ```
 
-## Key Features
-- **Multi-lingual Support**: Supports multiple programming languages, including Java, Python, Rust and C#.
-- **Codebase Exploration**: Enables developers to query about specific features or components within a codebase (e.g., asking about the login feature in a repository).
-- **Impact Analysis**: Assesses the potential impact of changes in the codebase, providing a holistic view of how modifications may affect the overall project.
-- **Actionable Insight**s: Provides recommendations and executes predefined actions based on the analysis of queries and codebase status.
-
-## Use Cases
-
-- **Feature Inquiry and Analysis**: Developers can inquire about specific features (e.g., authentication systems, API integrations) within the codebase, and RepoPilot provides detailed insights and suggestions for improvement or modification.
-- **Code Impact Assessment**: Before implementing changes, developers can assess how these changes might impact the entire repository, including dependencies, performance, and potential bugs.
-- **Automated Code Navigation**: Assists in navigating complex codebases, making it easier for developers to understand and work with large and complex projects.
-
-### Example Usages
+### Example
 
 ```python
 # Importing the RepoPilot library
@@ -150,19 +161,7 @@ Usage: repopilot query [OPTIONS] REPO_PATH [ARGS]...
 │ --help                                Show this message and exit.                                               │                                                                                            
 ╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
 ```
-## Architecture
-<p align="center">
-    <br>
-    <img src="assets/RepoPilot.svg" width="950"/>
-    <br>
-<p>
 
-RepoPilot is a multi-agent system that consists of three main components: the **Planning Agent**, the **Navigation Agent**, and the **Analysis Agent**. 
-- **Planning Agent** is responsible for understanding the user's query and determining a draft plan of action. The planning agent is based on GPT-4 prompted with a query and general information about the codebase.
-
-- **Navigation Agent** is responsible for navigating the codebase, finding relevant code snippets and storing high value information related to the query into the working memory. The navigation agent is implemented with ReAct-like architecture with dynamic backtracking as well as multi-languages language server protocol (mLSP) support to efficiently navigate inside the codebase (go-to-definition, find references, code search, semantic code search, etc).
-
-- **Analysis Agent** is responsible for finally giving the user the insights and recommendations based on the query and the information stored in the working memory. The analysis agent is based on GPT-4 prompted with the query and the information stored in the working memory.
 
 ## Acknowledgements
 We would like to thank the development of [Multiplspy](https://github.com/microsoft/monitors4codegen), [Supporting Multiple languages chunking](https://github.com/langchain-ai/langchain/pull/13318) and [codetext parser](https://github.com/FSoft-AI4Code/CodeText-parser) for the multi-language support of the navigation agent.
