@@ -29,8 +29,12 @@
 ## Table of Contents
   - [Introduction](#overview)
   - [Architecture](#architecture)
-  - [Quick Demo](#quick-demo) 
-  - [Architecture](#architecture)
+  - [Installation](#installation)
+      - [Quick Demo](#quick-demo)
+  - [CLI Usage](#cli-usage)
+      - [Set Up](#setup)
+      - [Query](#query)    
+  - [Licence](#license)
 
 ## Overview
 
