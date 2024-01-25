@@ -7,6 +7,8 @@ import socketserver
 from repopilot.multilspy.lsp_protocol_handler.lsp_types import SymbolKind
 import json
 import difflib
+from transformers import AutoTokenizer
+import tiktoken
 
 def find_most_matched_string(word_list, target):
     # Get close matches; n=1 ensures only the top match is returned
@@ -252,3 +254,26 @@ def get_file_paths_recursive(directory):
             file_path = os.path.join(root, file)
             file_paths.append(file_path)
     return file_paths
+
+def truncate_tokens(string: str, encoding_name: str, max_length: int = 8192) -> str:
+    """Truncates a text string based on max number of tokens."""
+    encoding = tiktoken.encoding_for_model(encoding_name)
+    encoded_string = encoding.encode(string)
+    num_tokens = len(encoded_string)
+
+    if num_tokens > max_length:
+        string = encoding.decode(encoded_string[:max_length-300])
+
+    return string
+
+def truncate_tokens_hf(string: str, encoding_name: str) -> str:
+    """Truncates a text string based on max number of tokens."""
+    tokenizer = AutoTokenizer.from_pretrained(encoding_name)
+    max_tokens = tokenizer.model_max_length
+    encoded_string = tokenizer.encode(string, return_tensors="pt")
+    num_tokens = len(encoded_string[0])
+
+    if num_tokens > max_tokens:
+        string = tokenizer.decode(encoded_string[0][:max_tokens-400])
+
+    return string

@@ -18,6 +18,7 @@ from langchain_core.exceptions import OutputParserException
 from langchain.agents import AgentExecutor
 from langchain.agents.agent import ExceptionTool
 class AgentExecutor(AgentExecutor):
+    verbose: int = 1
     def _iter_next_step(
         self,
         name_to_tool_map: Dict[str, BaseTool],

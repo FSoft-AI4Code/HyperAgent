@@ -10,11 +10,12 @@ from langchain.llms import VLLM
 from repopilot.tools import tool_classes, SemanticCodeSearchTool
 from repopilot.utils import clone_repo, check_local_or_remote
 from repopilot.agents.planner import load_chat_planner
-from repopilot.agents.plan_seeking import load_agent_navigator, load_agent_analyzer, PlanSeeking
+from repopilot.agents.plan_seeking import load_agent_navigator, PlanSeeking
 from repopilot.agents.adaptive_plan_seeking import AdaptivePlanSeeking
 from repopilot.prompts.general_qa import example_qa
 from repopilot.prompts import analyzer as analyzer_prompt
 from repopilot.prompts import navigator as navigator_prompt
+from repopilot.agents.llm import LLM
 from repopilot.constants import DEFAULT_PLANNER_TYPE, DEFAULT_LOCAL_AGENT, DEFAULT_VERBOSE_LEVEL
 
 logging.basicConfig(
@@ -83,7 +84,13 @@ def Setup(
         "struct": struct,
     }
     llm_plan = ChatOpenAI(temperature=0, model="gpt-4-1106-preview", openai_api_key=openai_api_key)
-    llm_analyzer = ChatOpenAI(temperature=0, model="gpt-3.5-turbo-1106")
+    analyzer_config = {
+        "model": "gpt-4-1106-preview", 
+        "openai_api_key":openai_api_key,
+        "max_tokens": 40000,
+        "system_prompt": analyzer_prompt.PROMPT,
+    }   
+    llm_analyzer = LLM(analyzer_config)
     planner = load_chat_planner(
         llm=llm_plan,
         type=planner_type,
@@ -103,13 +110,7 @@ def Setup(
         include_task_in_prompt=False,
         save_trajectories_path=save_trajectories_path
     )
-    analyzer = load_agent_analyzer(
-        llm_analyzer,
-        analyzer_prompt.PREFIX,
-        analyzer_prompt.SUFFIX,
-        vectorstore,
-        verbose=True
-    )
+    analyzer = llm_analyzer
 
     # seeking_algorithm = PlanSeeking
     seeking_algorithm = AdaptivePlanSeeking if planner_type == "adaptive" else PlanSeeking
@@ -132,11 +133,11 @@ class RepoPilot:
         clone_dir="data/repos",
         examples=example_qa,
         save_trajectories_path=None,
+        verbose = DEFAULT_VERBOSE_LEVEL,
     ):
         self.repo_path = repo_path
         self.openai_api_key = openai_api_key
         self.language = language
-        openai_api_key = os.environ.get("OPENAI_API_KEY", None)
         if openai_api_key is None:
             raise ValueError("Please provide an OpenAI API key.")
         self.system = Setup(
@@ -147,6 +148,7 @@ class RepoPilot:
             clone_dir=clone_dir,
             examples=examples,
             save_trajectories_path=save_trajectories_path,
+            verbose=verbose
         )
 
     def query_codebase(self, query):

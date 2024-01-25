@@ -7,7 +7,6 @@ from langchain_experimental.plan_and_execute.executors.base import ChainExecutor
 from typing import Any, Dict, List, Optional
 
 from langchain.callbacks.manager import (
-    AsyncCallbackManagerForChainRun,
     CallbackManagerForChainRun,
 )
 from langchain.chains.base import Chain
@@ -22,23 +21,14 @@ from langchain_experimental.pydantic_v1 import Field
 from langchain.agents.structured_chat.prompt import PREFIX, SUFFIX
 from repopilot.agents.base import ChainExecutor, StructuredChatAgent
 from repopilot.agents.agent_executor import AgentExecutor
-from langchain.schema import Document
 
-HUMAN_MESSAGE_TEMPLATE = """Previous steps: {previous_steps}
-
-Current objective: {current_step}
-
+HUMAN_MESSAGE_TEMPLATE = """Objective: {current_step}
+Agent scratchpad:
 {agent_scratchpad}"""
 
-TASK_PREFIX = """Human request: {objective}
-
-"""
-
-ANALYZER_HUMAN_MESSAGE_TEMPLATE = """Current navigating objective: {objective}
-
-Current notes from information agent: ##{current_notes}
-## Agent scratchpad:o
-{agent_scratchpad}
+ANALYZER_HUMAN_MESSAGE_TEMPLATE = """Relatable codebase and analysis: 
+```{current_notes}```
+{analyzer_objective}
 """
 
 FORMAT_INSTRUCTIONS = """Use a json blob to specify a tool by providing an action key (tool name) and an action_input key (tool input).
@@ -73,54 +63,6 @@ Action:
 }}}}
 ```"""
 
-def load_agent_analyzer(
-    llm: BaseLanguageModel,
-    prefix: str = "",
-    suffix: str = "",
-    vectorstore: Chroma = None,
-    verbose: bool = False,
-) -> ChainExecutor:
-    """_summary_
-
-    Args:
-        llm (BaseLanguageModel): _description_
-        prefix (str, optional): _description_. Defaults to ANALYZER_PREFIX.
-        suffix (str, optional): _description_. Defaults to ANALYZER_SUFFIX.
-        verbose (bool, optional): _description_. Defaults to False.
-
-    Returns:
-        ChainExecutor: _description_
-    """
-    input_variables = ["current_notes", "agent_scatchpad"]
-    template = ANALYZER_HUMAN_MESSAGE_TEMPLATE
-    
-    def semantic_search(query):
-        retrieved_docs = vectorstore.similarity_search(query, k=2)
-        return [doc.page_content for doc in retrieved_docs]
-    
-    tools = [Tool(
-            name="Relevant Information Search",
-            func=semantic_search,
-            description="useful to get the detailed code implementation of objects mentioned in the notes")]
-    tools = []
-    
-    agent = StructuredChatAgent.from_llm_and_tools(
-        llm, 
-        tools=tools, 
-        human_message_template=template, 
-        input_variables=input_variables, 
-        prefix=prefix, 
-        suffix=suffix)
-    
-    agent_analyzer = AgentExecutor.from_agent_and_tools(
-        agent=agent, 
-        tools=tools,
-        verbose=verbose, 
-        return_intermediate_steps=False
-    )
-    # agent_analyzer.handle_parsing_errors = True
-    return ChainExecutor(chain=agent_analyzer)
-
 def load_agent_navigator(
     llm: BaseLanguageModel,
     tools: List[BaseTool],
@@ -143,13 +85,9 @@ def load_agent_navigator(
     Returns:
         ChainExecutor
     """
-    input_variables = ["previous_steps", "current_step", "agent_scratchpad"]
+    input_variables = ["current_step", "agent_scratchpad"]
     template = HUMAN_MESSAGE_TEMPLATE
     format_instructions = FORMAT_INSTRUCTIONS
-
-    if include_task_in_prompt:
-        input_variables.append("objective")
-        template = TASK_PREFIX + template
 
     agent = StructuredChatAgent.from_llm_and_tools(
         llm,
@@ -174,13 +112,14 @@ class PlanSeeking(Chain):
     """The planner to use."""
     navigator: BaseExecutor
     """The executor to use."""
-    analyzer: BaseExecutor
+    analyzer: Any
     step_container: BaseStepContainer = Field(default_factory=ListStepContainer)
     """The step container to use."""
     vectorstore: Chroma
     """The vectorstore-backed memory"""
     input_key: str = "input"
     output_key: str = "output"
+    analyzer_key: str = "analyzer_input"
 
     @property
     def input_keys(self) -> List[str]:
@@ -196,49 +135,26 @@ class PlanSeeking(Chain):
         run_manager: Optional[CallbackManagerForChainRun] = None,
     ) -> Dict[str, Any]:
         verbose_langchain = True if self.verbose > 0 else False
-        current_notes = ""
-        plan = self.planner.plan(
-            inputs,
+        current_notes = ""      
+        new_inputs = {"current_step": inputs[self.input_key]}
+        response, intermediate_steps = self.navigator.step(
+            new_inputs,
             callbacks=run_manager.get_child() if run_manager else None,
         )
-        if run_manager:
-            plan_str = ""
-            for i, step in enumerate(plan.steps):
-                plan_str += f"Step {i}: {step.value}\n"
-            run_manager.on_text(plan_str, verbose=verbose_langchain)
-        for i, step in enumerate(plan.steps):
-            _new_inputs = {
-                "previous_steps": self.step_container,
-                "current_step": step,
-                "objective": inputs[self.input_key],
-            }
-            new_inputs = {**_new_inputs, **inputs}          
-            response, intermediate_steps = self.navigator.step(
-                new_inputs,
-                callbacks=run_manager.get_child() if run_manager else None,
-            )
-            for j, react_step in enumerate(intermediate_steps):
-                if isinstance(react_step[1], list):
-                    obs_strings = [str(x) for x in react_step[1]]
-                    tool_output = "\n".join(obs_strings)
-                else:
-                    tool_output = str(react_step[1])
-                current_notes += f"\n\nStep: {step.value}\n\nSubstep:{j}\n\Thought: {react_step[0].log.split('Action:')[0]}\nOutput: {tool_output}\n\n"
-                vec_note = react_step[0].log + "\n" + tool_output
-                self.vectorstore.add_documents([Document(page_content=vec_note)])
-            early_exit = "Final Answer" in response.response or "final answer" in response.response or "Solved" in response.response or "solved" in response.response
-            current_notes += f"Response for step {i}: {response.response}"
-            self.step_container.add_step(step, response)
-            if early_exit:
-                break
+        for j, react_step in enumerate(intermediate_steps):
+            if isinstance(react_step[1], list):
+                obs_strings = [str(x) for x in react_step[1]]
+                tool_output = "\n".join(obs_strings)
+            else:
+                tool_output = str(react_step[1])
+            current_notes += f"\nStep:{j}\n\Analysis: {react_step[0].log.split('Action:')[0]}\nOutput: {tool_output}\n"
+            current_notes += f"Final Analysis: {response}"
                 
         ## Run the analyzer
         analyzer_inputs = {
             "current_notes": current_notes,
-            "objective": inputs[self.input_key],
+            "analyzer_objective": inputs[self.analyzer_key],
         }
-        answer = self.analyzer.step(
-            analyzer_inputs,
-            callbacks=run_manager.get_child() if run_manager else None,
-        )
+        analyzer_prompt = ANALYZER_HUMAN_MESSAGE_TEMPLATE.format(**analyzer_inputs)
+        answer = self.analyzer(analyzer_prompt)
         return {self.output_key: answer}
