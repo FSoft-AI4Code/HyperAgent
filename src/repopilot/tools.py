@@ -396,6 +396,9 @@ class OpenFileTool(BaseTool):
             str: The content of the file.
 
         """
+        if keyword is None and start_line is None and end_line is None:
+            return "Please specify the keyword or start and end line to view the content of the file."
+        
         abs_path = os.path.join(self.path, relative_file_path)
         try:
             if start_line is not None and end_line is not None:

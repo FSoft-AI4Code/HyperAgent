@@ -4,7 +4,7 @@ import jedi
 from codetext.utils import parse_code
 from codetext.parser import PythonParser, CsharpParser, RustParser, JavaParser
 
-logging.getLogger('codetext').setLevel(logging.WARNING)
+logging.getLogger('codetext').setLevel(logging.ERROR)
 
 def get_node_text(start_byte: int, end_byte: int, code: str) -> str:
     """

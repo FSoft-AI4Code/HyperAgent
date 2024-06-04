@@ -24,6 +24,7 @@ from repopilot.agents.agent_executor import AgentExecutor
 from repopilot.agents.llms import LocalLLM
 from repopilot.utils import find_abs_path
 from langchain_community.callbacks import get_openai_callback
+from repopilot.constants import DEFAULT_TRAJECTORIES_PATH
 
 HUMAN_MESSAGE_TEMPLATE = """Objective: {current_step}
 Agent scratchpad:
@@ -79,7 +80,7 @@ def load_agent_navigator(
     suffix: str = SUFFIX,
     verbose: int = 1,
     include_task_in_prompt: bool = False,
-    save_trajectories_path: str = "data/agent_trajectories",
+    save_trajectories_path: str = DEFAULT_TRAJECTORIES_PATH,
     
 ) -> ChainExecutor:
     """
@@ -121,7 +122,7 @@ def load_agent_generator(
     suffix: str = SUFFIX,
     verbose: int = 1,
     include_task_in_prompt: bool = False,
-    save_trajectories_path: str = "data/agent_trajectories",
+    save_trajectories_path: str = DEFAULT_TRAJECTORIES_PATH,
     
 ) -> ChainExecutor:
     """
@@ -163,7 +164,7 @@ def load_agent_executor(
     suffix: str = SUFFIX,
     verbose: int = 1,
     include_task_in_prompt: bool = False,
-    save_trajectories_path: str = "data/agent_trajectories",
+    save_trajectories_path: str = DEFAULT_TRAJECTORIES_PATH,
     
 ) -> ChainExecutor:
     """

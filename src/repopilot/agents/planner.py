@@ -7,7 +7,6 @@ from langchain.schema.language_model import BaseLanguageModel
 from langchain.schema.messages import SystemMessage
 
 from langchain_experimental.plan_and_execute.planners.base import LLMPlanner
-from langchain_core.output_parsers import BaseOutputParser
 from langchain_experimental.plan_and_execute.schema import PlanOutputParser
 from repopilot.prompts.planner import PLANNER_TEMPLATE
 import json

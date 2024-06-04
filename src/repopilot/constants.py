@@ -10,6 +10,7 @@ DEFAULT_PLANNER_TYPE = "static"
 DEFAULT_VLLM_PORT = 5200
 DEFAULT_LANGUAGE = "python"
 DEFAULT_VERBOSE_LEVEL = 1
+DEFAULT_TRAJECTORIES_PATH = " /datadrive5/huypn16/RepoPilot/datadrive5/huypn16/RepoPilot/data/trajectories"
 
 DEFAULT_LLM_CONFIGS = {
     "planner": {
