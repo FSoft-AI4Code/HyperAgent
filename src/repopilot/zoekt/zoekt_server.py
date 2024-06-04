@@ -42,12 +42,11 @@ class ZoektServer:
             index_path (str, optional): The path to the index directory. Defaults to ".zoekt_tmp".
 
         """
-        zoekt_index_repo_path = f"{root_index_path}/{repo_path.split('/')[-1]}" if not index_path else index_path
+        zoekt_index_repo_path = f"{root_index_path}/{repo_path.split('/')[-1]}" 
         self.repo_path = repo_path
         self.index_path = zoekt_index_repo_path
         if not Path(zoekt_index_repo_path).is_dir():
             Path(zoekt_index_repo_path).mkdir(parents=True)
-            
         subprocess.run(
             f"$GOPATH/bin/zoekt-index -index {zoekt_index_repo_path} -parallelism=1 {repo_path}",
             shell=True,
@@ -89,7 +88,7 @@ class ZoektServer:
                 self.zoekt_server.kill()
                 
                 
-    def search(self, names, num_result=2):
+    def search(self, names, num_result=5):
         """
         Performs a search on the Zoekt server.
 

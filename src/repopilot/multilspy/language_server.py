@@ -451,18 +451,19 @@ class LanguageServer:
         ret: List[multilspy_types.Location] = []
         if not isinstance(response, list):
             ret = []
-        for item in response:
-            assert isinstance(item, dict)
-            assert LSPConstants.URI in item
-            assert LSPConstants.RANGE in item
+        else:
+            for item in response:
+                assert isinstance(item, dict)
+                assert LSPConstants.URI in item
+                assert LSPConstants.RANGE in item
 
-            new_item: multilspy_types.Location = {}
-            new_item.update(item)
-            new_item["absolutePath"] = PathUtils.uri_to_path(new_item["uri"])
-            new_item["relativePath"] = str(
-                PurePath(os.path.relpath(new_item["absolutePath"], self.repository_root_path))
-            )
-            ret.append(multilspy_types.Location(**new_item))
+                new_item: multilspy_types.Location = {}
+                new_item.update(item)
+                new_item["absolutePath"] = PathUtils.uri_to_path(new_item["uri"])
+                new_item["relativePath"] = str(
+                    PurePath(os.path.relpath(new_item["absolutePath"], self.repository_root_path))
+                )
+                ret.append(multilspy_types.Location(**new_item))
 
         return ret
 

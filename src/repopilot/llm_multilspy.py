@@ -3,8 +3,6 @@ from repopilot.multilspy.multilspy_config import MultilspyConfig
 from repopilot.multilspy.multilspy_logger import MultilspyLogger
 from repopilot.utils import matching_kind_symbol, matching_symbols, add_num_line, get_text, word_to_position
 from repopilot.multilspy.lsp_protocol_handler.lsp_types import SymbolKind
-from repopilot.multilspy.multilspy_exceptions import MultilspyException
-from repopilot.multilspy import lsp_protocol_handler
 
 class LSPToolKit:
     """
@@ -36,15 +34,9 @@ class LSPToolKit:
         Returns:
             the file text if successful, Else returns an error message string.
         """
-        try:
-            with self.server.start_server():
-                try:
-                    with self.server.open_file(relative_path):
-                        result = self.server.get_open_file_text(relative_path)
-                except:
-                    return "The tool cannot open the file, the file path is not correct."
-        except lsp_protocol_handler.server.Error:
-            return "Error: internal server error"
+        with self.server.start_server():
+            with self.server.open_file(relative_path):
+                result = self.server.get_open_file_text(relative_path)
 
         return result
 
@@ -98,10 +90,8 @@ class LSPToolKit:
             list: Returns either a list of symbols or a detailed list of symbols based on the detailed_output flag
         """
         with self.server.start_server():
-            try:
-                file_symbols = self.server.request_document_symbols(file_path)[0]
-            except MultilspyException:
-                return f"The tool cannot open the file, the file path {file_path} is not correct."
+            file_symbols = self.server.request_document_symbols(file_path)[0]
+
 
         if not verbose:
             return file_symbols
@@ -115,7 +105,6 @@ class LSPToolKit:
                 # TODO: Add more primary symbols depending on the language
                 primary_symbols = [SymbolKind.Class, SymbolKind.Function, SymbolKind.Struct]
                 primary_symbols = [int(symbol_kind) for symbol_kind in primary_symbols]
-
                 if symbol["kind"] in primary_symbols:
                     symbol_line_location = next((line_num for line_num, line in enumerate(symbol_definition.split("\n")) if symbol["name"] in line), 0)
                     try:
@@ -125,21 +114,21 @@ class LSPToolKit:
 
                         if "value" not in hover_documentation:
                             hover_documentation = "None"
-                            definition_preview = "\n".join(symbol_definition.split("\n")[:preview_size+4])
-                        else:
-                            definition_preview = "\n".join(symbol_definition.split("\n")[:preview_size])
-
-                        definition_with_line_numbers = add_num_line(definition_preview, symbol["range"]["start"]["line"])
+                            # definition_preview = "\n".join(symbol_definition.split("\n")[:preview_size+4])
+                        # else:
+                            # definition_preview = "\n".join(symbol_definition.split("\n")[:preview_size])
+                        if "import" in symbol_definition:
+                            continue
+                        definition_with_line_numbers = add_num_line(symbol_definition, symbol["range"]["start"]["line"])
                         output_item = "\n".join([
                             "Name: " + str(symbol["name"]),
                             "Type: " + str(matching_kind_symbol(symbol)),
-                            "Preview: " + str(definition_with_line_numbers),
+                            "Definition: " + str(definition_with_line_numbers),
                             "Documentation: " + str(hover_documentation)
                         ])
                         detailed_list.append(output_item)
                     except ValueError:
                         pass
-
         file_symbols = [symbol_item for symbol_item in detailed_list if symbol_item is not None]
         return file_symbols
     
@@ -169,14 +158,18 @@ class LSPToolKit:
                 In verbose mode, this string contains additional information at each location such as implementation code.
         """
         document_contents = self.open_file(file_path)
-        try:
-            cursor_position = word_to_position(document_contents, search_word, line=line_number, offset=offset_value)
-        except ValueError:
+        
+        if line_number is None:
             # Handle cases where the line number is either incorrect or not known
             cursor_position = word_to_position(document_contents, search_word, line=None, offset=offset_value)
+        else:
+            try:
+                cursor_position = word_to_position(document_contents, search_word, line=line_number, offset=offset_value)
+            except:
+                cursor_position = word_to_position(document_contents, search_word, line=None, offset=offset_value)
 
-        if cursor_position is None:
-            return "The tool cannot find the word in the file"
+        # if cursor_position is None:
+        #     return "The tool cannot find the word in the file"
 
         with self.server.start_server():
             references_output = self.server.request_references(file_path, **cursor_position)

@@ -15,9 +15,10 @@ from langchain.agents.tools import InvalidTool
 from langchain_core.tools import BaseTool
 from langchain_core.agents import AgentAction, AgentFinish, AgentStep
 from langchain_core.exceptions import OutputParserException
-from langchain.agents import AgentExecutor
+from langchain.agents import AgentExecutor as AE
 from langchain.agents.agent import ExceptionTool
-class AgentExecutor(AgentExecutor):
+
+class AgentExecutor(AE):
     verbose: int = 1
     def _iter_next_step(
         self,

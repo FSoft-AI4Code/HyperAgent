@@ -1,9 +1,8 @@
 import logging
-from codetext.utils import parse_code
-from codetext.parser import PythonParser, CsharpParser, RustParser, JavaParser
-from repopilot.utils import add_num_line
 import os
 import jedi 
+from codetext.utils import parse_code
+from codetext.parser import PythonParser, CsharpParser, RustParser, JavaParser
 
 logging.getLogger('codetext').setLevel(logging.WARNING)
 
@@ -71,7 +70,7 @@ def get_code_jedi(definition: jedi.Script, verbose: bool=False) -> str:
             start_num_line += 1
         return "\n".join(results)
 
-def search_py_elements_inside_project(names, backend, num_result=5, verbose=False):
+def search_py_elements_inside_project(names, backend, num_result=3, verbose=False):
     """Get all matched identifiers from a repo
     
     Args:
@@ -101,9 +100,8 @@ def search_py_elements_inside_project(names, backend, num_result=5, verbose=Fals
             for definition in class_definitions:
                 if definition.is_definition():
                     extracted_definition = {
-                        "name": definition.name,
+                        "path": definition.module_path,
                         "full_name": definition.full_name,
-                        "documentation": definition._get_docstring(),
                         "implementation": get_code_jedi(definition, verbose)
                     }
                     output_dict[name].append(extracted_definition)
@@ -115,9 +113,8 @@ def search_py_elements_inside_project(names, backend, num_result=5, verbose=Fals
             for definition in function_definitions:
                 if definition.is_definition():
                     extracted_definition = {
-                        "name": definition.name,
+                        "path": definition.module_path,
                         "full_name": definition.full_name,
-                        "documentation": definition._get_docstring(),
                         "implementation": get_code_jedi(definition, verbose),
                     }
                     output_dict[name].append(extracted_definition)
@@ -128,9 +125,8 @@ def search_py_elements_inside_project(names, backend, num_result=5, verbose=Fals
             idx = 0
             for definition in variable_definitions:
                 extracted_definition = {
-                    "name": definition.name,
+                    "path": definition.module_path,
                     "full_name": definition.full_name,
-                    "documentation": None,
                     "implementation": definition.description,
                 }
                 output_dict[name].append(extracted_definition)
@@ -151,7 +147,7 @@ def search_py_elements_inside_project(names, backend, num_result=5, verbose=Fals
             
     return output_dict
     
-def search_zoekt_elements_inside_project(names: list, backend: object, num_result: int = 2, verbose: bool = False) -> dict:
+def search_zoekt_elements_inside_project(names: list, backend: object, num_result: int = 5, verbose: bool = False) -> dict:
     """
     Search for elements inside a project using the Zoekt search engine.
 
@@ -168,10 +164,10 @@ def search_zoekt_elements_inside_project(names: list, backend: object, num_resul
     search_results = {name: [] for name in names}
 
     with backend.start_server():
-        zoekt_results = backend.search([f"sym:{name}" for name in names], num_result=num_result)
+        zoekt_results = backend.search([f"{name}" for name in names], num_result=num_result)
 
     for name in names:
-        files = zoekt_results[f'sym:{name}']["result"]["FileMatches"]
+        files = zoekt_results[f'{name}']["result"]["FileMatches"]
 
         if not files:
             continue
@@ -187,10 +183,10 @@ def search_zoekt_elements_inside_project(names: list, backend: object, num_resul
 
                 if name in metadata["identifier"]:
                     result = {
-                        "file": file["FileName"],
+                        "file": file["FileName"].replace(backend.repo_path, ""),
                         "name": metadata["identifier"],
                         "documentation": parser.get_docstring(func, source),
-                        "implementation": add_num_line(get_node_text(func.start_byte, func.end_byte, source), func.start_point[0])
+                        # "implementation": add_num_line(get_node_text(func.start_byte, func.end_byte, source), func.start_point[0])
                     }
                     search_results[name].append(result)
 
@@ -202,14 +198,11 @@ def search_zoekt_elements_inside_project(names: list, backend: object, num_resul
                         "file": file["FileName"],
                         "name": metadata["identifier"],
                         "documentation": parser.get_docstring(cls, source),
-                        "implementation": add_num_line(get_node_text(cls.start_byte, cls.end_byte, source), cls.start_point[0])
+                        # "implementation": add_num_line(get_node_text(cls.start_byte, cls.end_byte, source), cls.start_point[0])
                     }
                     search_results[name].append(result)
 
-    return search_results
+    return {name: search_results[name][:num_result] for name in names[:10]}
     
 def search_elements_inside_project(names, backend, verbose, language):
-    if language == "python":
-        return search_py_elements_inside_project(names, backend, verbose=verbose)
-    else:
-        return search_zoekt_elements_inside_project(names, backend, verbose=verbose)
+    return search_zoekt_elements_inside_project(names, backend, verbose=verbose)

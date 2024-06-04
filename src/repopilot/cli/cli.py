@@ -11,7 +11,7 @@ from repopilot.cli.console import Console
 from langchain_community.llms.vllm import VLLMOpenAI
 from langchain.chat_models import ChatOpenAI
 from langchain.embeddings import OpenAIEmbeddings
-from langchain.vectorstores import Chroma
+from langchain_community.vectorstores import Chroma
 from repopilot.prompts import analyzer as analyzer_prompt
 from repopilot.prompts import navigator as navigator_prompt
 from repopilot.agents.plan_seeking import load_agent_navigator, load_agent_analyzer, PlanSeeking
@@ -153,7 +153,6 @@ def query(
     llm_analyzer = ChatOpenAI(temperature=0, model="gpt-4-1106-preview")
     planner = load_chat_planner(
         llm=llm_plan,
-        type=planner_type,
         **planner_input
     )
 

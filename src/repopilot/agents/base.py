@@ -15,14 +15,15 @@ from langchain_core.prompts.chat import (
 from langchain_core.pydantic_v1 import Field
 
 from langchain.agents.agent import Agent, AgentOutputParser
-from langchain.agents.structured_chat.output_parser import (
-    StructuredChatOutputParserWithRetries,
-)
 from langchain.agents.structured_chat.prompt import FORMAT_INSTRUCTIONS, PREFIX, SUFFIX
 from langchain.callbacks.base import BaseCallbackManager
 from langchain.chains.llm import LLMChain
 from langchain.tools import BaseTool
 from langchain_core.agents import AgentAction, AgentFinish
+from repopilot.parsers.struct_parser import (
+    StructuredChatOutputParserWithRetries,
+)
+
 import re
 import os
 import json
@@ -34,6 +35,8 @@ class ChainExecutor(BaseExecutor):
 
     chain: Chain
     """The chain to use."""
+    name: str = "Chain Executor"
+    description: str = "Executes a chain of tools."
 
     def step(
         self, inputs: dict, callbacks: Callbacks = None, **kwargs: Any
@@ -41,7 +44,14 @@ class ChainExecutor(BaseExecutor):
         """Take step."""
         response = self.chain(inputs, callbacks=callbacks)
         if "intermediate_steps" in response:
-            return StepResponse(response=response["output"]), response["intermediate_steps"]
+            try:
+                return StepResponse(response=response["output"]), response["intermediate_steps"]
+            except ValueError as e:
+                response = str(e)
+                if not response.startswith("Could not parse LLM output: "):
+                    raise e
+                response = response.removeprefix("Could not parse LLM output: `").removesuffix("`")
+                return StepResponse(response=response["output"]), response["intermediate_steps"]
         else:
             return StepResponse(response=response["output"])
 

@@ -9,6 +9,7 @@ import json
 import difflib
 from transformers import AutoTokenizer
 import tiktoken
+import codecs
 
 def find_most_matched_string(word_list, target):
     # Get close matches; n=1 ensures only the top match is returned
@@ -277,3 +278,124 @@ def truncate_tokens_hf(string: str, encoding_name: str) -> str:
         string = tokenizer.decode(encoded_string[0][:max_tokens-400])
 
     return string
+
+def find_non_utf8_files(path):
+    """
+    Finds all non-UTF-8 file paths in a given directory and returns their relative paths.
+
+    Args:
+        path (str): The path to the directory.
+
+    Returns:
+        list: A list of relative paths of non-UTF-8 files.
+    """
+    non_utf8_files = []
+    for root, dirs, files in os.walk(path):
+        for file in files:
+            file_path = os.path.join(root, file)
+            try:
+                with codecs.open(file_path, 'r', 'utf-8') as f:
+                    f.read()
+            except UnicodeDecodeError:
+                # Calculate the relative path by removing the base directory path
+                relative_path = os.path.relpath(file_path, path)
+                non_utf8_files.append(relative_path)
+    return non_utf8_files
+
+def find_abs_path(folder, file_name):
+    # Walk through the directory and its subdirectories
+    for root, dirs, files in os.walk(folder):
+        # Construct the potential full path
+        potential_path = os.path.join(root, file_name)
+        # Check if this potential path is a file
+        if os.path.isfile(potential_path):
+            # Return the absolute path of the file
+            return os.path.abspath(potential_path)
+    # If file is not found, return None
+    return None
+
+def run_ctags(file_path):
+    MAIN_KINDS = {"module": SymbolKind.Module, "namespace": SymbolKind.Namespace, "class": SymbolKind.Class, "method": SymbolKind.Method, "function": SymbolKind.Function, "member": SymbolKind.Method}
+    filter_results = []
+    final_results = []
+    cmd = ["ctags", "--extras=*", "--fields={line}{end}{name}{kind}{scopeKind}", "--output-format=json", file_path]
+    process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    stdout, stderr = process.communicate()
+
+    if process.returncode != 0:
+        print(f"Error executing ctags: {stderr.decode()}")
+    else:
+        results = [json.loads(line) for line in stdout.decode().splitlines()]
+    for symbol in results:
+        if "kind" in symbol and "end" in symbol:
+            if symbol["kind"] in MAIN_KINDS:
+                symbol["kind"] = MAIN_KINDS[symbol["kind"]]
+                symbol["range"] = {"start_line": symbol["line"], "end_line": symbol["end"]}
+                symbol["created_by_ctags"] = True
+                filter_results.append(symbol)
+                
+    # a simple heuristic to get the longest name for each symbol since ctags does not provide the full name
+    for symbol in filter_results:
+        if "scopeKind" in symbol:
+            for result in results:
+                if "line" in result and "scopeKind" in result and "name" in result:
+                    if result["line"] == symbol["line"] and result["scopeKind"] == symbol["scopeKind"] and len(result["name"]) > len(symbol["name"]):
+                        symbol["name"] = result["name"]
+    # filter out duplicate symbols, choose the longest end-start line
+    filter_results = sorted(filter_results, key=lambda x: (x["line"], x["end"] - x["line"]), reverse=True)
+    for symbol in filter_results:
+        if symbol["name"] not in [result["name"] for result in final_results]:
+            final_results.append(symbol)
+    return final_results
+
+def get_symbol_per_file(file_path: str, primary_symbols, parent_path, keyword):
+    out_file_symbols = []
+    file_symbols = run_ctags(file_path)
+    primary_symbols = [int(symbol_kind) for symbol_kind in primary_symbols]
+    file_symbols = [symbol for symbol in file_symbols if symbol["kind"] in primary_symbols]
+    
+    for symbol in file_symbols:
+        symbol_definition = open(file_path, "r").readlines()[symbol["range"]["start_line"]-1:symbol["range"]["end_line"]]
+        symbol_definition = "".join(symbol_definition)
+        output_item = {
+            "name": symbol["name"],
+            "definition": add_num_line(symbol_definition, symbol["range"]["start_line"]),
+            "range": symbol["range"],
+            "path": file_path.replace(parent_path, ""),
+        }
+        if keyword is not None:
+            # if keyword exists, we prefer exact match over partial match to reduce false positives and redudant observation, otherwise we keep all partial matches.
+            condition = (keyword == symbol["name"]) if keyword in [s["name"] for s in file_symbols] else (keyword in symbol["name"])
+            if condition:
+                out_file_symbols.append(output_item)
+        else:
+            out_file_symbols.append(output_item)
+    
+    out_str = ""
+    out_str += f"Symbols in {file_path.replace(parent_path, '')}\n"
+    num_line_per_symbol = [symbol["range"]["end_line"] - symbol["range"]["start_line"] for symbol in out_file_symbols]
+    if len(out_file_symbols) == 0:
+        return "No symbol found in this file."
+    
+    if len(out_file_symbols) >= 3 or max(num_line_per_symbol) > 35:
+        out_str += "Name StartLine EndLine\n"
+        for symbol in out_file_symbols:
+            out_str += f"{symbol['name']} {symbol['range']['start_line']} {symbol['range']['end_line']}\n"
+    else:
+        out_str += "Name StartLine EndLine Definition\n"
+        for symbol in out_file_symbols:
+            out_str += f"{symbol['name']} {symbol['range']['start_line']} {symbol['range']['end_line']} \n{symbol['definition']}\n"
+    
+    return out_str
+
+def get_symbol(file_path: str, parent_path: str, keyword: str = None):
+    primary_symbols = [SymbolKind.Class, SymbolKind.Method, SymbolKind.Function]
+    with open(file_path, 'r+') as f:
+        try:
+            if not f.read().endswith('\n'):
+                f.write('\n')
+            symbols = get_symbol_per_file(file_path, primary_symbols, parent_path, keyword)
+            return symbols
+        except UnicodeDecodeError:
+            print(f"Error in reading file {file_path}")
+            return f"Error in reading file {file_path}"
