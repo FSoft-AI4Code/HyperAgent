@@ -1,5 +1,5 @@
-from langchain_anthropic import AnthropicLLM
-from langchain_community.chat_models.openai import ChatOpenAI
+from langchain_anthropic import ChatAnthropic
+from langchain_openai import ChatOpenAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_openai import AzureChatOpenAI
 from langchain_together import ChatTogether
@@ -20,15 +20,15 @@ def setup_llm(llm_config):
             tensor_parallel_size=1  
         )
     elif "gpt" in model_name:
-        llm = ChatOpenAI(temperature=0, model="gpt-4-1106-preview", openai_api_key=os.environ["OPENAI_API_KEY"])
+        llm = ChatOpenAI(temperature=0, model=model_name, openai_api_key=os.environ["OPENAI_API_KEY"])
     elif "gpt_azure" in model_name:
         llm = AzureChatOpenAI(temperature=0, openai_api_version="2023-07-01-preview", azure_deployment="aic-ai4code-research")
     elif "gemini" in model_name:
-        llm = ChatGoogleGenerativeAI(model="gemini-1.5-pro-latest")
+        llm = ChatGoogleGenerativeAI(model=model_name)
     elif "together" in model_name:
-        llm = ChatTogether(model="meta-llama/Llama-3-70b-chat-hf", api_key=os.environ["TOGETHER_API_KEY"])
+        llm = ChatTogether(model=model_name.replace("together/", ""), api_key=os.environ["TOGETHER_API_KEY"])
     elif "claude" in model_name:
-        llm = AnthropicLLM(model=model_name)
+        llm = ChatAnthropic(model=model_name)
     else:
         raise ValueError(f"Unknown model {llm_config['planner']['model']}")
     

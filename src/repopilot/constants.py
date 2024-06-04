@@ -13,23 +13,19 @@ DEFAULT_VERBOSE_LEVEL = 1
 
 DEFAULT_LLM_CONFIGS = {
     "planner": {
-        "model_name": "gpt-4-1106-preview",
+        "model_name": "gemini-1.5-pro-latest",
         "is_local": False,
-        "max_tokens": 2048
     },
     "navigator": {
-        "model_name": "gpt-4-1106-preview",
+        "model_name": "claude-3-haiku-20240307",
         "is_local": False,
-        "max_tokens": 2048
     },
     "generator": {
-        "model_name": "gpt-4-1106-preview",
+        "model_name": "claude-3-haiku-20240307",
         "is_local": False,
-        "max_tokens": 2048
     },
     "executor": {
-        "model_name": "gpt-4-1106-preview",
+        "model_name": "claude-3-haiku-20240307",
         "is_local": False,
-        "max_tokens": 2048
     }
 }

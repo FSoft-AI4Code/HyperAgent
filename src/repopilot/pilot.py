@@ -1,25 +1,18 @@
 import subprocess
 import os
-import logging
+import warnings
 from typing import Optional
-from repopilot.utils import clone_repo, check_local_or_remote
+from repopilot.utils import clone_repo, check_local_or_remote, setup_logger
 from repopilot.agents.planner import load_chat_planner
 from repopilot.agents.plan_seeking import load_agent_navigator, PlanSeeking, load_agent_generator, load_agent_executor, load_summarizer
 from repopilot.prompts import navigator as navigator_prompt
 from repopilot.prompts import generator as generator_prompt
 from repopilot.prompts import executor as executor_prompt
 from repopilot.build import setup_llms, initialize_tools
-
 from repopilot.constants import DEFAULT_VERBOSE_LEVEL, DEFAULT_LLM_CONFIGS
-
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
-)
-
-logging.getLogger("httpx").setLevel(logging.WARNING)
-logging.getLogger("multilspy").setLevel(logging.FATAL)
-logger = logging.getLogger(__name__)
         
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+logger = setup_logger()
 
 def Setup(
     repo_path: str,

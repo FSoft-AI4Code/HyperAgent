@@ -3,9 +3,8 @@ import numpy as np
 from typing import Type, List, Optional
 from pydantic import BaseModel, Field
 from langchain.tools import BaseTool, Tool
-from openai import OpenAI
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.document_loaders.generic import GenericLoader
+from langchain_community.document_loaders.generic import GenericLoader
 from repopilot.langchain_parsers.parsers import LanguageParser
 from .get_repo_struct import visualize_tree
 from .llm_multilspy import LSPToolKit, add_num_line
@@ -162,6 +161,7 @@ class GoToDefinitionTool(BaseTool):
             str: The definition of the symbol.
 
         """
+        line = int(line)
         return self.lsptoolkit.get_definition(word, relative_path, line, verbose=verbose)
 
 
@@ -180,7 +180,6 @@ class FindAllReferencesTool(BaseTool):
     description = """Given a code snippet that contains target symbol, find all references of this symbol inside the project. If you increase the num_results, the tool will return more references, but if it does not increase the number of references, it means you should use another tool."""
     args_schema = FindAllReferencesArgs
     lsptoolkit: LSPToolKit = None
-    openai_engine: OpenAI = None
     path = ""
     verbose = False
     language = "python"
@@ -189,7 +188,6 @@ class FindAllReferencesTool(BaseTool):
         super().__init__()
         self.path = path
         self.lsptoolkit = LSPToolKit(path, language)
-        self.openai_engine = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
     
     def _run(self, word: str, relative_file_path: str, line: Optional[int] = None, num_results: int = 10):
         """
@@ -304,7 +302,6 @@ class GetAllSymbolsTool(BaseTool):
 
 class GetTreeStructureArgs(BaseModel):
     relative_path: str = Field(..., description="The relative path of the folder we want to explore")
-    level: int = Field(..., description="The level of the tree structure we want to explore, prefer to use 2 (default) for a quick overview of the folder structure then use 3 for more details")
 
 class GetTreeStructureTool(BaseTool):
     """
@@ -342,10 +339,10 @@ class GetTreeStructureTool(BaseTool):
         super().__init__()
         self.path = path
     
-    def _run(self, relative_path: str, level: int = 2):
+    def _run(self, relative_path: str):
         abs_path = os.path.join(self.path, relative_path)
         try:
-            output = visualize_tree(abs_path, level=level)
+            output = visualize_tree(abs_path, level=1)
             output = "The tree structure of " + relative_path + " is: \n" + output
         except: 
             output = "Execution failed, please check the relative path again, likely the relative path lacks of prefix directory name"

@@ -1,7 +1,6 @@
 import ast
 from typing import Any, List
-
-from langchain.document_loaders.parsers.language.code_segmenter import CodeSegmenter
+from langchain_community.document_loaders.parsers.language.code_segmenter import CodeSegmenter
 
 
 class PythonSegmenter(CodeSegmenter):

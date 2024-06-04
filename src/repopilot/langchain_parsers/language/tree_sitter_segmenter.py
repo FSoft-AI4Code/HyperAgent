@@ -1,7 +1,7 @@
 from abc import abstractmethod
 from typing import TYPE_CHECKING, List
 
-from langchain.document_loaders.parsers.language.code_segmenter import CodeSegmenter
+from langchain_community.document_loaders.parsers.language.code_segmenter import CodeSegmenter
 
 if TYPE_CHECKING:
     from tree_sitter import Language, Parser
