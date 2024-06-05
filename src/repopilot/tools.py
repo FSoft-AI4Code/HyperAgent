@@ -513,7 +513,7 @@ class EditorTool(BaseTool):
         super().__init__()
         self.path = path
     
-    def _run(self, relative_file_path: str, start_line:int, end_line: int, patch: str):
+    def _run(self, relative_file_path: str, start_line:int = None, end_line: int = None, patch: str = None):
         """
         Opens the specified file and returns its content.
 
@@ -530,6 +530,9 @@ class EditorTool(BaseTool):
         
         with open(osp.join(self.path, relative_file_path), 'r') as file:
             lines = file.readlines()
+            
+        if end_line is  None or end_line is None:
+            return "Please specify either start and end line"
         
         if start_line < 1 or end_line > len(lines) or start_line > end_line:
             return "Invalid start and end line, please check the line number again"

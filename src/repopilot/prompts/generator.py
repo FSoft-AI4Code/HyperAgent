@@ -11,5 +11,6 @@ Important notes:
     4. DO NOT re-generate the same failed edit. Running it again will lead to the same error. Edit the file again if necessary based on the error message.
     5. If you have the exact name of the file and symbol to edit, you can use the code search to find the definition of the symbol. If there's no definition, you can use open open_file tool.
     6. Pay attention to original indentation! Something like this "patch": "    def something(self, s):\n    # Check if something is something\n        return something if the original code is indented with 4 spaces.
-
+    7. The patch should be a block of code that be replaced into the code. It's not a diff or github patch.
+    
 You have access to the following tool:"""
