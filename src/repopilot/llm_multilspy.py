@@ -69,9 +69,16 @@ class LSPToolKit:
             if symbol is None:
                 return "Please try again with semantic or code search tool"
             symbol_type = matching_kind_symbol(symbol)
+            definition = ""
             if "location" not in symbol:
-                definition = add_num_line(get_text(self.open_file(output[0]["relativePath"]), symbol["range"]), symbol["range"]["start"]["line"])
+                if symbol["range"]["end"]["line"] - symbol["range"]["start"]["line"] > 100:
+                    definition = "Too long to display, you should use open_file tool to view partial content step by step."
+                    symbol["range"]["end"]["line"] = symbol["range"]["start"]["line"] + 100
+                definition += add_num_line(get_text(self.open_file(output[0]["relativePath"]), symbol["range"]), symbol["range"]["start"]["line"])
             else:
+                if symbol["location"]["range"]["end"]["line"] - symbol["location"]["range"]["start"]["line"] > 100:
+                    definition = "Too long to display, you should use open_file tool to view partial content step by step."
+                    symbol["location"]["range"]["end"]["line"] = symbol["location"]["range"]["start"]["line"] + 100
                 definition = add_num_line(get_text(self.open_file(output[0]["relativePath"]), symbol["location"]["range"]), symbol["location"]["range"]["start"]["line"])
             output = "Name: " + str(symbol["name"]) + "\n" + "Type: " + str(symbol_type) + "\n" + "Definition: " + definition
         

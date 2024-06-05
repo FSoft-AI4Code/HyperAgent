@@ -24,9 +24,9 @@ def setup_llm(llm_config):
     elif "gpt_azure" in model_name:
         llm = AzureChatOpenAI(temperature=0, openai_api_version="2023-07-01-preview", azure_deployment="aic-ai4code-research")
     elif "gemini" in model_name:
-        llm = ChatGoogleGenerativeAI(model=model_name)
+        llm = ChatGoogleGenerativeAI(model=model_name, temperature=0)
     elif "together" in model_name:
-        llm = ChatTogether(model=model_name.replace("together/", ""), api_key=os.environ["TOGETHER_API_KEY"])
+        llm = ChatTogether(model=model_name.replace("together/", ""), api_key=os.environ["TOGETHER_API_KEY"], temperature=0)
     elif "claude" in model_name:
         llm = ChatAnthropic(model=model_name)
     else:

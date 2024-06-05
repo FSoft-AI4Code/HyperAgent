@@ -1,6 +1,7 @@
 from typing import List
 
 import re
+import openai
 from langchain.schema.language_model import BaseLanguageModel
 from langchain.tools import BaseTool
 from langchain_experimental.plan_and_execute.executors.base import ChainExecutor
@@ -71,6 +72,12 @@ Action:
   "action_input": "Final response to human"
 }}}}
 ```"""
+def filter_response(text):
+    text = text.replace("```json", "")
+    text = text.replace("action: ", "")
+    text = text.replace("Final Answer", "")
+    text = text.replace("action_input", "")
+    return text
 
 def load_agent_navigator(
     llm: BaseLanguageModel,
@@ -262,28 +269,36 @@ class PlanSeeking(Chain):
                             tool_output = str(react_step[1])
                             current_notes += f"\nStep:{j}\n\Analysis: {react_step[0].log.split('Action:')[0]}\nOutput: {tool_output}\n"
                     if any([key in response.response for key in DO_NOT_SUMMARIZED_KEYS]):
-                        current_notes = self.summarizer(current_notes) + "\n" + response.response
+                        try:
+                            current_notes = self.summarizer(current_notes) + "\n" + response.response
+                        except openai.BadRequestError:
+                            current_notes = response.response
                     else:
-                        current_notes = self.summarizer(current_notes + "\n" + response.response) 
+                        current_notes = self.summarizer(current_notes + "\n" + filter_response(response.response)) 
                     next_key =  planner_response + "\n"
                     
                     next_key += f"Observation: {current_notes}\n"
-                    
                     nav_memory += f"Planner Request: {planner_request} \nYour Result: {response}\n"
 
                 elif agent_type == "Code Generator":
-                    try:
-                        pattern = r'`([^`]*)`'
+                    pattern = r'`([^`]*)`'
 
-                        # Find all matches
-                        matches = re.findall(pattern, planner_request)
+                    # Find all matches
+                    matches = re.findall(pattern, planner_request)
+                    if matches:
                         file_paths = [match for match in matches if match.endswith(".py")]
-                        full_path = find_abs_path(self.repo_dir, file_paths[0])
-                    except:
+                        if len(file_paths) > 0:
+                            full_path = find_abs_path(self.repo_dir, file_paths[0])
+                        else:
+                            full_path = None
+                    else:
                         pattern = r"'([^\']*)'"
                         matches = re.findall(pattern, planner_request)
                         file_paths = [match for match in matches if match.endswith(".py")]
-                        full_path = find_abs_path(self.repo_dir, file_paths[0])
+                        if len(file_paths) > 0:
+                            full_path = find_abs_path(self.repo_dir, file_paths[0])
+                        else:
+                            full_path = None
                         
                     if full_path is not None:
                         generator_inputs = {"current_step": planner_request, "file_path": file_paths[0] if file_paths else None}

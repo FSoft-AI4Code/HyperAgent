@@ -12,6 +12,16 @@ from repopilot.prompts.planner import PLANNER_TEMPLATE
 import json
 import re
 
+def parse_manual(text):
+    # Extract the action and input from the text
+    action = text.split("Action: ")[1]
+    agent_type = "Code Generator" if "Code Generator" in action else None
+    agent_type = "Codebase Navigator" if "Codebase Navigator" in action else agent_type
+    agent_type = "Bash Executor" if "Bash Executor" in action else agent_type
+    request = action.split("request")[1].split("terminated")[0]
+    terminated = False if "false" in action else True
+    return {"agent_type": agent_type, "request": request, "terminated": terminated}
+
 def parse_string_to_dict(s):
     # Remove leading and trailing whitespaces (if any)
     s = s.strip()
@@ -50,7 +60,10 @@ class PlanningOutputParser(PlanOutputParser):
         # Search for the pattern in the text
         match = re.search(pattern, text)
         if match:
-            return json.loads(match.group(1).strip(), strict=False) 
+            try:
+                return json.loads(match.group(1).strip(), strict=False) 
+            except json.decoder.JSONDecodeError:
+                return parse_manual(text)
         else:
             return parse_string_to_dict(text.split("Action: ")[1])
 

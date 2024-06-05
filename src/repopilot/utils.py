@@ -349,6 +349,13 @@ def run_ctags(file_path):
             final_results.append(symbol)
     return final_results
 
+def get_symbol_with_keyword(file_path: str, parent_path: str, keyword: str):
+    out_symbols = get_symbol_per_file(file_path, [SymbolKind.Class, SymbolKind.Method, SymbolKind.Function], parent_path, keyword)
+    for symbol in out_symbols:
+        if keyword == symbol["name"]:
+            return symbol["definition"]
+    return F"No symbol {keyword} found in this file."
+
 def get_symbol_per_file(file_path: str, primary_symbols, parent_path, keyword):
     out_file_symbols = []
     file_symbols = run_ctags(file_path)
@@ -372,31 +379,31 @@ def get_symbol_per_file(file_path: str, primary_symbols, parent_path, keyword):
         else:
             out_file_symbols.append(output_item)
     
-    out_str = ""
-    out_str += f"Symbols in {file_path.replace(parent_path, '')}\n"
-    num_line_per_symbol = [symbol["range"]["end_line"] - symbol["range"]["start_line"] for symbol in out_file_symbols]
-    if len(out_file_symbols) == 0:
-        return "No symbol found in this file."
-    
-    if len(out_file_symbols) >= 3 or max(num_line_per_symbol) > 35:
-        out_str += "Name StartLine EndLine\n"
-        for symbol in out_file_symbols:
-            out_str += f"{symbol['name']} {symbol['range']['start_line']} {symbol['range']['end_line']}\n"
-    else:
-        out_str += "Name StartLine EndLine Definition\n"
-        for symbol in out_file_symbols:
-            out_str += f"{symbol['name']} {symbol['range']['start_line']} {symbol['range']['end_line']} \n{symbol['definition']}\n"
-    
-    return out_str
+    return out_file_symbols
 
-def get_symbol(file_path: str, parent_path: str, keyword: str = None):
+def get_symbol_verbose(file_path: str, parent_path: str, keyword: str = None):
     primary_symbols = [SymbolKind.Class, SymbolKind.Method, SymbolKind.Function]
     with open(file_path, 'r+') as f:
         try:
             if not f.read().endswith('\n'):
                 f.write('\n')
-            symbols = get_symbol_per_file(file_path, primary_symbols, parent_path, keyword)
-            return symbols
+            out_file_symbols = get_symbol_per_file(file_path, primary_symbols, parent_path, keyword)
+            out_str = ""
+            out_str += f"Symbols in {file_path.replace(parent_path, '')}\n"
+            num_line_per_symbol = [symbol["range"]["end_line"] - symbol["range"]["start_line"] for symbol in out_file_symbols]
+            if len(out_file_symbols) == 0:
+                return "No symbol found in this file."
+            
+            if len(out_file_symbols) >= 3 or max(num_line_per_symbol) > 35:
+                out_str += "Name StartLine EndLine\n"
+                for symbol in out_file_symbols:
+                    out_str += f"{symbol['name']} {symbol['range']['start_line']} {symbol['range']['end_line']}\n"
+            else:
+                out_str += "Name StartLine EndLine Definition\n"
+                for symbol in out_file_symbols:
+                    out_str += f"{symbol['name']} {symbol['range']['start_line']} {symbol['range']['end_line']} \n{symbol['definition']}\n"
+            
+            return out_str
         except UnicodeDecodeError:
             print(f"Error in reading file {file_path}")
             return f"Error in reading file {file_path}"

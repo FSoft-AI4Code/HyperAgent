@@ -12,6 +12,8 @@ from repopilot.build import setup_llms, initialize_tools
 from repopilot.constants import DEFAULT_VERBOSE_LEVEL, DEFAULT_LLM_CONFIGS, DEFAULT_TRAJECTORIES_PATH
         
 warnings.filterwarnings("ignore", category=DeprecationWarning)
+warnings.filterwarnings("ignore", category=FutureWarning)
+
 logger = setup_logger()
 
 def Setup(
@@ -102,7 +104,7 @@ class RepoPilot:
         commit=None,
         language="python",
         clone_dir="data/repos",
-        save_trajectories_path=None,
+        save_trajectories_path=DEFAULT_TRAJECTORIES_PATH,
         llm_configs = DEFAULT_LLM_CONFIGS,
         verbose = DEFAULT_VERBOSE_LEVEL,
     ):

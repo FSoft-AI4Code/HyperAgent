@@ -13,7 +13,7 @@ from .zoekt.zoekt_server import ZoektServer
 from .utils import identify_extension, find_non_utf8_files
 from langchain_community.embeddings.cohere import CohereEmbeddings
 from langchain_community.vectorstores import Chroma
-from repopilot.utils import get_symbol
+from repopilot.utils import get_symbol_verbose, get_symbol_with_keyword
 import jedi
 import platform
 import uuid
@@ -195,6 +195,9 @@ class FindAllReferencesTool(BaseTool):
         Returns:
             Union[str, List[str]]: The list of references or an error message if an exception occurs.
         """
+        if "/" not in relative_file_path:
+            return "Invalid relative file path, please check the path again"
+        
         abs_path = os.path.join(self.path, relative_file_path)
         
         is_dir = os.path.isdir(abs_path)
@@ -246,7 +249,7 @@ class GetAllSymbolsTool(BaseTool):
             Union[List[str], str]: The list of symbols or an error message.
         """
         try:
-            return get_symbol(osp.join(self.path, path_to_file), self.path, keyword)
+            return get_symbol_verbose(osp.join(self.path, path_to_file), self.path, keyword)
         except IsADirectoryError:
             return "The relative path is a folder, please specify the file path instead. Consider using get_tree_structure to find the file name then use this tool one file path at a time"
         except FileNotFoundError:
@@ -384,6 +387,12 @@ class OpenFileTool(BaseTool):
                             returned_source.append(expanded_source)
                         out_str += "\n".join(returned_source)
                 return out_str
+            # else:
+            #     out_str = "The content of " + relative_file_path.replace(self.path, "") + f"with keyword {keywords} is: \n"
+            #     for keyword in keywords:
+            #         out_str += get_symbol_with_keyword(abs_path, self.path, keyword)
+            #     out_str += "\n"
+            #     return out_str
         except FileNotFoundError:
             return "File not found, please check the path again"
         source = add_num_line(source, start_line)
@@ -444,7 +453,7 @@ class BashExecutorTool(BaseTool):
     
     repo_dir = ""
 
-    process = Field(default_factory=_get_default_bash_process)
+    process = _get_default_bash_process()
     """Bash process to run commands."""
 
     name = "terminal"
@@ -473,7 +482,7 @@ class BashExecutorTool(BaseTool):
         """Run commands and return final output."""
 
         print(f"Executing command:\n {commands}") 
-        commands+= f"cd {self.repo_dir} && " + commands
+        commands = f"cd {self.repo_dir} && " + commands
         try:
             if self.ask_human_input:
                 user_input = input("Proceed with command execution? (y/n): ").lower()
@@ -485,7 +494,7 @@ class BashExecutorTool(BaseTool):
                 return self.process.run(commands)
 
         except Exception as e:
-            return "Error during command execution: {e}"
+            return f"Error during command execution: {e}"
 
 
 class EditorArgs(BaseModel):
@@ -516,6 +525,9 @@ class EditorTool(BaseTool):
             str: The content of the file.
 
         """
+        if "/" not in relative_file_path:
+            return "Invalid relative file path, please check the path again"
+        
         with open(osp.join(self.path, relative_file_path), 'r') as file:
             lines = file.readlines()
         
