@@ -24,7 +24,7 @@ from repopilot.agents.agent_executor import AgentExecutor
 from repopilot.agents.llms import LocalLLM
 from repopilot.utils import find_abs_path
 from langchain_community.callbacks import get_openai_callback
-from repopilot.constants import DEFAULT_TRAJECTORIES_PATH
+from repopilot.constants import DEFAULT_TRAJECTORIES_PATH, DO_NOT_SUMMARIZED_KEYS
 
 HUMAN_MESSAGE_TEMPLATE = """Objective: {current_step}
 Agent scratchpad:
@@ -261,8 +261,10 @@ class PlanSeeking(Chain):
                         else:
                             tool_output = str(react_step[1])
                             current_notes += f"\nStep:{j}\n\Analysis: {react_step[0].log.split('Action:')[0]}\nOutput: {tool_output}\n"
-
-                    current_notes = self.summarizer(current_notes + "\n" + response.response)
+                    if any([key in response.response for key in DO_NOT_SUMMARIZED_KEYS]):
+                        current_notes = self.summarizer(current_notes) + "\n" + response.response
+                    else:
+                        current_notes = self.summarizer(current_notes + "\n" + response.response) 
                     next_key =  planner_response + "\n"
                     
                     next_key += f"Observation: {current_notes}\n"
@@ -289,9 +291,12 @@ class PlanSeeking(Chain):
                             generator_inputs,
                             callbacks=run_manager.get_child() if run_manager else None,
                         )
-                        next_key = response 
+                        next_key =  planner_response + "\n"
+                        next_key += f"Observation: {response}\n"
+                        
                     else:
-                        next_key = "File not found"
+                        next_key = planner_response + "\n"
+                        next_key = f"Observation: File not Found\n"
                 
                 elif agent_type == "Bash Executor":
                     executor_inputs = {"current_step": planner_request}
@@ -300,7 +305,8 @@ class PlanSeeking(Chain):
                         callbacks=run_manager.get_child() if run_manager else None,
                     )
                     
-                    next_key = response
+                    next_key = planner_response + "\n"
+                    next_key += f"Observation: {response}\n"
                 
                 inputs["previous_steps"].append(next_key)
                 index += 1

@@ -11,6 +11,7 @@ DEFAULT_VLLM_PORT = 5200
 DEFAULT_LANGUAGE = "python"
 DEFAULT_VERBOSE_LEVEL = 1
 DEFAULT_TRAJECTORIES_PATH = "/datadrive5/huypn16/RepoPilot/data/agent_trajectories"
+DO_NOT_SUMMARIZED_KEYS = ["python", "code_snippet"]
 
 DEFAULT_LLM_CONFIGS = {
     "planner": {
