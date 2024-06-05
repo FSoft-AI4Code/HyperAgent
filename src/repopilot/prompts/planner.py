@@ -15,6 +15,8 @@ Important Notes:
 
 Given following agents:
 {formatted_agents}
+and the file structure of the repository:
+{struct}
 
 Response of should be in the format:
 

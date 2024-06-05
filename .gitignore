@@ -16,5 +16,6 @@ dist/*
 wandb/
 model/
 data/repos/*
+data/agent_trajectories/*
 .vscode/*
 ```

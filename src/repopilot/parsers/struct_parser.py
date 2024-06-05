@@ -86,6 +86,43 @@ class StructuredChatOutputParser(AgentOutputParser):
     def _type(self) -> str:
         return "structured_chat"
 
+class StructuredGeneratorChatOutputParser(AgentOutputParser):
+    """Output parser for the structured chat agent."""
+
+    format_instructions: str = FORMAT_INSTRUCTIONS
+    """Default formatting instructions"""
+
+    pattern = re.compile(r"```(?:json\s+)?(\W.*?)```", re.DOTALL)
+    """Regex pattern to parse the output."""
+
+    def get_format_instructions(self) -> str:
+        """Returns formatting instructions for the given output parser."""
+        return self.format_instructions
+
+    def parse(self, text: str) -> Union[AgentAction, AgentFinish]:
+        if "Final Answer" in text:
+            action_match = self.pattern.search(text)
+            if action_match is not None:
+                response = json.loads(action_match.group(1).strip(), strict=False)
+                if isinstance(response, list):
+                    # gpt turbo frequently ignores the directive to emit a single action
+                    logger.warning("Got multiple action responses: %s", response)
+                    response = response[0]
+                if response["action"] == "Final Answer":
+                    return AgentFinish({"output": response["action_input"]}, text)
+                else:
+                    return AgentAction(
+                        response["action"], response.get("action_input", {}), text
+                    )
+            else:
+                return AgentFinish({"output": text}, text)
+        else:
+            text = text.split("Final Answer:")[1]
+            return AgentFinish({"output": text}, text)
+
+    @property
+    def _type(self) -> str:
+        return "structured_chat"
 
 class StructuredChatOutputParserWithRetries(AgentOutputParser):
     """Output parser with retries for the structured chat agent."""

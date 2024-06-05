@@ -11,7 +11,7 @@ from langchain.callbacks.manager import (
     CallbackManagerForChainRun,
 )
 from langchain.chains.base import Chain
-
+from langchain.agents.structured_chat.output_parser import StructuredChatOutputParserWithRetries
 from langchain_experimental.plan_and_execute.executors.base import BaseExecutor
 from langchain_experimental.plan_and_execute.planners.base import BasePlanner
 from langchain_experimental.plan_and_execute.schema import (
@@ -23,6 +23,7 @@ from langchain.agents.structured_chat.prompt import PREFIX, SUFFIX
 from repopilot.agents.base import ChainExecutor, StructuredChatAgent
 from repopilot.agents.agent_executor import AgentExecutor
 from repopilot.agents.llms import LocalLLM
+from repopilot.parsers.struct_parser import StructuredGeneratorChatOutputParser
 from repopilot.utils import find_abs_path
 from langchain_community.callbacks import get_openai_callback
 from repopilot.constants import DEFAULT_TRAJECTORIES_PATH, DO_NOT_SUMMARIZED_KEYS
@@ -151,6 +152,7 @@ def load_agent_generator(
         llm,
         tools,
         human_message_template=template,
+        output_parser=StructuredGeneratorChatOutputParser(),
         input_variables=input_variables,
         prefix=prefix,
         suffix=suffix,

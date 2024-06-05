@@ -6,14 +6,14 @@ from langchain.tools import BaseTool, Tool
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders.generic import GenericLoader
 from repopilot.langchain_parsers.parsers import LanguageParser
-from .get_repo_struct import visualize_tree
-from .llm_multilspy import LSPToolKit, add_num_line
-from .code_search import search_elements_inside_project
-from .zoekt.zoekt_server import ZoektServer
-from .utils import identify_extension, find_non_utf8_files
+from repopilot.get_repo_struct import visualize_tree
+from repopilot.llm_multilspy import LSPToolKit, add_num_line
+from repopilot.code_search import search_elements_inside_project
+from repopilot.zoekt.zoekt_server import ZoektServer
+from repopilot.utils import identify_extension, find_non_utf8_files
 from langchain_community.embeddings.cohere import CohereEmbeddings
 from langchain_community.vectorstores import Chroma
-from repopilot.utils import get_symbol_verbose, get_symbol_with_keyword
+from repopilot.utils import get_symbol_verbose
 import jedi
 import platform
 import uuid
@@ -71,7 +71,7 @@ class CodeSearchTool(BaseTool):
     """
 
     name = "code_search"
-    description = """Useful when you want to find all matched primary symbols (function, class name) in a repository. You want to quickly find a class or function like 'some_function' function."""
+    description = """Useful when you want to find all matched primary symbols (function, class name) in a repository. You want to quickly find a class or function like `some_function` function not `something.something`"""
     args_schema: Type[BaseModel] = CodeSearchArgs
     path = ""
     verbose = False
