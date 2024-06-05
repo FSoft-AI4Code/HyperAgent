@@ -44,37 +44,43 @@ class StructuredChatOutputParser(AgentOutputParser):
         return self.format_instructions
 
     def parse(self, text: str) -> Union[AgentAction, AgentFinish]:
-        if "summary" in text or "summarize" in text or "summarise" in text:
-            return AgentFinish({"output": text}, text)
-        
-        if "action" in text:
-            if ("```python" not in text) and ("```\ndef" not in text):
-                action_match = self.pattern.search(text)
-                if action_match is not None:
-                    response = json.loads(action_match.group(1).strip(), strict=False)
-                    if isinstance(response, list):
-                        # gpt turbo frequently ignores the directive to emit a single action
-                        logger.warning("Got multiple action responses: %s", response)
-                        response = response[0]
+        try:
+            if "summary" in text or "summarize" in text or "summarise" in text:
+                return AgentFinish({"output": text}, text)
+            
+            if "action" in text:
+                if ("```python" not in text) and ("```\ndef" not in text):
+                    action_match = self.pattern.search(text)
+                    if action_match is not None:
+                        response = json.loads(action_match.group(1).strip(), strict=False)
+                        if isinstance(response, list):
+                            # gpt turbo frequently ignores the directive to emit a single action
+                            logger.warning("Got multiple action responses: %s", response)
+                            response = response[0]
+                        if response["action"] == "Final Answer":
+                            return AgentFinish({"output": response["action_input"]}, text)
+                        else:
+                            return AgentAction(
+                                response["action"], response.get("action_input", {}), text
+                            )
+                    else:
+                        return AgentFinish({"output": text}, text)
+                else:
+                    response = extract_action_and_input(text)
                     if response["action"] == "Final Answer":
                         return AgentFinish({"output": response["action_input"]}, text)
                     else:
                         return AgentAction(
                             response["action"], response.get("action_input", {}), text
-                        )
+                    )
+            else:
+                if "Final Answer:" in text:
+                    text = text.split("Final Answer:")[1]
+                    return AgentFinish({"output": text}, text)
                 else:
                     return AgentFinish({"output": text}, text)
-            else:
-                response = extract_action_and_input(text)
-                if response["action"] == "Final Answer":
-                    return AgentFinish({"output": response["action_input"]}, text)
-                else:
-                    return AgentAction(
-                        response["action"], response.get("action_input", {}), text
-                )
-        else:
+        except:
             return AgentFinish({"output": text}, text)
-        
 
     @property
     def _type(self) -> str:

@@ -31,7 +31,6 @@ Agent scratchpad:
 {agent_scratchpad}"""
 
 NAV_HUMAN_MESSAGE_TEMPLATE = """Objective: {current_step}
-Navigation Memory: {nav_memory}
 Agent scratchpad:
 {agent_scratchpad}
 """
@@ -241,12 +240,12 @@ class PlanSeeking(Chain):
         terminated = False
         nav_memory = ""
         
+        index = 0
         with get_openai_callback() as cb:
             while not terminated:
-                planner_output = self.planner.plan(inputs)
+                planner_output, planner_response = self.planner.plan(inputs)
                 agent_type = planner_output["agent_type"]
                 planner_request = planner_output["request"]
-                
                 if agent_type == "Codebase Navigator":
                     current_notes = ""
                     nav_inputs = {"current_step": planner_request, "nav_memory": nav_memory}
@@ -255,7 +254,7 @@ class PlanSeeking(Chain):
                         callbacks=run_manager.get_child() if run_manager else None,
                     )
                     
-                    for j, react_step in enumerate(intermediate_steps[-5:]):
+                    for j, react_step in enumerate(intermediate_steps):
                         if isinstance(react_step[1], list):
                             obs_strings = [str(x) for x in react_step[1]]
                             tool_output = "\n".join(obs_strings)
@@ -263,11 +262,12 @@ class PlanSeeking(Chain):
                             tool_output = str(react_step[1])
                             current_notes += f"\nStep:{j}\n\Analysis: {react_step[0].log.split('Action:')[0]}\nOutput: {tool_output}\n"
 
-                    current_notes = self.summarizer(current_notes)
-                    next_key = "Request: " + planner_request + "\n"
-                    next_key += f"Findings: {current_notes}"
+                    current_notes = self.summarizer(current_notes + "\n" + response.response)
+                    next_key =  planner_response + "\n"
                     
-                    nav_memory += f"Planner Request: {planner_request} \nItermediate Results: {current_notes}\nResult: {response}\n"
+                    next_key += f"Observation: {current_notes}\n"
+                    
+                    nav_memory += f"Planner Request: {planner_request} \nYour Result: {response}\n"
 
                 elif agent_type == "Code Generator":
                     try:
@@ -303,7 +303,7 @@ class PlanSeeking(Chain):
                     next_key = response
                 
                 inputs["previous_steps"].append(next_key)
-                
+                index += 1
                 print(f"Total Tokens: {cb.total_tokens}")
                 print(f"Prompt Tokens: {cb.prompt_tokens}")
                 print(f"Completion Tokens: {cb.completion_tokens}")

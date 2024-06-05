@@ -9,7 +9,7 @@ from repopilot.prompts import navigator as navigator_prompt
 from repopilot.prompts import generator as generator_prompt
 from repopilot.prompts import executor as executor_prompt
 from repopilot.build import setup_llms, initialize_tools
-from repopilot.constants import DEFAULT_VERBOSE_LEVEL, DEFAULT_LLM_CONFIGS
+from repopilot.constants import DEFAULT_VERBOSE_LEVEL, DEFAULT_LLM_CONFIGS, DEFAULT_TRAJECTORIES_PATH
         
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 logger = setup_logger()
@@ -19,7 +19,7 @@ def Setup(
     commit: str,
     language: str = "python",
     clone_dir: str = "data/repos",
-    save_trajectories_path: Optional[str] = None,
+    save_trajectories_path: Optional[str] = DEFAULT_TRAJECTORIES_PATH,
     db_path: Optional[str] = None,  
     index_path: Optional[str] = "data/indexes",
     llm_configs: Optional[dict] = None,

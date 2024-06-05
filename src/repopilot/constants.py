@@ -10,7 +10,7 @@ DEFAULT_PLANNER_TYPE = "static"
 DEFAULT_VLLM_PORT = 5200
 DEFAULT_LANGUAGE = "python"
 DEFAULT_VERBOSE_LEVEL = 1
-DEFAULT_TRAJECTORIES_PATH = " /datadrive5/huypn16/RepoPilot/datadrive5/huypn16/RepoPilot/data/trajectories"
+DEFAULT_TRAJECTORIES_PATH = "/datadrive5/huypn16/RepoPilot/data/agent_trajectories"
 
 DEFAULT_LLM_CONFIGS = {
     "planner": {
@@ -22,7 +22,7 @@ DEFAULT_LLM_CONFIGS = {
         "is_local": False,
     },
     "generator": {
-        "model_name": "claude-3-haiku-20240307",
+        "model_name": "gemini-1.5-pro-latest",
         "is_local": False,
     },
     "executor": {

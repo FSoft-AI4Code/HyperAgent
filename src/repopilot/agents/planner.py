@@ -44,19 +44,13 @@ class PlanningOutputParser(PlanOutputParser):
 
     def parse(self, text: str):
         text = text.replace("```python", "")
-        text = text.replace("```", "")
-        text = text.replace("Thought:", "")
-        pattern = r'Action:\s*(\{.*?\})'
+        # pattern = r'Action:\s*(\{.*?\})'
+        pattern = re.compile(r"```(?:json\s+)?(\W.*?)```", re.DOTALL)
 
         # Search for the pattern in the text
-        match = re.search(pattern, text, re.DOTALL)
+        match = re.search(pattern, text)
         if match:
-            action_str = match.group(1)
-            # Convert the string representation of the dictionary to an actual dictionar
-            return json.loads(action_str, strict=False)   
-        elif "json" in text:
-            json_txt = text.split("json")[1].replace("```", "").strip()
-            return json.loads(json_txt)
+            return json.loads(match.group(1).strip(), strict=False) 
         else:
             return parse_string_to_dict(text.split("Action: ")[1])
 
@@ -80,7 +74,7 @@ def load_chat_planner(
     prompt_template = ChatPromptTemplate.from_messages(
         [
             SystemMessage(content=system_prompt),
-            HumanMessagePromptTemplate.from_template("Human Request: \n```{input}```\nPrevious Plan Results: \n```{previous_steps}```"),
+            HumanMessagePromptTemplate.from_template("Planner Query <Focus Here!>: \n```{input}```\nAgent Scratchpad : \n```{previous_steps}```"),
         ]
     )
     llm_chain = LLMChain(llm=llm, prompt=prompt_template)
