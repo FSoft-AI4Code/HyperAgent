@@ -23,7 +23,7 @@ from langchain.agents.structured_chat.prompt import PREFIX, SUFFIX
 from repopilot.agents.base import ChainExecutor, StructuredChatAgent
 from repopilot.agents.agent_executor import AgentExecutor
 from repopilot.agents.llms import LocalLLM
-from repopilot.parsers.struct_parser import StructuredGeneratorChatOutputParser
+from repopilot.parsers.struct_parser import StructuredGeneratorChatOutputParser, StructuredBashChatOutputParser
 from repopilot.utils import find_abs_path
 from langchain_community.callbacks import get_openai_callback
 from repopilot.constants import DEFAULT_TRAJECTORIES_PATH, DO_NOT_SUMMARIZED_KEYS
@@ -196,6 +196,7 @@ def load_agent_executor(
         tools,
         human_message_template=template,
         input_variables=input_variables,
+        output_parser=StructuredBashChatOutputParser(),
         prefix=prefix,
         suffix=suffix,
         format_instructions=format_instructions,
@@ -280,7 +281,7 @@ class PlanSeeking(Chain):
                     next_key =  planner_response + "\n"
                     
                     next_key += f"Observation: {current_notes}\n"
-                    nav_memory += f"Planner Request: {planner_request} \nYour Result: {response}\n"
+                    nav_memory += f"Planner Request: {planner_request} \nYour Result: {current_notes}\n"
 
                 elif agent_type == "Code Generator":
                     pattern = r'`([^`]*)`'

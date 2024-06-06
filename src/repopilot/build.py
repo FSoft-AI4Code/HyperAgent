@@ -3,6 +3,7 @@ from langchain_openai import ChatOpenAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_openai import AzureChatOpenAI
 from langchain_together import ChatTogether
+from langchain_mistralai.chat_models import ChatMistralAI
 from langchain_community.llms.vllm import VLLM
 
 import os
@@ -19,16 +20,23 @@ def setup_llm(llm_config):
             trust_remote_code=True,
             tensor_parallel_size=1  
         )
+    elif "gpt_azure" in model_name:
+        model_name = model_name.replace("gpt_azure/", "")
+        llm = AzureChatOpenAI(temperature=0, api_version=os.environ["API_VERSION"], azure_endpoint=os.environ["AZURE_ENDPOINT_GPT4"], api_key=os.environ["OPENAI_API_KEY"], azure_deployment="codevista-openai-eastuse-gpt4o")
     elif "gpt" in model_name:
         llm = ChatOpenAI(temperature=0, model=model_name, openai_api_key=os.environ["OPENAI_API_KEY"])
-    elif "gpt_azure" in model_name:
-        llm = AzureChatOpenAI(temperature=0, openai_api_version="2023-07-01-preview", azure_deployment="aic-ai4code-research")
     elif "gemini" in model_name:
         llm = ChatGoogleGenerativeAI(model=model_name, temperature=0)
     elif "together" in model_name:
         llm = ChatTogether(model=model_name.replace("together/", ""), api_key=os.environ["TOGETHER_API_KEY"], temperature=0)
     elif "claude" in model_name:
         llm = ChatAnthropic(model=model_name)
+    elif "mistral" in model_name:
+        model_name = model_name.replace("mistral/", "")
+        llm = ChatMistralAI(model=model_name, api_key=os.environ["MISTRAL_API_KEY"], temperature=0)
+    elif "vllm" in model_name:
+        model_name = model_name.replace("vllm/", "")
+        llm = VLLM(model=model_name, trust_remote_code=True, tensor_parallel_size=2)
     else:
         raise ValueError(f"Unknown model {llm_config['planner']['model']}")
     

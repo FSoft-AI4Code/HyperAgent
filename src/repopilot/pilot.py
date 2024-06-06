@@ -52,7 +52,6 @@ def Setup(
         navigator_prompt.SUFFIX,
         verbose=verbose,
         include_task_in_prompt=False,
-        save_trajectories_path=save_trajectories_path
     )
     
     generator = load_agent_generator(

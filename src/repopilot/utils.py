@@ -174,6 +174,10 @@ def word_to_position(source: str, word: str, line: None|int|list = None, offset:
         for i, _line in enumerate(lines):
             if word in _line:
                 return {"line": i, "column": lines[i].index(word)+1}
+    except IndexError:
+        for i, _line in enumerate(lines):
+            if word in _line:
+                return {"line": i, "column": _line.index(word)+1}
     return None
 
 def add_num_line(source: str, start_line: int):

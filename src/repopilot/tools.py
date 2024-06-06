@@ -42,7 +42,7 @@ def _get_platform() -> str:
     return system
 
 class CodeSearchArgs(BaseModel):
-    names: list[str] = Field(..., description="The names of the identifiers to search")
+    names: list[str] = Field(..., description="The names of the identifiers to search. Identifier should be a single word like `some_function` not `something.something`")
 
 class CodeSearchTool(BaseTool):
     """
@@ -156,8 +156,10 @@ class GoToDefinitionTool(BaseTool):
         """
         if line is not None:
             line = int(line)
-        return self.lsptoolkit.get_definition(word, relative_path, line, verbose=verbose)
-
+        try:
+            return self.lsptoolkit.get_definition(word, relative_path, line, verbose=verbose)
+        except:
+            return "File read failed, please check the path again"
 
 class FindAllReferencesArgs(BaseModel):
     word: str = Field(..., description="The name of the symbol to find all references")
@@ -302,12 +304,12 @@ class GetTreeStructureTool(BaseTool):
             output = visualize_tree(abs_path, level=1)
             output = "The tree structure of " + relative_path + " is: \n" + output
         except: 
-            output = "Execution failed, please check the relative path again, likely the relative path lacks of prefix directory name"
+            output = "Execution failed, please check the relative path again, likely the relative path lacks of prefix directory name. Using get_tree_structure on the parent directory such as '.' or 'something/' to get the list of files and directories to continue exploring."
         return output
 
 class OpenFileArgs(BaseModel):
     relative_file_path: str = Field(..., description="The relative path of the file you want to open")
-    keywords: List[str] = Field(..., description="The list of keywords you want to search in the file")
+    keywords: List[str] = Field(..., description="The list of keywords you want to search in the file, it's should be a single word like grpc but not grpcio.grpc")
     start_line: Optional[int] = Field(..., description="The starting line number of the file you want to open")
     end_line: Optional[int] = Field(..., description="The ending line number of the file you want to open")
 class OpenFileTool(BaseTool):
@@ -641,5 +643,7 @@ class OpenFileToolForGenerator(BaseTool):
                     return "The content of " + relative_file_path.replace(self.path, "") + " is: \n" + import_source + "\n".join(returned_source)
         except FileNotFoundError:
             return "File not found, please check the path again"
+        except TypeError:
+            source = open(abs_path, "r").read()
         source = add_num_line(source, start_line)
         return "The content of " + relative_file_path.replace(self.path, "") + " is: \n" + source

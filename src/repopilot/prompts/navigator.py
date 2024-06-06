@@ -17,7 +17,7 @@ Important Tips:
     3. get_all_symbols: Use this tool to get all symbols in the target file, it should be used with a keyword.
     4. get_folder_structure: Use this tool to get the structure of the target folder. This will help you understand the organization of the codebase, and find the relevant files to use other tools.
     5. code_search: Use this tool to search for symbol name if you know the exact name of the symbol, this is useful to find the definition if you're not familiar with codebase yet.
-    6. go_to_definition: Use this tool to navigate to the definition of an identifier, for example self._print in a class.
-    7. open_file: Use this tool to open a file in the codebase, this is useful to read the partial content of the file (40 lines). Should be used with a keyword or limited start_line and end_line. If your previous open does not show all the information, next turn you can open the same file with different start_line and end_line (incrementally scrolling).
+    6. go_to_definition: Use this tool to navigate to the definition of an identifier, for example self._print in a class. (single word only, not a combination like sympy.latex), in this case, _print.
+    7. open_file: Use this tool to open a file in the codebase, this is useful to read the partial content of the file (40 lines). Should be used with a keyword (single word only, not a combination like sympy.latex just latex) or limited start_line and end_line. If your previous open does not show all the information, next turn you can open the same file with different start_line and end_line (incrementally scrolling).
 
 You have access to the following tools:"""

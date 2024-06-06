@@ -93,7 +93,8 @@ def load_chat_planner(
     llm_chain = LLMChain(llm=llm, prompt=prompt_template)
     return LLMPlanner(
         llm_chain=llm_chain,
-        output_parser=PlanningOutputParser()
+        output_parser=PlanningOutputParser(),
+        stop=["Observation:"]
     )
     
     

@@ -11,6 +11,7 @@ from langchain_core.language_models import BaseLanguageModel
 from langchain_core.pydantic_v1 import Field
 
 from langchain.agents.agent import AgentOutputParser
+from langchain.agents.output_parsers import StructuredChatOutputParser
 from langchain.agents.structured_chat.prompt import FORMAT_INSTRUCTIONS
 from langchain.output_parsers import OutputFixingParser
 
@@ -45,6 +46,14 @@ class StructuredChatOutputParser(AgentOutputParser):
 
     def parse(self, text: str) -> Union[AgentAction, AgentFinish]:
         try:
+            if "Bash Executor" in text:
+                pattern = r'"request":\s*"(.*?)",\s*"terminated"'
+                match = re.search(pattern, text, re.DOTALL)
+                if match:
+                    request_string = match.group(1)
+                    return AgentAction("Bash Executor", {"request": request_string}, text)
+                else:
+                    pass
             if "summary" in text or "summarize" in text or "summarise" in text:
                 return AgentFinish({"output": text}, text)
             
@@ -86,6 +95,61 @@ class StructuredChatOutputParser(AgentOutputParser):
     def _type(self) -> str:
         return "structured_chat"
 
+class StructuredBashChatOutputParser(AgentOutputParser):
+    """Output parser for the structured chat agent."""
+
+    format_instructions: str = FORMAT_INSTRUCTIONS
+    """Default formatting instructions"""
+
+    pattern = re.compile(r"```(?:json\s+)?(\W.*?)```", re.DOTALL)
+    """Regex pattern to parse the output."""
+
+    def get_format_instructions(self) -> str:
+        """Returns formatting instructions for the given output parser."""
+        return self.format_instructions
+
+    def parse(self, text: str) -> Union[AgentAction, AgentFinish]:
+        text = text.replace("```python", "")
+        try:
+            action_match = self.pattern.search(text)
+            if action_match is not None:
+                response = json.loads(action_match.group(1).strip(), strict=False)
+                if isinstance(response, list):
+                    # gpt turbo frequently ignores the directive to emit a single action
+                    logger.warning("Got multiple action responses: %s", response)
+                    response = response[0]
+                if response["action"] == "Final Answer":
+                    return AgentFinish({"output": response["action_input"]}, text)
+                else:
+                    return AgentAction(
+                        response["action"], response.get("action_input", {}), text
+                    )
+            else:
+                return AgentFinish({"output": text}, text)
+        except Exception as e:
+            # Define the regex patterns for each field
+            patch_pattern = r'"patch":\s*"([^"]*)"'
+            start_line_pattern = r'"start_line":\s*(\d+)'
+            end_line_pattern = r'"end_line":\s*(\d+)'
+            path_pattern = r'"relative_file_path":\s*"([^"]*)"'
+
+            # Find matches for each pattern
+            patch_match = re.search(patch_pattern, text)
+            start_line_match = re.search(start_line_pattern, text)
+            end_line_match = re.search(end_line_pattern, text)
+            relative_file_path_match = re.search(path_pattern, text)
+            relative_file_path = relative_file_path_match.group(1) if relative_file_path_match else None
+
+            # Extract the values if the matches are found
+            patch_string = patch_match.group(1).replace('\\n', '\n') if patch_match else None
+            start_line = int(start_line_match.group(1)) if start_line_match else None
+            end_line = int(end_line_match.group(1)) if end_line_match else None
+            return AgentAction("editor_file", {"patch": patch_string, "start_line": start_line, "end_line": end_line, "relative_file_path": relative_file_path}, text)
+
+    @property
+    def _type(self) -> str:
+        return "structured_chat"
+
 class StructuredGeneratorChatOutputParser(AgentOutputParser):
     """Output parser for the structured chat agent."""
 
@@ -100,7 +164,7 @@ class StructuredGeneratorChatOutputParser(AgentOutputParser):
         return self.format_instructions
 
     def parse(self, text: str) -> Union[AgentAction, AgentFinish]:
-        if "Final Answer" in text:
+        if "Final Answer" not in text:
             action_match = self.pattern.search(text)
             if action_match is not None:
                 response = json.loads(action_match.group(1).strip(), strict=False)
@@ -117,13 +181,13 @@ class StructuredGeneratorChatOutputParser(AgentOutputParser):
             else:
                 return AgentFinish({"output": text}, text)
         else:
-            text = text.split("Final Answer:")[1]
+            text = text.split("Final Answer")[1]
             return AgentFinish({"output": text}, text)
 
     @property
     def _type(self) -> str:
         return "structured_chat"
-
+    
 class StructuredChatOutputParserWithRetries(AgentOutputParser):
     """Output parser with retries for the structured chat agent."""
 

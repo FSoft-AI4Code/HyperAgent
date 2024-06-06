@@ -15,7 +15,7 @@ DO_NOT_SUMMARIZED_KEYS = ["python", "code_snippet"]
 
 DEFAULT_LLM_CONFIGS = {
     "planner": {
-        "model_name": "gemini-1.5-pro-latest",
+        "model_name": "together/microsoft/WizardLM-2-8x22B",
         "is_local": False,
     },
     "navigator": {
@@ -23,11 +23,11 @@ DEFAULT_LLM_CONFIGS = {
         "is_local": False,
     },
     "generator": {
-        "model_name": "gemini-1.5-pro-latest",
+        "model_name": "together/microsoft/WizardLM-2-8x22B",
         "is_local": False,
     },
     "executor": {
-        "model_name": "claude-3-haiku-20240307",
+        "model_name": "together/microsoft/WizardLM-2-8x22B",
         "is_local": False,
     }
 }

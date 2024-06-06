@@ -114,7 +114,7 @@ class StructuredChatAgent(Agent):
             Action specifying what tool to use.
         """
         full_inputs = self.get_full_inputs(intermediate_steps, **kwargs)
-        input_prompt = self.llm_chain.prep_prompts(input_list=[full_inputs])
+        input_prompt, stop = self.llm_chain.prep_prompts(input_list=[full_inputs])
         full_output = self.llm_chain.predict(callbacks=callbacks, **full_inputs)
         if self.save_trajectories_path is not None:
             self.save_trajectories(full_output, input_prompt)
@@ -128,8 +128,8 @@ class StructuredChatAgent(Agent):
         """Save trajectories to file."""
         index = len(os.listdir(self.save_trajectories_path))
         instance = {
-            "system_prompt": prompt[0][0].messages[0].content,
-            "human_message": prompt[0][0].messages[1].content,
+            "system_prompt": prompt[0].messages[0].content,
+            "human_message": prompt[0].messages[1].content,
             "system_response": full_output
         }
         with open(os.path.join(self.save_trajectories_path, f"{index}_instance.json"), "w") as f:

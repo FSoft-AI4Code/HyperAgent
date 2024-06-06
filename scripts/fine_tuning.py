@@ -18,7 +18,7 @@ from transformers import (
 from trl import SFTTrainer
 
 def get_data():
-    data_folder = "data/trajectories"
+    data_folder = "data/agent_trajectories/nav"
     all_json_files = glob.glob(os.path.join(data_folder, "**/*.json"), recursive=True)
     system = []
     chat = []
@@ -48,14 +48,7 @@ def get_data():
     return train_dataset
     
 def main():
-    base_model_id = "codellama/CodeLlama-34b-Instruct-hf"
-    bnb_config = BitsAndBytesConfig(  
-        load_in_4bit= True,
-        bnb_4bit_quant_type= "nf4",
-        bnb_4bit_compute_dtype= torch.bfloat16,
-        bnb_4bit_use_double_quant= False,
-    )
-
+    base_model_id = ""
     base_model = AutoModelForCausalLM.from_pretrained(
         base_model_id,
         load_in_4bit=True,
