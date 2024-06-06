@@ -128,7 +128,6 @@ def load_agent_generator(
     prefix: str = PREFIX,
     suffix: str = SUFFIX,
     verbose: int = 1,
-    include_task_in_prompt: bool = False,
     save_trajectories_path: str = DEFAULT_TRAJECTORIES_PATH,
     
 ) -> ChainExecutor:
@@ -171,7 +170,7 @@ def load_agent_executor(
     prefix: str = PREFIX,
     suffix: str = SUFFIX,
     verbose: int = 1,
-    include_task_in_prompt: bool = False,
+    commit_hash: str = "",
     save_trajectories_path: str = DEFAULT_TRAJECTORIES_PATH,
     
 ) -> ChainExecutor:
@@ -187,10 +186,18 @@ def load_agent_executor(
     Returns:
         ChainExecutor
     """
+    if commit_hash == "":
+        commit_hash = input("You did not provide a commit hash, please provide a default name for your environment that executor is going to build.")
+    
+    env_name = f"ENV_NUM_{commit_hash}"
+    
+    
     input_variables = ["current_step", "agent_scratchpad"]
     template = HUMAN_MESSAGE_TEMPLATE
     format_instructions = FORMAT_INSTRUCTIONS
 
+    suffix = suffix.replace("ENV_NAME", env_name)
+    
     agent = StructuredChatAgent.from_llm_and_tools(
         llm,
         tools,

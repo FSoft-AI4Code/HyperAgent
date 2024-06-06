@@ -18,7 +18,7 @@ def setup_llm(llm_config):
         llm = VLLM(
             model=model_name,
             trust_remote_code=True,
-            tensor_parallel_size=1  
+            tensor_parallel_size=llm_config.get("tensor_parallel_size", 6),  
         )
     elif "gpt_azure" in model_name:
         model_name = model_name.replace("gpt_azure/", "")
@@ -34,19 +34,23 @@ def setup_llm(llm_config):
     elif "mistral" in model_name:
         model_name = model_name.replace("mistral/", "")
         llm = ChatMistralAI(model=model_name, api_key=os.environ["MISTRAL_API_KEY"], temperature=0)
-    elif "vllm" in model_name:
-        model_name = model_name.replace("vllm/", "")
-        llm = VLLM(model=model_name, trust_remote_code=True, tensor_parallel_size=2)
     else:
         raise ValueError(f"Unknown model {llm_config['planner']['model']}")
     
     return llm
 
 def setup_llms(llm_configs):
-    llm_plan = setup_llm(llm_configs["planner"])
-    llm_nav = setup_llm(llm_configs["navigator"])
-    llm_gen = setup_llm(llm_configs["generator"])
-    llm_exec = setup_llm(llm_configs["executor"])
+    if not llm_configs["planner"]["is_local"]:
+        llm_plan = setup_llm(llm_configs["planner"])
+        llm_nav = setup_llm(llm_configs["navigator"])
+        llm_gen = setup_llm(llm_configs["generator"])
+        llm_exec = setup_llm(llm_configs["executor"])
+    else:
+        llm_plan = setup_llm(llm_configs["planner"])
+        llm_nav = setup_llm(llm_configs["navigator"])
+        return llm_nav, llm_plan, llm_plan, llm_plan
+
+    
     return llm_nav, llm_gen, llm_exec, llm_plan
 
 def initialize_tools(repo_dir, db_path, index_path, language):

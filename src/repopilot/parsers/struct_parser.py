@@ -11,7 +11,6 @@ from langchain_core.language_models import BaseLanguageModel
 from langchain_core.pydantic_v1 import Field
 
 from langchain.agents.agent import AgentOutputParser
-from langchain.agents.output_parsers import StructuredChatOutputParser
 from langchain.agents.structured_chat.prompt import FORMAT_INSTRUCTIONS
 from langchain.output_parsers import OutputFixingParser
 

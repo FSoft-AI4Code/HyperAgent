@@ -67,7 +67,8 @@ def Setup(
         exec_tools,
         executor_prompt.PREFIX,
         executor_prompt.SUFFIX,
-        verbose=verbose
+        verbose=verbose,
+        commit_hash=commit
     )
     
     summarizer = load_summarizer()
@@ -94,13 +95,13 @@ def Setup(
         repo_dir=repo_dir,
         verbose=DEFAULT_VERBOSE_LEVEL
     )
-    return system
+    return system, repo_dir
 
 class RepoPilot:
     def __init__(
         self,
         repo_path,
-        commit=None,
+        commit="str",
         language="python",
         clone_dir="data/repos",
         save_trajectories_path=DEFAULT_TRAJECTORIES_PATH,
@@ -109,7 +110,7 @@ class RepoPilot:
     ):
         self.repo_path = repo_path
         self.language = language
-        self.system = Setup(
+        self.system, repo_dir = Setup(
             self.repo_path,
             commit,
             language=language,
@@ -118,6 +119,7 @@ class RepoPilot:
             llm_configs=llm_configs,
             verbose=verbose
         )
+        self.repo_dir = repo_dir
 
     def query_codebase(self, query):
         result = self.system.run(query)

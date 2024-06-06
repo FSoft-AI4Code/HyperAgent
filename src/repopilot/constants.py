@@ -15,19 +15,19 @@ DO_NOT_SUMMARIZED_KEYS = ["python", "code_snippet"]
 
 DEFAULT_LLM_CONFIGS = {
     "planner": {
-        "model_name": "together/microsoft/WizardLM-2-8x22B",
-        "is_local": False,
+        "model_name": "alpindale/WizardLM-2-8x22B",
+        "is_local": True,
     },
     "navigator": {
         "model_name": "claude-3-haiku-20240307",
         "is_local": False,
     },
     "generator": {
-        "model_name": "together/microsoft/WizardLM-2-8x22B",
-        "is_local": False,
+        "model_name": "alpindale/WizardLM-2-8x22B",
+        "is_local": True,
     },
     "executor": {
-        "model_name": "together/microsoft/WizardLM-2-8x22B",
-        "is_local": False,
+        "model_name": "alpindale/WizardLM-2-8x22B",
+        "is_local": True,
     }
 }
