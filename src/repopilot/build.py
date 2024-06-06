@@ -5,6 +5,7 @@ from langchain_openai import AzureChatOpenAI
 from langchain_together import ChatTogether
 from langchain_mistralai.chat_models import ChatMistralAI
 from langchain_community.llms.vllm import VLLM
+from langchain_community.llms import DeepInfra
 
 import os
 from repopilot.tools import *
@@ -34,6 +35,9 @@ def setup_llm(llm_config):
     elif "mistral" in model_name:
         model_name = model_name.replace("mistral/", "")
         llm = ChatMistralAI(model=model_name, api_key=os.environ["MISTRAL_API_KEY"], temperature=0)
+    elif "deepinfra" in model_name:
+        model_name = model_name.replace("deepinfra/", "")
+        llm = DeepInfra(model_id=model_name)
     else:
         raise ValueError(f"Unknown model {llm_config['planner']['model']}")
     

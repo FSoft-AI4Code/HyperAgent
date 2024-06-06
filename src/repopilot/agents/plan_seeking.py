@@ -24,7 +24,7 @@ from repopilot.agents.base import ChainExecutor, StructuredChatAgent
 from repopilot.agents.agent_executor import AgentExecutor
 from repopilot.agents.llms import LocalLLM
 from repopilot.parsers.struct_parser import StructuredGeneratorChatOutputParser, StructuredBashChatOutputParser
-from repopilot.utils import find_abs_path
+from repopilot.utils import find_abs_path, print_text
 from langchain_community.callbacks import get_openai_callback
 from repopilot.constants import DEFAULT_TRAJECTORIES_PATH, DO_NOT_SUMMARIZED_KEYS
 
@@ -254,15 +254,19 @@ class PlanSeeking(Chain):
         inputs: Dict[str, Any],
         run_manager: Optional[CallbackManagerForChainRun] = None,
     ) -> Dict[str, Any]:
-        terminated = False
         nav_memory = ""
         
         index = 0
         with get_openai_callback() as cb:
-            while not terminated:
+            while True:
                 planner_output, planner_response = self.planner.plan(inputs)
                 agent_type = planner_output["agent_type"]
+                if planner_output["terminated"]:
+                    break
                 planner_request = planner_output["request"]
+                
+                print_text(planner_response, "blue")
+                
                 if agent_type == "Codebase Navigator":
                     current_notes = ""
                     nav_inputs = {"current_step": planner_request, "nav_memory": nav_memory}
@@ -317,7 +321,7 @@ class PlanSeeking(Chain):
                             callbacks=run_manager.get_child() if run_manager else None,
                         )
                         next_key =  planner_response + "\n"
-                        next_key += f"Observation: {response}\n"
+                        next_key += f"Observation: {intermediate_steps}\nFinal Output From Generator - \n{response.response}\n"
                         
                     else:
                         next_key = planner_response + "\n"

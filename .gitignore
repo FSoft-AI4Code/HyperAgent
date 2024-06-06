@@ -18,4 +18,5 @@ model/
 data/repos/*
 data/agent_trajectories/*
 .vscode/*
+swe_bench.zip
 ```

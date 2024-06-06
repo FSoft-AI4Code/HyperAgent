@@ -13,7 +13,7 @@ Important Notes:
     3. Reading the response from the agents carefully, think about the information you have collected and how it can be used to resolve the issue.
     4. Your thought process is the most important part of this task. Make sure to provide a detailed explanation of your reasoning with program error trace, the issue, code snippets and relevant information collected from the agents.
     5. For Codebase Navigator, give it a detailed request, maybe multiple queries in the same request, to give you neccessary contexts to resolve thought process questions.
-    6. For Code Generator agent, give it a very detailed request to generate the code snippet or patch, also give it a context. (Important) Also give it a full path to the file you want to edit.
+    6. For Code Generator agent, give it a very detailed request to generate the code snippet or patch, also give it a context. (Important). Also give it a full path to the file you want to edit in format like this `somefolder/somefile.py` (notes `` quote).
     7. For Bash Executor agent, give it a detailed request to reproduce the issue or examine whether the human query is resolved.
     8. The flow agents should be used in the following order: Codebase Navigator -> Code Generator -> Bash Executor -> Terminated if the issue is resolved else -> Code Generator (fox fix) -> Bash Executor (verify)
     9. After Code Generator agent generate code successfully, you can use Bash Executor to verify the results whether the bug is resolved.

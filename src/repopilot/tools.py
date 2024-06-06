@@ -364,6 +364,10 @@ class OpenFileTool(BaseTool):
                     return f"The number of lines to show is limited at 40, the requested number of lines is {end_line - start_line}, please specify the start and end line again or using keyword instead. For example {start_line}:{start_line+40}"
                 source = open(abs_path, "r").read()
                 lines = source.split("\n")
+                
+                if start_line > len(lines):
+                    return f"Invalid start line, the start line is greater than the total number of lines in the file, the total number of lines in the file is {len(lines)}"
+                
                 source = "\n".join(lines[start_line-1:end_line]) 
             else:
                 out_str = "The content of " + relative_file_path.replace(self.path, "") + " is: \n"
@@ -647,3 +651,9 @@ class OpenFileToolForGenerator(BaseTool):
             source = open(abs_path, "r").read()
         source = add_num_line(source, start_line)
         return "The content of " + relative_file_path.replace(self.path, "") + " is: \n" + source
+    
+
+if __name__ == "__main__":
+    tool = OpenFileTool("evaluation_benchmark/SWE-bench/data/repos/repo__django__django__commit__4fd3044ca0135da903a70dfb66992293f529ecf1")
+    out = tool._run("django/core/validators.py", start_line=563, end_line=594)
+    print(out)

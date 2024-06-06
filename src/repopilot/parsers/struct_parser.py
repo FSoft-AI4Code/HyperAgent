@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import logging
 import re
+import ast
 from typing import Optional, Union
 
 from langchain_core.agents import AgentAction, AgentFinish
@@ -161,24 +162,69 @@ class StructuredGeneratorChatOutputParser(AgentOutputParser):
     def get_format_instructions(self) -> str:
         """Returns formatting instructions for the given output parser."""
         return self.format_instructions
+    
+    def escape_inner_quotes(json_str):
+    # Pattern to find the 'patch' value
+        pattern = r'("patch":\s*")(.*?)([^\\]")'
+        # Replacement function to escape double quotes
+        def replacer(match):
+            start = match.group(1)
+            content = match.group(2).replace('"', '\\"')
+            end = match.group(3)
+            return f'{start}{content}{end}'
+        # Apply the replacement
+        return re.sub(pattern, replacer, json_str, flags=re.DOTALL)
+    
+    def extract_fields(self, json_str):
+        fields = {}
+
+        # Extract relative_file_path
+        relative_file_path_match = re.search(r'"relative_file_path":\s*"([^"]+)"', json_str)
+        if relative_file_path_match:
+            fields['relative_file_path'] = relative_file_path_match.group(1)
+
+        # Extract start_line
+        start_line_match = re.search(r'"start_line":\s*(\d+)', json_str)
+        if start_line_match:
+            fields['start_line'] = int(start_line_match.group(1))
+
+        # Extract end_line
+        end_line_match = re.search(r'"end_line":\s*(\d+)', json_str)
+        if end_line_match:
+            fields['end_line'] = int(end_line_match.group(1))
+
+        # Extract patch (handling multiline and escaped quotes)
+        patch_match = re.search(r'"patch":\s*"((?:[^"\\]|\\.)*?)"', json_str, re.DOTALL)
+        if patch_match:
+            # Manually evaluate the patch value to handle escaped quotes and newlines
+            patch_value = patch_match.group(1)
+            fields['patch'] = ast.literal_eval(f'"{patch_value}"')
+
+        return fields
 
     def parse(self, text: str) -> Union[AgentAction, AgentFinish]:
         if "Final Answer" not in text:
-            action_match = self.pattern.search(text)
-            if action_match is not None:
-                response = json.loads(action_match.group(1).strip(), strict=False)
-                if isinstance(response, list):
-                    # gpt turbo frequently ignores the directive to emit a single action
-                    logger.warning("Got multiple action responses: %s", response)
-                    response = response[0]
-                if response["action"] == "Final Answer":
-                    return AgentFinish({"output": response["action_input"]}, text)
+            if "editor_file" not in text:
+                action_match = self.pattern.search(text)
+                if action_match is not None:
+                    response = json.loads(action_match.group(1).strip(), strict=False)
+                    if isinstance(response, list):
+                        # gpt turbo frequently ignores the directive to emit a single action
+                        logger.warning("Got multiple action responses: %s", response)
+                        response = response[0]
+                    if response["action"] == "Final Answer":
+                        return AgentFinish({"output": response["action_input"]}, text)
+                    else:
+                        return AgentAction(
+                            response["action"], response.get("action_input", {}), text
+                        )
                 else:
-                    return AgentAction(
-                        response["action"], response.get("action_input", {}), text
-                    )
+                    return AgentFinish({"output": text}, text)
             else:
-                return AgentFinish({"output": text}, text)
+                response = self.extract_fields(text)
+                return AgentAction(
+                    "editor_file", response, text
+                )
         else:
             text = text.split("Final Answer")[1]
             return AgentFinish({"output": text}, text)

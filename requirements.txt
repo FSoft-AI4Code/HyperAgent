@@ -1,5 +1,9 @@
 gitpython
 langchain
+langchain-community
+langchain-anthropic
+langchain-openai
+langchain-google-genai
 openai
 javalang
 tree-sitter-languages

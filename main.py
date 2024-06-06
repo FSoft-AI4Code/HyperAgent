@@ -16,7 +16,6 @@ logger = logging.getLogger(__name__)
 
 if __name__ == "__main__":
     logger.info("Start!")
-    api_key = os.environ.get("OPENAI_API_KEY")
     repo = input("Please provide a valid folder path or GitHub URL: ")
     commit = input("Please provide a commit: (default: HEAD if enter)")
     language = input("Please provide a programming language: (default: python if enter)")
