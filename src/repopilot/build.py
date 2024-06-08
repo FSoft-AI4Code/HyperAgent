@@ -7,6 +7,7 @@ from langchain_mistralai.chat_models import ChatMistralAI
 from langchain_fireworks import Fireworks
 from langchain_openrouter import OpenRouterLLM
 from langchain_community.llms.vllm import VLLM
+from langchain_community.llms.vllm import VLLMOpenAI
 from langchain_community.llms import DeepInfra
 from langchain_community.llms.ollama import Ollama
 
@@ -19,11 +20,11 @@ def setup_llm(llm_config):
     model_name = llm_config["model_name"]
     
     if llm_config["is_local"]:
-        llm = VLLM(
-            model=model_name,
-            trust_remote_code=True,
-            tensor_parallel_size=llm_config.get("tensor_parallel_size", 6),  
-        )
+        llm = VLLMOpenAI(
+            openai_api_key="EMPTY",
+            openai_api_base="http://localhost:8000/v1", 
+            model_name=model_name,
+        )  
     elif "gpt_azure" in model_name:
         model_name = model_name.replace("gpt_azure/", "")
         llm = AzureChatOpenAI(temperature=0, api_version=os.environ["API_VERSION"], azure_endpoint=os.environ["AZURE_ENDPOINT_GPT4"], api_key=os.environ["OPENAI_API_KEY"], azure_deployment="codevista-openai-eastuse-gpt4o")
@@ -54,17 +55,11 @@ def setup_llm(llm_config):
     return llm
 
 def setup_llms(llm_configs):
-    if not llm_configs["planner"]["is_local"]:
-        llm_plan = setup_llm(llm_configs["planner"])
-        llm_nav = setup_llm(llm_configs["navigator"])
-        llm_gen = setup_llm(llm_configs["generator"])
-        llm_exec = setup_llm(llm_configs["executor"])
-    else:
-        llm_plan = setup_llm(llm_configs["planner"])
-        llm_nav = setup_llm(llm_configs["navigator"])
-        return llm_nav, llm_plan, llm_plan, llm_plan
+    llm_plan = setup_llm(llm_configs["planner"])
+    llm_nav = setup_llm(llm_configs["navigator"])
+    llm_gen = setup_llm(llm_configs["generator"])
+    llm_exec = setup_llm(llm_configs["executor"])
 
-    
     return llm_nav, llm_gen, llm_exec, llm_plan
 
 def initialize_tools(repo_dir, db_path, index_path, language):

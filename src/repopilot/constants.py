@@ -17,20 +17,19 @@ DEFAULT_LLM_CONFIGS = {
     "planner": {
         # "model_name": "vllm/dreamgen/WizardLM-2-8x22B",
         # "model_name": "accounts/fireworks/models/qwen2-72b-instruct",
-        "model_name": "together/Qwen/Qwen2-72B-Instruct",
-        # "model_name": "gemini-1.5-pro-latest",
-        "is_local": False,
+        "model_name": "Qwen/Qwen2-72B-Instruct",
+        "is_local": True,
     },
     "navigator": {
         "model_name": "claude-3-haiku-20240307",
         "is_local": False,
     },
     "generator": {
-        "model_name": "gemini-1.5-pro-latest",
-        "is_local": False,
+        "model_name": "Qwen/Qwen2-72B-Instruct",
+        "is_local": True,
     },
     "executor": {
-        "model_name": "gemini-1.5-pro-latest",
+        "model_name": "claude-3-haiku-20240307",
         "is_local": False,
     }
 }

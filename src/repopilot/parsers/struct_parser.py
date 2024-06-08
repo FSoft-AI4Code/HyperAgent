@@ -203,6 +203,7 @@ class StructuredGeneratorChatOutputParser(AgentOutputParser):
         return fields
 
     def parse(self, text: str) -> Union[AgentAction, AgentFinish]:
+        print(text)
         if "Final Answer" not in text:
             if "editor_file" not in text:
                 action_match = self.pattern.search(text)
