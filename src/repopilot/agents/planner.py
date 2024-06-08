@@ -1,16 +1,21 @@
 import re
-import ast
-
 from langchain.chains import LLMChain
 from langchain.prompts import ChatPromptTemplate, HumanMessagePromptTemplate
 from langchain.schema.language_model import BaseLanguageModel
 from langchain.schema.messages import SystemMessage
 
-from langchain_experimental.plan_and_execute.planners.base import LLMPlanner
-from langchain_experimental.plan_and_execute.schema import PlanOutputParser
 from repopilot.prompts.planner import PLANNER_TEMPLATE
 import json
 import re
+from abc import abstractmethod
+from typing import Any, List, Optional
+
+from langchain.callbacks.manager import Callbacks
+from langchain.chains.llm import LLMChain
+
+from langchain_experimental.plan_and_execute.schema import Plan, PlanOutputParser
+from langchain_experimental.plan_and_execute.agent_executor import BasePlanner
+
 
 def parse_manual(text):
     # Extract the action and input from the text
@@ -56,9 +61,13 @@ class PlanningOutputParser(PlanOutputParser):
         text = text.replace("```python", "")
         # pattern = r'Action:\s*(\{.*?\})'
         pattern = re.compile(r"```(?:json\s+)?(\W.*?)```", re.DOTALL)
+        qwen_pattern = re.compile(r'```json\s*(\{.*?\})\s*```', re.DOTALL)
 
         # Search for the pattern in the text
         match = re.search(pattern, text)
+        if not match:
+            match = re.search(qwen_pattern, text)
+        
         if match:
             try:
                 return json.loads(match.group(1).strip(), strict=False) 
@@ -66,6 +75,30 @@ class PlanningOutputParser(PlanOutputParser):
                 return parse_manual(text)
         else:
             return parse_string_to_dict(text.split("Action: ")[1])
+
+class LLMPlanner(BasePlanner):
+    """LLM planner."""
+
+    llm_chain: LLMChain
+    """The LLM chain to use."""
+    output_parser: PlanningOutputParser
+    """The output parser to use."""
+    stop: Optional[List] = None
+    """The stop list to use."""
+
+    def plan(self, inputs: dict, callbacks: Callbacks = None, **kwargs: Any) -> Plan:
+        """Given input, decide what to do."""
+        llm_response = self.llm_chain.run(**inputs, stop=self.stop, callbacks=callbacks)
+        return self.output_parser.parse(llm_response), llm_response
+
+    async def aplan(
+        self, inputs: dict, callbacks: Callbacks = None, **kwargs: Any
+    ) -> Plan:
+        """Given input, asynchronously decide what to do."""
+        llm_response = await self.llm_chain.arun(
+            **inputs, stop=self.stop, callbacks=callbacks
+        )
+        return self.output_parser.parse(llm_response)
 
 def load_chat_planner(
     llm: BaseLanguageModel, **kwargs

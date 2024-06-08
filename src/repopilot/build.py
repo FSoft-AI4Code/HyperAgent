@@ -4,8 +4,11 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_openai import AzureChatOpenAI
 from langchain_together import ChatTogether
 from langchain_mistralai.chat_models import ChatMistralAI
+from langchain_fireworks import Fireworks
+from langchain_openrouter import OpenRouterLLM
 from langchain_community.llms.vllm import VLLM
 from langchain_community.llms import DeepInfra
+from langchain_community.llms.ollama import Ollama
 
 import os
 from repopilot.tools import *
@@ -38,6 +41,13 @@ def setup_llm(llm_config):
     elif "deepinfra" in model_name:
         model_name = model_name.replace("deepinfra/", "")
         llm = DeepInfra(model_id=model_name)
+    elif "fireworks" in model_name:
+        llm = Fireworks(model=model_name, fireworks_api_key=os.environ["FIREWORKS_API_KEY"], temperature=0.6)
+    elif "openrouter" in model_name:
+        llm = OpenRouterLLM(model=model_name, temperature=0.6)
+    elif "ollama" in model_name:
+        model_name = model_name.replace("ollama/", "")
+        llm = Ollama(model=model_name, temperature=0.0)
     else:
         raise ValueError(f"Unknown model {llm_config['planner']['model']}")
     

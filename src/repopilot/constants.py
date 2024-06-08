@@ -15,7 +15,10 @@ DO_NOT_SUMMARIZED_KEYS = ["python", "code_snippet"]
 
 DEFAULT_LLM_CONFIGS = {
     "planner": {
-        "model_name": "vllm/dreamgen/WizardLM-2-8x22B",
+        # "model_name": "vllm/dreamgen/WizardLM-2-8x22B",
+        # "model_name": "accounts/fireworks/models/qwen2-72b-instruct",
+        "model_name": "together/Qwen/Qwen2-72B-Instruct",
+        # "model_name": "gemini-1.5-pro-latest",
         "is_local": False,
     },
     "navigator": {

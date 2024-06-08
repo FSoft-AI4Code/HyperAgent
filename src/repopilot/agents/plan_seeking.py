@@ -260,13 +260,12 @@ class PlanSeeking(Chain):
         with get_openai_callback() as cb:
             while True:
                 planner_output, planner_response = self.planner.plan(inputs)
+                print_text(planner_response, "blue")
                 agent_type = planner_output["agent_type"]
                 if planner_output["terminated"]:
                     break
                 planner_request = planner_output["request"]
-                
-                print_text(planner_response, "blue")
-                
+                                
                 if agent_type == "Codebase Navigator":
                     current_notes = ""
                     nav_inputs = {"current_step": planner_request, "nav_memory": nav_memory}
@@ -313,6 +312,11 @@ class PlanSeeking(Chain):
                             full_path = find_abs_path(self.repo_dir, file_paths[0])
                         else:
                             full_path = None
+                            
+                    if full_path is None:
+                        full_path = [path for path in planner_request.split(" ") if path.endswith(".py")]
+                        if len(full_path) > 0:
+                            full_path = find_abs_path(self.repo_dir, full_path[0])
                         
                     if full_path is not None:
                         generator_inputs = {"current_step": planner_request, "file_path": file_paths[0] if file_paths else None}

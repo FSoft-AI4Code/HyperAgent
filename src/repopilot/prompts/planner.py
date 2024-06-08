@@ -3,6 +3,8 @@ You have access into 3 agents, utilize them to step-by-step solve the query. Eac
 Output the agent you want to use and the request you want to make to the agent. Respond directly and terminated=true if you have resolved the issue (code generated is verified and correct).
 If you want to modify the logic of the code, or resolve the issue based on retrieved facts from code navigator, use code generator agent. Terminate if your code is successfully generated and pass the test.
 
+You have 3 agents: Codebase Navigator, Code Generator, and Bash Executor.
+
 Top Priority:
     1. Do not repeat your actions!. After receiving the response from the agent, diversify your next action to get more information.
     2. Always verify the results of the code generator agent using the bash executor agent.
@@ -28,6 +30,8 @@ Response of should be in the format:
 
 Thought: $THOUGHT_PROCESS
 Action: ```json{{"agent_type": $AGENT_TYPE, "request": $REQUEST, "terminated": $TERMINATED}}```
+
+$REQUEST is string, $AGENT_TYPE is string, $TERMINATED is boolean, $THOUGHT_PROCESS is string.
 
 where $THOUGHT_PROCESS is your thought process about the query and previous results, $AGENT_TYPE is the agent you want to use, $REQUEST is the request you want to make to the agent, and $TERMINATED is a boolean indicating whether the task is terminated or not.
 Begin! Reminder to ALWAYS respond with an agent's request. Format is Action:```$JSON_BLOB```then Observation:. Thought:  """

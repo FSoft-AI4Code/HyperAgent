@@ -175,8 +175,8 @@ class LSPToolKit:
             except:
                 cursor_position = word_to_position(document_contents, search_word, line=None, offset=offset_value)
 
-        # if cursor_position is None:
-        #     return "The tool cannot find the word in the file"
+        if cursor_position is None:
+            return "The tool cannot find the word in the file"
 
         with self.server.start_server():
             references_output = self.server.request_references(file_path, **cursor_position)
