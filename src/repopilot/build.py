@@ -24,6 +24,7 @@ def setup_llm(llm_config):
             openai_api_key="EMPTY",
             openai_api_base="http://localhost:8000/v1", 
             model_name=model_name,
+            max_tokens = 30000,
         )  
     elif "gpt_azure" in model_name:
         model_name = model_name.replace("gpt_azure/", "")

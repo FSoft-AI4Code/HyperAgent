@@ -208,7 +208,10 @@ class StructuredGeneratorChatOutputParser(AgentOutputParser):
             if "editor_file" not in text:
                 action_match = self.pattern.search(text)
                 if action_match is not None:
-                    response = json.loads(action_match.group(1).strip(), strict=False)
+                    try:
+                        response = json.loads(action_match.group(1).strip(), strict=False)
+                    except:
+                        import ipdb; ipdb.set_trace()
                     if isinstance(response, list):
                         # gpt turbo frequently ignores the directive to emit a single action
                         logger.warning("Got multiple action responses: %s", response)

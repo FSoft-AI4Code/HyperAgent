@@ -17,7 +17,8 @@ DEFAULT_LLM_CONFIGS = {
     "planner": {
         # "model_name": "vllm/dreamgen/WizardLM-2-8x22B",
         # "model_name": "accounts/fireworks/models/qwen2-72b-instruct",
-        "model_name": "Qwen/Qwen2-72B-Instruct",
+        # "model_name": "Qwen/Qwen2-72B-Instruct",
+        "model_name": "MaziyarPanahi/WizardLM-2-8x22B-AWQ",
         "is_local": True,
     },
     "navigator": {
@@ -25,7 +26,8 @@ DEFAULT_LLM_CONFIGS = {
         "is_local": False,
     },
     "generator": {
-        "model_name": "Qwen/Qwen2-72B-Instruct",
+        # "model_name": "Qwen/Qwen2-72B-Instruct",
+        "model_name": "MaziyarPanahi/WizardLM-2-8x22B-AWQ",
         "is_local": True,
     },
     "executor": {

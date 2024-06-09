@@ -58,6 +58,7 @@ class PlanningOutputParser(PlanOutputParser):
     """Planning output parser."""
 
     def parse(self, text: str):
+        print(text)
         text = text.replace("```python", "")
         # pattern = r'Action:\s*(\{.*?\})'
         pattern = re.compile(r"```(?:json\s+)?(\W.*?)```", re.DOTALL)

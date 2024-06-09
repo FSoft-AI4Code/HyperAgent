@@ -197,6 +197,8 @@ class FindAllReferencesTool(BaseTool):
         Returns:
             Union[str, List[str]]: The list of references or an error message if an exception occurs.
         """
+        if relative_file_path is None:
+            return "Please specify the relative file path"
         if "/" not in relative_file_path:
             return "Invalid relative file path, please check the path again"
         
