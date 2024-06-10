@@ -4,6 +4,7 @@ repopilot.egg-info
 */__pycache__/*
 **/*.pyc
 **/__pycache__/*
+**/__pycache__/
 src/repopilot/multilspy/language_servers/rust_analyzer/static
 src/repopilot/multilspy/language_servers/eclipse_jdtls/static
 src/repopilot/tree-sitter

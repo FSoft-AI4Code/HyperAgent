@@ -20,7 +20,7 @@ if __name__ == "__main__":
     commit = input("Please provide a commit: (default: HEAD if enter)")
     language = input("Please provide a programming language: (default: python if enter)")
     question = input("Please provide a question: ")
-    pilot = RepoPilot(repo, commit=commit, openai_api_key=api_key, language=language, clone_dir="data/repos")
+    pilot = RepoPilot(repo, commit=commit, language=language, clone_dir="data/repos")
     logger.info("Setup done!")
     
     with get_openai_callback() as cb:

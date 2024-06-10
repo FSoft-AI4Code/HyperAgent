@@ -18,7 +18,7 @@ from repopilot.agents.plan_seeking import load_agent_navigator, load_agent_analy
 from repopilot.agents.adaptive_plan_seeking import AdaptivePlanSeeking
 from repopilot.agents.planner import load_chat_planner
 from repopilot.utils import clone_repo, check_local_or_remote
-from repopilot.tools import tool_classes, SemanticCodeSearchTool, CodeSearchTool
+from repopilot.tools.tools import tool_classes, SemanticCodeSearchTool, CodeSearchTool
 from repopilot.prompts.general_qa import example_qa
 from repopilot.constants import DEFAULT_CLONE_DIR, SEMANTIC_CODE_SEARCH_DB_PATH, DEFAULT_DEVICES, DEFAULT_LOCAL_AGENT, DEFAULT_GH_TOKEN, DEFAULT_WORKDIR_CLI, ZOEKT_CODE_SEARCH_INDEX_PATH, DEFAULT_PLANNER_TYPE, DEFAULT_VLLM_PORT, DEFAULT_LANGUAGE
 from repopilot.utils import save_infos_to_folder

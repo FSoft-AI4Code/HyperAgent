@@ -58,7 +58,6 @@ class PlanningOutputParser(PlanOutputParser):
     """Planning output parser."""
 
     def parse(self, text: str):
-        print(text)
         text = text.replace("```python", "")
         # pattern = r'Action:\s*(\{.*?\})'
         pattern = re.compile(r"```(?:json\s+)?(\W.*?)```", re.DOTALL)
@@ -121,7 +120,7 @@ def load_chat_planner(
     prompt_template = ChatPromptTemplate.from_messages(
         [
             SystemMessage(content=system_prompt),
-            HumanMessagePromptTemplate.from_template("Planner Query <Focus Here!>: \n```{input}```\nAgent Scratchpad : \n```{previous_steps}```"),
+            HumanMessagePromptTemplate.from_template("Planner Query <Focus Here!>: \n```{input}```\nAgent Scratchpad:\n```{previous_steps}```.\nThought: "),
         ]
     )
     llm_chain = LLMChain(llm=llm, prompt=prompt_template)
@@ -130,5 +129,3 @@ def load_chat_planner(
         output_parser=PlanningOutputParser(),
         stop=["Observation:"]
     )
-    
-    

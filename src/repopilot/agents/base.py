@@ -20,7 +20,7 @@ from langchain.callbacks.base import BaseCallbackManager
 from langchain.chains.llm import LLMChain
 from langchain.tools import BaseTool
 from langchain_core.agents import AgentAction, AgentFinish
-from repopilot.parsers.struct_parser import (
+from repopilot.langchain_parsers.struct_parser import (
     StructuredChatOutputParserWithRetries,
 )
 

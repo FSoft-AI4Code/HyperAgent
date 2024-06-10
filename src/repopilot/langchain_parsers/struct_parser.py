@@ -26,6 +26,7 @@ def extract_action_and_input(text):
             extracted_dict = json.loads(match.replace("```", ""), strict=False)
             break
     
+    # TODO: Handle the case where there are multiple actions
     if len(extracted_dict) == 0:
         return {"action": "Final Answer", "action_input": text}
     
@@ -203,7 +204,8 @@ class StructuredGeneratorChatOutputParser(AgentOutputParser):
         return fields
 
     def parse(self, text: str) -> Union[AgentAction, AgentFinish]:
-        print(text)
+        # if not text.startswith("Thought:"):
+        #     text = text.replace(text.split("Thought:")[0], "")
         if "Final Answer" not in text:
             if "editor_file" not in text:
                 action_match = self.pattern.search(text)
@@ -223,7 +225,7 @@ class StructuredGeneratorChatOutputParser(AgentOutputParser):
                             response["action"], response.get("action_input", {}), text
                         )
                 else:
-                    return AgentFinish({"output": text}, text)
+                    raise OutputParserException(f"Could not parse LLM output: {text}")
             else:
                 response = self.extract_fields(text)
                 return AgentAction(

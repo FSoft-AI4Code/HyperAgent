@@ -23,7 +23,7 @@ from langchain.agents.structured_chat.prompt import PREFIX, SUFFIX
 from repopilot.agents.base import ChainExecutor, StructuredChatAgent
 from repopilot.agents.agent_executor import AgentExecutor
 from repopilot.agents.llms import LocalLLM
-from repopilot.parsers.struct_parser import StructuredGeneratorChatOutputParser, StructuredBashChatOutputParser
+from repopilot.langchain_parsers.struct_parser import StructuredGeneratorChatOutputParser, StructuredBashChatOutputParser
 from repopilot.utils import find_abs_path, print_text
 from langchain_community.callbacks import get_openai_callback
 from repopilot.constants import DEFAULT_TRAJECTORIES_PATH, DO_NOT_SUMMARIZED_KEYS
@@ -258,7 +258,7 @@ class PlanSeeking(Chain):
         
         index = 0
         with get_openai_callback() as cb:
-            while True:
+            while (index < 20):
                 planner_output, planner_response = self.planner.plan(inputs)
                 print_text(planner_response, "blue")
                 agent_type = planner_output["agent_type"]
@@ -347,6 +347,6 @@ class PlanSeeking(Chain):
                 print(f"Prompt Tokens: {cb.prompt_tokens}")
                 print(f"Completion Tokens: {cb.completion_tokens}")
             
-        answer = self.planner.output_parser.parse(inputs["previous_steps"])
+        answer = inputs["previous_steps"][-1].split("Action:")[0]
         
         return {self.output_key: answer}

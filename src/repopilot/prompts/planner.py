@@ -30,8 +30,9 @@ Response of should be in the format:
 
 Thought: $THOUGHT_PROCESS
 Action: ```json{{"agent_type": $AGENT_TYPE, "request": $REQUEST, "terminated": $TERMINATED}}```
+Observation: 
 
 $REQUEST is string, $AGENT_TYPE is string, $TERMINATED is boolean, $THOUGHT_PROCESS is string.
 
 where $THOUGHT_PROCESS is your thought process about the query and previous results, $AGENT_TYPE is the agent you want to use, $REQUEST is the request you want to make to the agent, and $TERMINATED is a boolean indicating whether the task is terminated or not.
-Begin! Reminder to ALWAYS respond with an agent's request. Format is Action:```$JSON_BLOB```then Observation:. Thought:  """
+Begin! Reminder to ALWAYS respond with an agent's request. Format is Action:```$JSON_BLOB```then Observation: . Thought: """

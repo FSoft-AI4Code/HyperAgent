@@ -6,12 +6,31 @@ from urllib.parse import urlparse
 import socketserver
 from typing import Dict, List, Optional, TextIO
 from repopilot.multilspy.lsp_protocol_handler.lsp_types import SymbolKind
+from repopilot.constants import DEFAULT_PATCHES_DIR
 import json
 import difflib
 from transformers import AutoTokenizer
 import tiktoken
 import codecs
 import logging
+import random
+import string
+
+def generate_random_string(length, use_uppercase=True, use_lowercase=True, use_digits=True, use_punctuation=False):
+    characters = ''
+    if use_uppercase:
+        characters += string.ascii_uppercase
+    if use_lowercase:
+        characters += string.ascii_lowercase
+    if use_digits:
+        characters += string.digits
+    if use_punctuation:
+        characters += string.punctuation
+    
+    if not characters:
+        raise ValueError("At least one character set must be selected")
+    
+    return ''.join(random.choice(characters) for i in range(length))
 
 def find_most_matched_string(word_list, target):
     # Get close matches; n=1 ensures only the top match is returned
@@ -487,3 +506,13 @@ def print_text(
     """Print text with highlighting and no end characters."""
     text_to_print = get_colored_text(text, color) if color else text
     print(text_to_print, end=end, file=file)
+    
+def extract_patch(
+    repo_dir: str
+) -> str:
+    random_name = generate_random_string(8)
+    os.system(f"cd {repo_dir} && git diff HEAD > {DEFAULT_PATCHES_DIR}/{random_name}.diff")
+    
+    with open(f"{DEFAULT_PATCHES_DIR}/{random_name}.diff", "r") as f:
+        patch = f.read()
+    return patch

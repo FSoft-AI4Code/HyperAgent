@@ -1,3 +1,6 @@
+import os
+from repopilot.tools.tools import *
+
 from langchain_anthropic import ChatAnthropic
 from langchain_openai import ChatOpenAI
 from langchain_google_genai import ChatGoogleGenerativeAI
@@ -6,13 +9,9 @@ from langchain_together import ChatTogether
 from langchain_mistralai.chat_models import ChatMistralAI
 from langchain_fireworks import Fireworks
 from langchain_openrouter import OpenRouterLLM
-from langchain_community.llms.vllm import VLLM
 from langchain_community.llms.vllm import VLLMOpenAI
 from langchain_community.llms import DeepInfra
 from langchain_community.llms.ollama import Ollama
-
-import os
-from repopilot.tools import *
 
 def setup_llm(llm_config):
     #setup llm for planner
@@ -24,7 +23,7 @@ def setup_llm(llm_config):
             openai_api_key="EMPTY",
             openai_api_base="http://localhost:8000/v1", 
             model_name=model_name,
-            max_tokens = 30000,
+            max_tokens = 3000,
         )  
     elif "gpt_azure" in model_name:
         model_name = model_name.replace("gpt_azure/", "")

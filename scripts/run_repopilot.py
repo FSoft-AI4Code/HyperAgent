@@ -1,7 +1,7 @@
 from repopilot import RepoPilot
 from datasets import load_dataset
 from argparse import ArgumentParser
-from make_datasets.utils import extract_diff
+from repopilot.utils import extract_patch
 import json
 import os
 
@@ -26,11 +26,9 @@ def inference_per_instance(instance, output_folder, model_nick_name="repopilot")
     except Exception as e:
         print(e)
         os.system(f"rm -rf {pilot.repo_dir}")
-        os.system(f"conda uninstall ENV_NUM_{base_commit}")
+        os.system(f"conda uninstall ENV_NUM")
         return
-    patch = extract_diff(full_output)
-
-    print(full_output)
+    patch = extract_diff(pilot.repo_dir)
 
     output_dict["full_output"] = full_output
     output_dict["model_patch"] = patch
@@ -44,7 +42,7 @@ def inference_per_instance(instance, output_folder, model_nick_name="repopilot")
     
     # Clean up
     os.system(f"rm -rf {pilot.repo_dir}")
-    os.system(f"conda uninstall ENV_NUM_{base_commit}")
+    os.system(f"conda uninstall ENV_NUM")
 
 def get_args():
     parser = ArgumentParser()

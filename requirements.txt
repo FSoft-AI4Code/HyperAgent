@@ -4,6 +4,9 @@ langchain-community
 langchain-anthropic
 langchain-openai
 langchain-google-genai
+flake8
+autopep8
+sglang
 openai
 javalang
 tree-sitter-languages
