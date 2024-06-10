@@ -23,14 +23,12 @@ def inference_per_instance(instance, output_folder, model_nick_name="repopilot")
     system_input = template.format(issue=instance["problem_statement"])
     try:
         full_output = pilot.query_codebase({"input": system_input, "previous_steps": []})
+        patch = extract_patch(pilot.repo_dir)
+        output_dict["full_output"] = full_output
     except Exception as e:
         print(e)
-        os.system(f"rm -rf {pilot.repo_dir}")
-        os.system(f"conda uninstall ENV_NUM")
-        return
-    patch = extract_diff(pilot.repo_dir)
-
-    output_dict["full_output"] = full_output
+    
+    import ipdb; ipdb.set_trace()
     output_dict["model_patch"] = patch
     output_dict["instance_id"] = instance["instance_id"]
     output_dict["model_name_or_path"] = "repopilot"
@@ -39,10 +37,10 @@ def inference_per_instance(instance, output_folder, model_nick_name="repopilot")
 
     with open(output_file, "a+") as f:
         print(json.dumps(output_dict), file=f, flush=True)
-    
+        
     # Clean up
     os.system(f"rm -rf {pilot.repo_dir}")
-    os.system(f"conda uninstall ENV_NUM")
+    os.system(f"conda env remove --name {model_nick_name}")
 
 def get_args():
     parser = ArgumentParser()

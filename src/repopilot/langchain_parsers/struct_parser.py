@@ -213,7 +213,7 @@ class StructuredGeneratorChatOutputParser(AgentOutputParser):
                     try:
                         response = json.loads(action_match.group(1).strip(), strict=False)
                     except:
-                        import ipdb; ipdb.set_trace()
+                        raise OutputParserException(f"Could not parse LLM output: {text}")
                     if isinstance(response, list):
                         # gpt turbo frequently ignores the directive to emit a single action
                         logger.warning("Got multiple action responses: %s", response)

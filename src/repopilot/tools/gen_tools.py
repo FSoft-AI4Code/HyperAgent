@@ -124,8 +124,8 @@ class OpenFileToolForGenerator(BaseTool):
         abs_path = os.path.join(self.path, relative_file_path)
         try:
             if start_line is not None and end_line is not None:
-                if end_line - start_line > 70:
-                    return f"The number of lines to show is limited at 70, the requested number of lines is {end_line - start_line}, please specify the start and end line again (smaller |end_line-start_line|) or using keyword instead."
+                if end_line - start_line > 150:
+                    return f"The number of lines to show is limited at 150, the requested number of lines is {end_line - start_line}, please specify the start and end line again (smaller |end_line-start_line|) or using keyword instead."
                 source = open(abs_path, "r").read()
                 lines = source.split("\n")
                 source = "\n".join(lines[start_line-1:end_line]) 
@@ -155,4 +155,3 @@ class OpenFileToolForGenerator(BaseTool):
             source = open(abs_path, "r").read()
         source = add_num_line(source, start_line)
         return "The content of " + relative_file_path.replace(self.path, "") + " is: \n" + source
-    

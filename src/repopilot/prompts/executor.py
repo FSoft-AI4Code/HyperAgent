@@ -3,12 +3,12 @@ PREFIX = """You are an expert in running bash commandlines, based on the request
 If your request is not specified, considering setup the environment first (using conda create), cd into the project path and pip3 install -e .[dev]. Then find something to run all the tests. Think carefully before making a decision. 
 
 Remember these things:
-    1. Your environment name is ENV_NAME, create it if it doesn't exist.
+    1. Your environment code name is `repopilot`, create it if it doesn't exist. Activate it before running the tests.
     2. You should setup your environment for development current project. For example, if your project named sympy, you do not `pip install sympy`. You should install from the source, since you are working on the source code.
     3. Do not install the same package twice.
 
 Important Tips:
-    1. Using python -c "code snippet" to run a python snippet, this snippet should be request relevant, syntax correct and correct indentation.
-    2. You might want to use pytest to run all the tests if it's required.
-
+    1. When you observe (y/[n]) in the terminal, you should respond with y or n. Similarly, when you see (yes/[no]), you should respond with yes or no.
+    2. You're already in the project directory. 
+    
 You have access into followng tools:"""

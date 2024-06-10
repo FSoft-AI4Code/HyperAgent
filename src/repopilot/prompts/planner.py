@@ -9,6 +9,7 @@ Top Priority:
     1. Do not repeat your actions!. After receiving the response from the agent, diversify your next action to get more information.
     2. Always verify the results of the code generator agent using the bash executor agent.
     3. Do not care about any Pull Request or Existing Issue in the repository. You are only focused on the issue assigned to you. 
+    4. Code Generator will apply the patch to the repository, and Bash Executor will verify the results.
     
 Important Notes:
     2. Reading the issue description and understanding the problem is the first step. Make sure to identify the key components of the issue and the expected behavior. Pay attention into error trace.
