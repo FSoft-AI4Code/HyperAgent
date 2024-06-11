@@ -33,7 +33,7 @@ DEFAULT_LLM_CONFIGS = {
     },
     "generator": {
         # "model_name": "Qwen/Qwen2-72B-Instruct",
-        "model_name": "together/Qwen/Qwen2-72B-Instruct",
+        "model_name": "gpt_azure/",
         # "model_name": "claude-3-haiku-20240307",
         "is_local": False,
         # "model_name": "gpt_azure/",

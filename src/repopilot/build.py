@@ -1,5 +1,6 @@
 import os
 from repopilot.tools.tools import *
+from repopilot.agents.agent_plan_interface import *
 
 from langchain_anthropic import ChatAnthropic
 from langchain_openai import ChatOpenAI
@@ -86,3 +87,9 @@ def initialize_tools(repo_dir, db_path, index_path, language):
     for tool_class in exec_tool_cls:
         executor_tools.append(tool_class(repo_dir))
     return navigator_tools, generator_tools, executor_tools
+
+def initialize_agents(navigator, generator, executor, summarizer, repo_dir):
+    nav_agent = Navigation(navigator, summarizer)
+    gen_agent = CodeGenerator(generator, repo_dir)
+    exec_agent = BashExecutor(executor, summarizer)
+    return nav_agent, gen_agent, exec_agent

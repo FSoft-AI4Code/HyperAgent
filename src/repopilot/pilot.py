@@ -3,12 +3,12 @@ import os
 import warnings
 from typing import Optional
 from repopilot.utils import clone_repo, check_local_or_remote, setup_logger
-from repopilot.agents.planner import load_chat_planner
-from repopilot.agents.plan_seeking import load_agent_navigator, PlanSeeking, load_agent_generator, load_agent_executor, load_summarizer
+from repopilot.agents.plan_seeking import load_agent_navigator, load_agent_generator, load_agent_executor, load_summarizer, load_agent_planner
 from repopilot.prompts import navigator as navigator_prompt
 from repopilot.prompts import generator as generator_prompt
 from repopilot.prompts import executor as executor_prompt
-from repopilot.build import setup_llms, initialize_tools
+from repopilot.prompts import planner as planner_prompt
+from repopilot.build import setup_llms, initialize_tools, initialize_agents
 from repopilot.constants import DEFAULT_VERBOSE_LEVEL, DEFAULT_LLM_CONFIGS, DEFAULT_TRAJECTORIES_PATH
         
 warnings.filterwarnings("ignore", category=DeprecationWarning)
@@ -26,7 +26,7 @@ def Setup(
     index_path: Optional[str] = "data/indexes",
     llm_configs: Optional[dict] = None,
     verbose: int = DEFAULT_VERBOSE_LEVEL,
-) -> PlanSeeking:
+):
     
     # initialize the github repository
     gh_token = os.environ.get("GITHUB_TOKEN", None)
@@ -43,7 +43,7 @@ def Setup(
     # Set up the LLM
     llm_nav, llm_gen, llm_exec, llm_plan = setup_llms(llm_configs)
     logger.info("Initialized LLMs")
-        
+    
     # Set up the navigator, executor and generator agent (the system)
     navigator = load_agent_navigator(
         llm_nav,
@@ -73,29 +73,22 @@ def Setup(
     
     summarizer = load_summarizer()
     
-    agent_strings = [f"{agent.name}: {agent.description}" for agent in [navigator, generator, executor]]
-    formatted_agents = "\n".join(agent_strings)
+    agents = initialize_agents(navigator, generator, executor, summarizer, repo_dir)
+    
+    planner = load_agent_planner(
+        llm_plan,
+        agents,
+        planner_prompt.PREFIX,
+        planner_prompt.SUFFIX,
+        verbose=verbose
+    )
+    
     struct = subprocess.check_output(["tree", "-L","2", "-d", repo_dir]).decode("utf-8")
     planner_input = {
-        # "examples": examples,
-        "formatted_agents": formatted_agents,
         "struct": struct,
     }
-    planner = load_chat_planner(
-        llm=llm_plan,
-        **planner_input
-    )
-
-    system = PlanSeeking(
-        planner=planner,
-        navigator=navigator,
-        executor=executor,
-        generator=generator,
-        summarizer=summarizer,
-        repo_dir=repo_dir,
-        verbose=DEFAULT_VERBOSE_LEVEL
-    )
-    return system, repo_dir
+    
+    return planner, repo_dir, planner_input
 
 class RepoPilot:
     def __init__(
@@ -110,7 +103,7 @@ class RepoPilot:
     ):
         self.repo_path = repo_path
         self.language = language
-        self.system, repo_dir = Setup(
+        self.system, repo_dir, self.planner_input = Setup(
             self.repo_path,
             commit,
             language=language,
@@ -122,5 +115,6 @@ class RepoPilot:
         self.repo_dir = repo_dir
 
     def query_codebase(self, query):
-        result = self.system.run(query)
+        self.planner_input["current_step"] = query
+        result = self.system.step(self.planner_input)
         return result

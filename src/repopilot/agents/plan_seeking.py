@@ -1,32 +1,22 @@
 from typing import List
-
-import re
-import openai
 from langchain.schema.language_model import BaseLanguageModel
 from langchain.tools import BaseTool
-from langchain_experimental.plan_and_execute.executors.base import ChainExecutor
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
-from langchain.callbacks.manager import (
-    CallbackManagerForChainRun,
-)
-from langchain.chains.base import Chain
-from langchain.agents.structured_chat.output_parser import StructuredChatOutputParserWithRetries
-from langchain_experimental.plan_and_execute.executors.base import BaseExecutor
-from langchain_experimental.plan_and_execute.planners.base import BasePlanner
-from langchain_experimental.plan_and_execute.schema import (
-    BaseStepContainer,
-    ListStepContainer,
-)
-from langchain_experimental.pydantic_v1 import Field
 from langchain.agents.structured_chat.prompt import PREFIX, SUFFIX
 from repopilot.agents.base import ChainExecutor, StructuredChatAgent
 from repopilot.agents.agent_executor import AgentExecutor
 from repopilot.agents.llms import LocalLLM
 from repopilot.langchain_parsers.struct_parser import StructuredGeneratorChatOutputParser, StructuredBashChatOutputParser
-from repopilot.utils import find_abs_path, print_text
 from langchain_community.callbacks import get_openai_callback
-from repopilot.constants import DEFAULT_TRAJECTORIES_PATH, DO_NOT_SUMMARIZED_KEYS
+from repopilot.constants import DEFAULT_TRAJECTORIES_PATH
+
+PLANNER_HUMAN_MESSAGE_TEMPLATE = """Objective: {current_step}
+Project Structure:
+{struct}
+Planner scratchpad:
+{agent_scratchpad}
+"""
 
 EXEC_HUMAN_MESSAGE_TEMPLATE = """Objective: {current_step}
 Execution Memory:
@@ -218,155 +208,44 @@ def load_summarizer():
     summarizer = LocalLLM(config)
     return summarizer
 
-class PlanSeeking(Chain):
-    """Plan and execute a chain of steps."""
-
-    planner: BasePlanner
-    """The planner to use."""
-    navigator: BaseExecutor
-    """The executor to use."""
-    executor: BaseExecutor
-    """The executor to use."""
-    generator: BaseExecutor
-    """The generator to use."""
-    summarizer: LocalLLM
+def load_agent_planner(
+    llm: BaseLanguageModel,
+    tools: List[BaseTool],
+    prefix: str = PREFIX,
+    suffix: str = SUFFIX,
+    verbose: int = 1,
+    save_trajectories_path: str = DEFAULT_TRAJECTORIES_PATH,
     
-    repo_dir: str
-    
-    step_container: BaseStepContainer = Field(default_factory=ListStepContainer)
-    """The step container to use."""
-    input_key: str = "input"
-    output_key: str = "output"
-    analyzer_key: str = "analyzer_input"
+) -> ChainExecutor:
+    """
+    Load an agent executor.
 
-    @property
-    def input_keys(self) -> List[str]:
-        return [self.input_key]
+    Args:
+        llm: BaseLanguageModel
+        tools: List[BaseTool]
+        verbose: bool. Defaults to False.
+        include_task_in_prompt: bool. Defaults to False.
 
-    @property
-    def output_keys(self) -> List[str]:
-        return [self.output_key]
+    Returns:
+        ChainExecutor
+    """
+    input_variables = ["current_step", "agent_scratchpad", "struct"]
+    template = PLANNER_HUMAN_MESSAGE_TEMPLATE
+    format_instructions = FORMAT_INSTRUCTIONS
 
-    def _call(
-        self,
-        inputs: Dict[str, Any],
-        run_manager: Optional[CallbackManagerForChainRun] = None,
-    ) -> Dict[str, Any]:
-        nav_memory = ""
-        bash_memory = ""
-        
-        index = 0
-        with get_openai_callback() as cb:
-            while (index < 30):
-                planner_output, planner_response = self.planner.plan(inputs)
-                print_text(planner_response, "blue")
-                agent_type = planner_output["agent_type"]
-                if planner_output["terminated"]:
-                    break
-                planner_request = planner_output["request"]
-                                
-                if agent_type == "Codebase Navigator":
-                    current_notes = ""
-                    nav_inputs = {"current_step": planner_request, "nav_memory": nav_memory}
-                    response, intermediate_steps = self.navigator.step(
-                        nav_inputs,
-                        callbacks=run_manager.get_child() if run_manager else None,
-                    )
-                    
-                    for j, react_step in enumerate(intermediate_steps):
-                        if isinstance(react_step[1], list):
-                            obs_strings = [str(x) for x in react_step[1]]
-                            tool_output = "\n".join(obs_strings)
-                        else:
-                            tool_output = str(react_step[1])
-                            current_notes += f"\nStep:{j}\n\Analysis: {react_step[0].log.split('Action:')[0]}\nOutput: {tool_output}\n"
-                    if any([key in response.response for key in DO_NOT_SUMMARIZED_KEYS]):
-                        try:
-                            current_notes = self.summarizer(current_notes) + "\n" + response.response
-                        except openai.BadRequestError:
-                            current_notes = response.response
-                    else:
-                        current_notes = self.summarizer(current_notes + "\n" + filter_response(response.response)) 
-                    next_key =  f"Thought: {planner_response}\n"         
-                    next_key += f"Observation: {current_notes}\n"
-                    nav_memory += f"Planner Request: {planner_request} \nYour Result: {current_notes}\n"
-
-                elif agent_type == "Code Generator":
-                    pattern = r'`([^`]*)`'
-
-                    # Find all matches
-                    matches = re.findall(pattern, planner_request)
-                    if matches:
-                        file_paths = [match for match in matches if match.endswith(".py")]
-                        if len(file_paths) > 0:
-                            full_path = find_abs_path(self.repo_dir, file_paths[0])
-                        else:
-                            full_path = None
-                    else:
-                        pattern = r"'([^\']*)'"
-                        matches = re.findall(pattern, planner_request)
-                        file_paths = [match for match in matches if match.endswith(".py")]
-                        if len(file_paths) > 0:
-                            full_path = find_abs_path(self.repo_dir, file_paths[0])
-                        else:
-                            full_path = None
-                            
-                    if full_path is None:
-                        full_path = [path for path in planner_request.split(" ") if path.endswith(".py")]
-                        if len(full_path) > 0:
-                            full_path = find_abs_path(self.repo_dir, full_path[0])
-                        
-                    if full_path is not None:
-                        generator_inputs = {"current_step": planner_request, "file_path": file_paths[0] if file_paths else None}
-                        response, intermediate_steps = self.generator.step(
-                            generator_inputs,
-                            callbacks=run_manager.get_child() if run_manager else None,
-                        )
-                        next_key =  f"Thought: {planner_response}\n"
-                        next_key += f"Observation: {intermediate_steps}\n{response.response}\n"
-                        
-                    else:
-                        next_key = f"Thought: {planner_response}\n"
-                        next_key += f"Observation: File not Found\n"
-                        index += 1
-                
-                elif agent_type == "Bash Executor":
-                    break
-                    executor_inputs = {"current_step": planner_request, "bash_memory": bash_memory}
-                    response, intermediate_steps = self.executor.step(
-                        executor_inputs,
-                        callbacks=run_manager.get_child() if run_manager else None,
-                    )
-                    
-                    next_key = planner_response + "\n"
-                    next_key += f"Observation: {response}\n"
-                    
-                    
-                    for j, react_step in enumerate(intermediate_steps):
-                        if isinstance(react_step[1], list):
-                            obs_strings = [str(x) for x in react_step[1]]
-                            tool_output = "\n".join(obs_strings)
-                        else:
-                            tool_output = str(react_step[1])
-                            current_notes += f"\nStep:{j}\n\Analysis: {react_step[0].log.split('Action:')[0]}\nOutput: {tool_output}\n"
-                    if any([key in response.response for key in DO_NOT_SUMMARIZED_KEYS]):
-                        try:
-                            current_notes = self.summarizer(current_notes) + "\n" + response.response
-                        except openai.BadRequestError:
-                            current_notes = response.response
-                    else:
-                        current_notes = self.summarizer(current_notes + "\n" + filter_response(response.response)) 
-                    
-                    bash_memory += f"Planner Request: {planner_request} \nYour Result: {current_notes}\n"
-                    
-                    
-                
-                inputs["previous_steps"].append(next_key)
-                index += 1
-                print(f"Total Tokens: {cb.total_tokens}")
-                print(f"Prompt Tokens: {cb.prompt_tokens}")
-                print(f"Completion Tokens: {cb.completion_tokens}")
-            
-        answer = inputs["previous_steps"][-1].split("Action:")[0]
-        
-        return {self.output_key: answer}
+    agent = StructuredChatAgent.from_llm_and_tools(
+        llm,
+        tools,
+        human_message_template=template,
+        input_variables=input_variables,
+        prefix=prefix,
+        suffix=suffix,
+        format_instructions=format_instructions,
+    )
+    agent.save_trajectories_path = save_trajectories_path
+    agent_executor = AgentExecutor.from_agent_and_tools(
+        agent=agent, tools=tools, verbose=verbose, return_intermediate_steps=True 
+    )
+    agent_executor.handle_parsing_errors = True
+    return ChainExecutor(chain=agent_executor, name="Planner", description="Plan the next steps to resolve the query"
+)
