@@ -8,7 +8,8 @@ Remember these things:
     3. Do not install the same package twice.
 
 Important Tips:
-    1. When you observe (y/[n]) in the terminal, you should respond with y or n. Similarly, when you see (yes/[no]), you should respond with yes or no.
+    1. When you observe (y/[n]) in the terminal, you should respond only with y or n. Similarly, when you see (yes/[no]), you should respond with yes or no.
     2. You're already in the project directory. 
+    3. Run command one by one.
     
 You have access into followng tools:"""

@@ -7,7 +7,7 @@ import os
 
 template = "You need to identify the cause of the following github issue, collect the relevant information, and provide a solution. Github Issue: ```{issue}```"
 
-def inference_per_instance(instance, output_folder, model_nick_name="repopilot"):
+def inference_per_instance(instance, output_folder, model_nick_name="repopilot-gpt4o"):
     print(instance["problem_statement"])
     base_commit = instance["base_commit"]
     repo = instance["repo"]
@@ -18,17 +18,17 @@ def inference_per_instance(instance, output_folder, model_nick_name="repopilot")
         repo_path=repo_link,
         commit=base_commit,
         language="python",
+        clone_dir="/datadrive5/huypn16/RepoPilot/evaluation_benchmark/SWE-bench/data/repos_gpt4o",
         verbose=2
     )
     system_input = template.format(issue=instance["problem_statement"])
-    try:
-        full_output = pilot.query_codebase({"input": system_input, "previous_steps": []})
-        patch = extract_patch(pilot.repo_dir)
-        output_dict["full_output"] = full_output
-    except Exception as e:
-        print(e)
+    # try:
+    full_output = pilot.query_codebase({"input": system_input, "previous_steps": []})
+    output_dict["full_output"] = full_output
+    # except Exception as e:
+    #     print(e)
     
-    import ipdb; ipdb.set_trace()
+    patch = extract_patch(pilot.repo_dir)
     output_dict["model_patch"] = patch
     output_dict["instance_id"] = instance["instance_id"]
     output_dict["model_name_or_path"] = "repopilot"

@@ -33,11 +33,11 @@ DEFAULT_LLM_CONFIGS = {
     },
     "generator": {
         # "model_name": "Qwen/Qwen2-72B-Instruct",
-        "model_name": "gpt_azure/",
+        # "model_name": "gpt_azure/",
         # "model_name": "claude-3-haiku-20240307",
         "is_local": False,
         # "model_name": "gpt_azure/",
-        # "model_name": "MaziyarPanahi/WizardLM-2-8x22B-AWQ",
+        "model_name": "gemini-1.5-pro-latest",
         # "is_local": True,
     },
     "executor": {

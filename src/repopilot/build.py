@@ -90,6 +90,6 @@ def initialize_tools(repo_dir, db_path, index_path, language):
 
 def initialize_agents(navigator, generator, executor, summarizer, repo_dir):
     nav_agent = Navigation(navigator, summarizer)
-    gen_agent = CodeGenerator(generator, repo_dir)
+    gen_agent = CodeGenerator(generator, summarizer, repo_dir)
     exec_agent = BashExecutor(executor, summarizer)
     return nav_agent, gen_agent, exec_agent

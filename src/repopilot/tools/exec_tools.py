@@ -4,16 +4,18 @@ from typing import Optional
 import subprocess
 import selectors
 import os
+import time
 
-class InteractiveBashSession:
-    def __init__(self):
+class InteractiveShellSession:
+    def __init__(self, shell='zsh'):
+        self.shell = shell
         self.sel = selectors.DefaultSelector()
         self.proc = None
 
     def initialize(self):
-        # Open a subprocess with a Bash shell
+        # Open a subprocess with the specified shell
         self.proc = subprocess.Popen(
-            ['bash'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, bufsize=1
+            [self.shell], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, bufsize=1
         )
 
         # Register the subprocess stdout and stderr for non-blocking reading
@@ -23,33 +25,58 @@ class InteractiveBashSession:
     def command(self, command_str):
         if not self.proc:
             raise RuntimeError("Session not initialized. Call initialize() first.")
-        
+
+        # Unique marker to detect end of command execution
+        marker = "END_OF_COMMAND_{}".format(time.time())
+        full_command = f"{command_str} && echo {marker}"
+        command_done = False
+
         # Send the command to the subprocess
-        self.proc.stdin.write(command_str + "\n")
+        self.proc.stdin.write(full_command)
         self.proc.stdin.flush()
 
         output = []
         error = []
 
-        # Use selectors to handle non-blocking I/O
         while True:
             events = self.sel.select(timeout=1)
-            if not events:
-                break
             for key, _ in events:
                 data = key.data
                 if data == 'stdout':
                     chunk = os.read(key.fileobj.fileno(), 4096).decode()
+                    print(chunk)
                     if chunk:
                         output.append(chunk)
+                        if marker in chunk:
+                            command_done = True
+                            break
                 elif data == 'stderr':
                     chunk = os.read(key.fileobj.fileno(), 4096).decode()
                     if chunk:
                         error.append(chunk)
 
+            if command_done:
+                break
+
+        full_output = ''.join(output)
+        clean_output = full_output.replace(marker, '').strip()
+
         if error:
             return ''.join(error)
-        return ''.join(output)
+        return clean_output
+
+    def close(self):
+        if self.proc:
+            # Clean up: close the subprocess and unregister the selector
+            self.proc.stdin.close()
+            self.proc.stdout.close()
+            self.proc.stderr.close()
+            self.sel.unregister(self.proc.stdout)
+            self.sel.unregister(self.proc.stderr)
+            self.proc.terminate()
+            self.proc.wait()
+            self.proc = None
+
 
     def close(self):
         if self.proc:
@@ -71,7 +98,7 @@ class BashExecutorTool(BaseTool):
     
     repo_dir: str = ""
     name: str = "terminal"
-    bash_session: Optional[InteractiveBashSession] = None 
+    bash_session: Optional[InteractiveShellSession] = None 
     """Name of tool."""
 
     description = f"Run shell commands on this linux machine."
@@ -79,9 +106,10 @@ class BashExecutorTool(BaseTool):
     def __init__(self, repo_dir):
         super().__init__()
         self.repo_dir = repo_dir
-        self.bash_session = InteractiveBashSession()
+        self.bash_session = InteractiveShellSession()
         self.bash_session.initialize()
         self.bash_session.command(f"cd {self.repo_dir}")
+        self.bash_session.command(f"source ~/.zshrc")
 
     def _run(
         self,

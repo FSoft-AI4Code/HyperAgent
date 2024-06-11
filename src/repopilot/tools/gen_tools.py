@@ -4,7 +4,10 @@ from langchain.tools import BaseTool
 import subprocess
 from typing import List, Optional
 from repopilot.llm_multilspy import add_num_line
+from repopilot.agents.llms import LocalLLM
 import os
+
+summarizer = LocalLLM({"model": "mistralai/Mixtral-8x7B-Instruct-v0.1", "system_prompt": "Describe this error message in plain text.", "max_tokens": 25000})
 
 class EditorArgs(BaseModel):
     relative_file_path: str = Field(..., description="The relative file path of the file that is need to be edited")
@@ -71,7 +74,7 @@ class EditorTool(BaseTool):
             return f"Successfully edited the file {relative_file_path} from line {start_line} to {end_line}"
         else:
             os.remove(patch_file_path)
-            return f"Error executing command. Error message: {stdout_output + stderr_output}. Please read this error message carefully, reopen the file using open_file tool then try to fix the generated code."
+            return f"Error executing command. Error message: {summarizer(stdout_output + stderr_output)}. Please read this error message carefully, reopen the file using open_file tool then try to fix the generated code."
 
 class OpenFileToolForGeneratorArgs(BaseModel):
     relative_file_path: str = Field(..., description="The relative path of the file we want to open")
@@ -132,7 +135,10 @@ class OpenFileToolForGenerator(BaseTool):
             else:
                 line_idx = []
                 returned_source = []
-                source = open(abs_path, "r").read()
+                if osp.isfile(abs_path):
+                    source = open(abs_path, "r").read()
+                else:
+                    return "Your path is not a file, please check the path again. Use the get_folder_structure tool to see the structure of the folder"
                 lines = source.split("\n")
                 for i, line in enumerate(lines):
                     if keyword in line:

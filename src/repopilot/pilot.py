@@ -74,7 +74,7 @@ def Setup(
     summarizer = load_summarizer()
     
     agents = initialize_agents(navigator, generator, executor, summarizer, repo_dir)
-    
+        
     planner = load_agent_planner(
         llm_plan,
         agents,

@@ -5,7 +5,7 @@ from repopilot.constants import DO_NOT_SUMMARIZED_KEYS
 from repopilot.agents.plan_seeking import filter_response
 from repopilot.agents.base import ChainExecutor
 from repopilot.utils import find_abs_path
-from repopilot.agents.llm import LLM
+from repopilot.agents.llms import LLM
 from typing import Optional
 import re
 
@@ -37,28 +37,27 @@ class Navigation(BaseTool):
             else:
                 tool_output = str(react_step[1])
                 current_notes += f"\nStep:{j}\n\Analysis: {react_step[0].log.split('Action:')[0]}\nOutput: {tool_output}\n"
-        if any([key in response.response for key in DO_NOT_SUMMARIZED_KEYS]):
-            try:
-                current_notes = self.summarizer(current_notes) + "\n" + response.response
-            except openai.BadRequestError:
-                current_notes = response.response
-        else:
-            current_notes = self.summarizer(current_notes + "\n" + filter_response(response.response)) 
+        try:
+            current_notes = self.summarizer(current_notes) + "\n" + filter_response(response.response)
+        except openai.BadRequestError:
+            current_notes = response.response
         return current_notes
 
 class CodeGeneratorArgs(BaseModel):
     request: str = Field(..., description="a very detailed request to generate the code snippet or patch, also give it a context. (Important). Also give it a full path to the file you want to edit in format like this `somefolder/somefile.py` (notes `` quote).")
-
+    
 class CodeGenerator(BaseTool):
     name: str = "code_generator"
     args_schema = CodeGeneratorArgs
     generator: Optional[ChainExecutor] = None
+    summarizer: Optional[LLM] = None
     repo_dir: str = ""
     description: str = "Generate code snippets or patch that can be applied to the codebase."
     
-    def __init__(self, _agent, repo_dir):
+    def __init__(self, _agent, summarizer, repo_dir):
         super().__init__()
         self.generator = _agent
+        self.summarizer = summarizer
         self.repo_dir = repo_dir
     
     def _run(self, request: str):
@@ -88,11 +87,10 @@ class CodeGenerator(BaseTool):
         if full_path is not None:
             generator_inputs = {"current_step": request, "file_path": file_paths[0] if file_paths else None}
             response, intermediate_steps = self.generator.step(generator_inputs)
-    
-            next_key = f"{intermediate_steps}\n{response.response}\n"
+            current_notes = response.response
         else:
-            next_key = f"File not Found"
-        return next_key
+            current_notes = f"File not Found"
+        return current_notes
 
 class BashExecutorArgs(BaseModel):
     request: str = Field(..., description="a detailed request to reproduce the issue or examine whether the human query is resolved.")
@@ -122,12 +120,9 @@ class BashExecutor(BaseTool):
             else:
                 tool_output = str(react_step[1])
                 current_notes += f"\nStep:{j}\n\Analysis: {react_step[0].log.split('Action:')[0]}\nOutput: {tool_output}\n"
-        if any([key in response.response for key in DO_NOT_SUMMARIZED_KEYS]):
-            try:
-                current_notes = self.summarizer(current_notes) + "\n" + response.response
-            except openai.BadRequestError:
-                current_notes = response.response
-        else:
-            current_notes = self.summarizer(current_notes + "\n" + filter_response(response.response))
+        try:
+            current_notes = self.summarizer(current_notes) + "\n" + response.response
+        except openai.BadRequestError:
+            current_notes = response.response
 
         return current_notes

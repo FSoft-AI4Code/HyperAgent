@@ -67,6 +67,8 @@ Action:
 ```"""
 def filter_response(text):
     text = text.replace("```json", "")
+    text = text.replace("Action:", "")
+    text = text.replace("action", "")
     text = text.replace("action: ", "")
     text = text.replace("Final Answer", "")
     text = text.replace("action_input", "")
