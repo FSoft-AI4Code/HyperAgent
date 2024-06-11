@@ -27,7 +27,7 @@ def setup_llm(llm_config):
         )  
     elif "gpt_azure" in model_name:
         model_name = model_name.replace("gpt_azure/", "")
-        llm = AzureChatOpenAI(temperature=0, api_version=os.environ["API_VERSION"], azure_endpoint=os.environ["AZURE_ENDPOINT_GPT4"], api_key=os.environ["OPENAI_API_KEY"], azure_deployment="codevista-openai-eastuse-gpt4o")
+        llm = AzureChatOpenAI(temperature=0, api_version=os.environ["API_VERSION"], azure_endpoint=os.environ["AZURE_ENDPOINT_GPT4"], api_key=os.environ["OPENAI_API_KEY"], azure_deployment="ai4code-research-gpt4o")
     elif "gpt" in model_name:
         llm = ChatOpenAI(temperature=0, model=model_name, openai_api_key=os.environ["OPENAI_API_KEY"])
     elif "gemini" in model_name:
@@ -50,7 +50,7 @@ def setup_llm(llm_config):
         model_name = model_name.replace("ollama/", "")
         llm = Ollama(model=model_name, temperature=0.0)
     else:
-        raise ValueError(f"Unknown model {llm_config['planner']['model']}")
+        raise ValueError(f"Unknown model {llm_config['model']}")
     
     return llm
 

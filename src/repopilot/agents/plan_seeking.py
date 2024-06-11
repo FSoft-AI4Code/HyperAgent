@@ -28,7 +28,9 @@ from repopilot.utils import find_abs_path, print_text
 from langchain_community.callbacks import get_openai_callback
 from repopilot.constants import DEFAULT_TRAJECTORIES_PATH, DO_NOT_SUMMARIZED_KEYS
 
-HUMAN_MESSAGE_TEMPLATE = """Objective: {current_step}
+EXEC_HUMAN_MESSAGE_TEMPLATE = """Objective: {current_step}
+Execution Memory:
+{bash_memory}
 Agent scratchpad:
 {agent_scratchpad}"""
 
@@ -189,14 +191,10 @@ def load_agent_executor(
     if commit_hash == "":
         commit_hash = input("You did not provide a commit hash, please provide a default name for your environment that executor is going to build.")
     
-    env_name = f"ENV_NUM_{commit_hash}"
-    
     
     input_variables = ["current_step", "agent_scratchpad"]
-    template = HUMAN_MESSAGE_TEMPLATE
+    template = EXEC_HUMAN_MESSAGE_TEMPLATE
     format_instructions = FORMAT_INSTRUCTIONS
-
-    suffix = suffix.replace("ENV_NAME", env_name)
     
     agent = StructuredChatAgent.from_llm_and_tools(
         llm,
@@ -255,10 +253,11 @@ class PlanSeeking(Chain):
         run_manager: Optional[CallbackManagerForChainRun] = None,
     ) -> Dict[str, Any]:
         nav_memory = ""
+        bash_memory = ""
         
         index = 0
         with get_openai_callback() as cb:
-            while (index < 20):
+            while (index < 30):
                 planner_output, planner_response = self.planner.plan(inputs)
                 print_text(planner_response, "blue")
                 agent_type = planner_output["agent_type"]
@@ -288,8 +287,7 @@ class PlanSeeking(Chain):
                             current_notes = response.response
                     else:
                         current_notes = self.summarizer(current_notes + "\n" + filter_response(response.response)) 
-                    next_key =  planner_response + "\n"
-                    
+                    next_key =  f"Thought: {planner_response}\n"         
                     next_key += f"Observation: {current_notes}\n"
                     nav_memory += f"Planner Request: {planner_request} \nYour Result: {current_notes}\n"
 
@@ -324,15 +322,17 @@ class PlanSeeking(Chain):
                             generator_inputs,
                             callbacks=run_manager.get_child() if run_manager else None,
                         )
-                        next_key =  planner_response + "\n"
-                        next_key += f"Observation: {intermediate_steps}\nFinal Output From Generator - \n{response.response}\n"
+                        next_key =  f"Thought: {planner_response}\n"
+                        next_key += f"Observation: {intermediate_steps}\n{response.response}\n"
                         
                     else:
-                        next_key = planner_response + "\n"
-                        next_key = f"Observation: File not Found\n"
+                        next_key = f"Thought: {planner_response}\n"
+                        next_key += f"Observation: File not Found\n"
+                        index += 1
                 
                 elif agent_type == "Bash Executor":
-                    executor_inputs = {"current_step": planner_request}
+                    break
+                    executor_inputs = {"current_step": planner_request, "bash_memory": bash_memory}
                     response, intermediate_steps = self.executor.step(
                         executor_inputs,
                         callbacks=run_manager.get_child() if run_manager else None,
@@ -340,6 +340,26 @@ class PlanSeeking(Chain):
                     
                     next_key = planner_response + "\n"
                     next_key += f"Observation: {response}\n"
+                    
+                    
+                    for j, react_step in enumerate(intermediate_steps):
+                        if isinstance(react_step[1], list):
+                            obs_strings = [str(x) for x in react_step[1]]
+                            tool_output = "\n".join(obs_strings)
+                        else:
+                            tool_output = str(react_step[1])
+                            current_notes += f"\nStep:{j}\n\Analysis: {react_step[0].log.split('Action:')[0]}\nOutput: {tool_output}\n"
+                    if any([key in response.response for key in DO_NOT_SUMMARIZED_KEYS]):
+                        try:
+                            current_notes = self.summarizer(current_notes) + "\n" + response.response
+                        except openai.BadRequestError:
+                            current_notes = response.response
+                    else:
+                        current_notes = self.summarizer(current_notes + "\n" + filter_response(response.response)) 
+                    
+                    bash_memory += f"Planner Request: {planner_request} \nYour Result: {current_notes}\n"
+                    
+                    
                 
                 inputs["previous_steps"].append(next_key)
                 index += 1

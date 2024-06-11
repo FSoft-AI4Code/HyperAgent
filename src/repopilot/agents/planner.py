@@ -120,7 +120,7 @@ def load_chat_planner(
     prompt_template = ChatPromptTemplate.from_messages(
         [
             SystemMessage(content=system_prompt),
-            HumanMessagePromptTemplate.from_template("Planner Query <Focus Here!>: \n```{input}```\nAgent Scratchpad:\n```{previous_steps}```.\nThought: "),
+            HumanMessagePromptTemplate.from_template("Planner Query: \n```{input}```\nAgent Scratchpad:\n```{previous_steps}```.\nThought: "),
         ]
     )
     llm_chain = LLMChain(llm=llm, prompt=prompt_template)
