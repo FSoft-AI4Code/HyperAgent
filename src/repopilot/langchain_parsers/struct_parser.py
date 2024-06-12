@@ -204,6 +204,7 @@ class StructuredGeneratorChatOutputParser(AgentOutputParser):
         return fields
 
     def parse(self, text: str) -> Union[AgentAction, AgentFinish]:
+        import ipdb; ipdb.set_trace()
         # if not text.startswith("Thought:"):
         #     text = text.replace(text.split("Thought:")[0], "")
         if "Final Answer" not in text:
@@ -227,7 +228,10 @@ class StructuredGeneratorChatOutputParser(AgentOutputParser):
                 else:
                     raise OutputParserException(f"Could not parse LLM output: {text}")
             else:
-                response = self.extract_fields(text)
+                try:
+                    response = self.extract_fields(text)
+                except:
+                    raise OutputParserException(f"Could not parse LLM output: {text}")
                 return AgentAction(
                     "editor_file", response, text
                 )

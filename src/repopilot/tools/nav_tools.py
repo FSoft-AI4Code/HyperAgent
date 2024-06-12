@@ -9,7 +9,7 @@ from repopilot.get_repo_struct import visualize_tree
 from repopilot.llm_multilspy import LSPToolKit, add_num_line
 from repopilot.code_search import search_elements_inside_project
 from repopilot.zoekt.zoekt_server import ZoektServer
-from repopilot.utils import identify_extension, find_non_utf8_files
+from repopilot.utils import identify_extension, find_non_utf8_files, find_all_file_paths
 from langchain_community.embeddings.cohere import CohereEmbeddings
 from langchain_community.vectorstores import Chroma
 from repopilot.utils import get_symbol_verbose
@@ -70,11 +70,11 @@ class CodeSearchTool(BaseTool):
 
     
     def _run(self, names: list[str], verbose: bool = True):
-        try:
-            result = search_elements_inside_project(names, self.backend, verbose=verbose, language=self.language)
-            return result
-        except TypeError:
-            return "The search engine is not available, please check the word again, the word should be identifier only"
+        # try:
+        result = search_elements_inside_project(names, self.backend, verbose=verbose, language=self.language)
+        return result
+        # except TypeError:
+        #     return "The search engine is not available, please check the word again, the word should be identifier only"
     def _arun(self, names: list[str], verbose: bool = True):
         return NotImplementedError("Code Search Tool is not available for async run")
 
@@ -177,8 +177,8 @@ class FindAllReferencesTool(BaseTool):
         """
         if relative_file_path is None:
             return "Please specify the relative file path"
-        if "/" not in relative_file_path:
-            return "Invalid relative file path, please check the path again"
+        # if "/" not in relative_file_path:
+        #     return "Invalid relative file path, please check the path again"
         
         abs_path = os.path.join(self.path, relative_file_path)
         
@@ -348,7 +348,7 @@ class OpenFileTool(BaseTool):
                 if start_line > len(lines):
                     return f"Invalid start line, the start line is greater than the total number of lines in the file, the total number of lines in the file is {len(lines)}"
                 
-                source = "\n".join(lines[start_line-1:end_line]) 
+                source = "\n".join(lines[start_line:end_line]) 
             else:
                 out_str = "The content of " + relative_file_path.replace(self.path, "") + " is: \n"
                 for keyword in keywords:
@@ -430,3 +430,53 @@ class SemanticCodeSearchTool(Tool):
             func=semantic_code_search,
             description="useful for when the query is a sentance, semantic and vague. If exact search such as code search failed after multiple tries, try this",
         )
+
+class FindFileArgs(BaseModel):
+    file_name: str = Field(..., description="The name of the file you want to find")
+
+class FindFileTool(BaseTool):
+    """
+    Tool for finding a file inside a repository.
+
+    Args:
+        path (str): The path to the repository.
+        language (str): The language of the repository.
+
+    Attributes:
+        name (str): The name of the tool.
+        description (str): The description of the tool.
+        args_schema (class): The schema for the tool's arguments.
+        path (str): The path to the repository.
+
+    Methods:
+        _run(file_name: str) -> str:
+            Runs the tool to find the specified file.
+
+    """
+
+    name = "find_file"
+    description = """Useful when you want to find a file inside a repo. Remember to provide the file name correctly.
+    """
+    args_schema = FindFileArgs
+    path = ""
+    
+    def __init__(self, path, language=None):
+        super().__init__()
+        self.path = path
+    
+    def _run(self, file_name: str):
+        """
+        Finds the specified file inside the repository.
+
+        Args:
+            file_name (str): The name of the file to find.
+
+        Returns:
+            str: The path to the file.
+
+        """
+        file_paths = find_all_file_paths(self.path, file_name)
+        file_paths = [file_path.replace(self.path, "") for file_path in file_paths]
+        if len(file_paths) == 0:
+            return "The file is not found, please check the file name again"
+        return "The file is found at: " + "\n".join(file_paths)

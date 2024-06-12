@@ -516,3 +516,21 @@ def extract_patch(
     with open(f"{DEFAULT_PATCHES_DIR}/{random_name}.diff", "r") as f:
         patch = f.read()
     return patch
+
+def find_all_file_paths(parent_folder, file_name):
+  """Finds all paths of files with the given name in a parent folder.
+
+  Args:
+    parent_folder: The path to the parent folder.
+    file_name: The name of the file to find.
+
+  Returns:
+    A list of all full paths to the files if found, otherwise an empty list.
+  """
+
+  file_paths = []
+  for root, _, files in os.walk(parent_folder):
+    if file_name in files:
+      file_paths.append(os.path.join(root, file_name))
+
+  return file_paths

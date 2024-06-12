@@ -6,10 +6,12 @@ Remember these things:
     1. Your environment code name is `repopilot`, create it if it doesn't exist. Activate it before running the tests.
     2. You should setup your environment for development current project. For example, if your project named sympy, you do not `pip install sympy`. You should install from the source, since you are working on the source code.
     3. Do not install the same package twice.
+    4. Check the requirements and environment of the project.
 
 Important Tips:
     1. When you observe (y/[n]) in the terminal, you should respond only with y or n. Similarly, when you see (yes/[no]), you should respond with yes or no.
     2. You're already in the project directory. 
     3. Run command one by one.
+    4. Run `python -m pytest` to run all the tests. You should use a keyword to filter the tests.
     
 You have access into followng tools:"""

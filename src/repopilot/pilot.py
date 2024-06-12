@@ -117,4 +117,4 @@ class RepoPilot:
     def query_codebase(self, query):
         self.planner_input["current_step"] = query
         result = self.system.step(self.planner_input)
-        return result
+        return result.response

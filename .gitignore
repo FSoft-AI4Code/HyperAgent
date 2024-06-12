@@ -16,6 +16,7 @@ evaluation_benchmark/SWE_bench/data/*
 dist/*
 wandb/
 model/
+data/
 data/repos/*
 data/agent_trajectories/*
 .vscode/*

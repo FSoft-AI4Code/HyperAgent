@@ -1,7 +1,6 @@
 from pydantic import BaseModel, Field
 import openai
 from langchain.tools import BaseTool
-from repopilot.constants import DO_NOT_SUMMARIZED_KEYS
 from repopilot.agents.plan_seeking import filter_response
 from repopilot.agents.base import ChainExecutor
 from repopilot.utils import find_abs_path
@@ -25,7 +24,7 @@ class Navigation(BaseTool):
         self.navigator = _agent
         self.summarizer = summarizer
     
-    def _run(self, request: str):
+    def _run(self, request: str, title: str = ""):
         current_notes = ""
         nav_inputs = {"current_step": request, "nav_memory": self.nav_memory}
         response, intermediate_steps = self.navigator.step(nav_inputs)

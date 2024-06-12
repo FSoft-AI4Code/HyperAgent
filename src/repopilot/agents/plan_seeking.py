@@ -66,6 +66,8 @@ Action:
 }}}}
 ```"""
 def filter_response(text):
+    text = text.replace('"action_input":', "")
+    text = text.replace('"action:"', "")
     text = text.replace("```json", "")
     text = text.replace("Action:", "")
     text = text.replace("action", "")
@@ -246,7 +248,7 @@ def load_agent_planner(
     )
     agent.save_trajectories_path = save_trajectories_path
     agent_executor = AgentExecutor.from_agent_and_tools(
-        agent=agent, tools=tools, verbose=verbose, return_intermediate_steps=True 
+        agent=agent, tools=tools, verbose=verbose, return_intermediate_steps=True, max_iterations=10
     )
     agent_executor.handle_parsing_errors = True
     return ChainExecutor(chain=agent_executor, name="Planner", description="Plan the next steps to resolve the query"

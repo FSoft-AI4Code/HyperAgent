@@ -28,7 +28,7 @@ class InteractiveShellSession:
 
         # Unique marker to detect end of command execution
         marker = "END_OF_COMMAND_{}".format(time.time())
-        full_command = f"{command_str} && echo {marker}"
+        full_command = f"{command_str} && echo {marker}\n"
         command_done = False
 
         # Send the command to the subprocess
@@ -37,14 +37,14 @@ class InteractiveShellSession:
 
         output = []
         error = []
+        time.sleep(5)
 
         while True:
-            events = self.sel.select(timeout=1)
+            events = self.sel.select(timeout=0.1)
             for key, _ in events:
                 data = key.data
                 if data == 'stdout':
                     chunk = os.read(key.fileobj.fileno(), 4096).decode()
-                    print(chunk)
                     if chunk:
                         output.append(chunk)
                         if marker in chunk:

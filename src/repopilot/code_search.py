@@ -1,6 +1,7 @@
 import logging
 import os
 import jedi 
+from repopilot.utils import add_num_line
 from codetext.utils import parse_code
 from codetext.parser import PythonParser, CsharpParser, RustParser, JavaParser
 
@@ -147,7 +148,7 @@ def search_py_elements_inside_project(names, backend, num_result=3, verbose=Fals
             
     return output_dict
     
-def search_zoekt_elements_inside_project(names: list, backend: object, num_result: int = 5, verbose: bool = False) -> dict:
+def search_zoekt_elements_inside_project(names: list, backend: object, num_result: int = 10, verbose: bool = False) -> dict:
     """
     Search for elements inside a project using the Zoekt search engine.
 
@@ -165,7 +166,6 @@ def search_zoekt_elements_inside_project(names: list, backend: object, num_resul
 
     with backend.start_server():
         zoekt_results = backend.search([f"{name}" for name in names], num_result=num_result)
-
     for name in names:
         files = zoekt_results[f'{name}']["result"]["FileMatches"]
 
@@ -201,8 +201,19 @@ def search_zoekt_elements_inside_project(names: list, backend: object, num_resul
                         # "implementation": add_num_line(get_node_text(cls.start_byte, cls.end_byte, source), cls.start_point[0])
                     }
                     search_results[name].append(result)
-
-    return {name: search_results[name][:num_result] for name in names[:10]}
+        
+        if len(search_results[name]) < num_result//2:
+            for file in files:
+                source = open(os.path.join(backend.repo_path, file["FileName"]), "r").read()
+                for line, line_idx in enumerate(source.split("\n")):
+                    if name in line:
+                        result = {
+                            "file": file["FileName"],
+                            "implementation": add_num_line(line, line_idx+1)
+                        }
+                        search_results[name].append(result)
+        
+    return {name: search_results[name][:num_result] for name in names}
     
 def search_elements_inside_project(names, backend, verbose, language):
     return search_zoekt_elements_inside_project(names, backend, verbose=verbose)

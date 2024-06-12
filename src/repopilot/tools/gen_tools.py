@@ -37,8 +37,8 @@ class EditorTool(BaseTool):
             str: The content of the file.
 
         """
-        if "/" not in relative_file_path:
-            return "Invalid relative file path, please check the path again"
+        # if "/" not in relative_file_path:
+        #     return "Invalid relative file path, please check the path again"
         
         with open(osp.join(self.path, relative_file_path), 'r') as file:
             lines = file.readlines()
@@ -131,7 +131,7 @@ class OpenFileToolForGenerator(BaseTool):
                     return f"The number of lines to show is limited at 150, the requested number of lines is {end_line - start_line}, please specify the start and end line again (smaller |end_line-start_line|) or using keyword instead."
                 source = open(abs_path, "r").read()
                 lines = source.split("\n")
-                source = "\n".join(lines[start_line-1:end_line]) 
+                source = "\n".join(lines[start_line:end_line]) 
             else:
                 line_idx = []
                 returned_source = []
