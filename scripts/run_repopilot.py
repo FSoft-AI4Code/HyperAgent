@@ -6,6 +6,7 @@ import json
 import os
 import yaml
 import signal
+from tqdm import tqdm
 
 def load_yaml_config(file_path):
     with open(file_path, 'r') as file:
@@ -35,7 +36,7 @@ def inference_per_instance(instance, output_folder, model_nick_name, llm_configs
         raise TimeoutError("Execution timed out")
 
     # Set the timeout duration in seconds
-    timeout_duration = 350  # for example, 10 seconds
+    timeout_duration = 120000  # for example, 10 seconds
 
     # Set the signal handler and a timeout
     signal.signal(signal.SIGALRM, handler)
@@ -43,18 +44,18 @@ def inference_per_instance(instance, output_folder, model_nick_name, llm_configs
     
     system_input = template.format(issue=instance["problem_statement"])
     
-    # try:
-    full_output = pilot.query_codebase({"input": system_input, "previous_steps": []})
-    output_dict["full_output"] = full_output
-    # except TimeoutError as e:
-    #     output_dict["full_output"] = "Timeout Error"
-    #     print(e)
-    # except Exception as e:
-    #     output_dict["full_output"] = "Error"
-    #     print(e)
-    # finally:
-    #     # Disable the alarm
-    #     signal.alarm(0)
+    try:
+        full_output = pilot.query_codebase({"input": system_input, "previous_steps": []})
+        output_dict["full_output"] = full_output
+    except TimeoutError as e:
+        output_dict["full_output"] = "Timeout Error"
+        print(e)
+    except Exception as e:
+        output_dict["full_output"] = "Error"
+        print(e)
+    finally:
+        # Disable the alarm
+        signal.alarm(0)
     patch = extract_patch(pilot.repo_dir)
     output_dict["model_patch"] = patch
     output_dict["instance_id"] = instance["instance_id"]
@@ -82,7 +83,7 @@ def main():
     dataset = load_dataset("princeton-nlp/SWE-bench_Lite")[args.split]
     config = load_yaml_config(args.config)
     dataset = dataset.filter(lambda x: "django" not in x["repo"])
-    for instance in dataset.select(range(1,10)):
+    for instance in tqdm(dataset.select(range(5,100))):
         inference_per_instance(instance, args.output_folder, config["name"], config)
 
 if __name__ == "__main__":

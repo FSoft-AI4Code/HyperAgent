@@ -198,16 +198,28 @@ class StructuredGeneratorChatOutputParser(AgentOutputParser):
 
         # Extract patch (handling multiline and escaped quotes)
         patch_match = re.search(r'"patch":\s*"((?:[^"\\]|\\.)*?)"', json_str, re.DOTALL)
+        pattern = re.search(r'"patch":\s+"(.*?)"\n\s+}\n}\n```', json_str, re.DOTALL)
         if patch_match:
-            # Manually evaluate the patch value to handle escaped quotes and newlines
-            patch_value = patch_match.group(1)
-            fields['patch'] = ast.literal_eval(f'"{patch_value}"')
-
-        return fields
+            try:
+                # Manually evaluate the patch value to handle escaped quotes and newlines
+                patch_value = patch_match.group(1)
+                fields['patch'] = ast.literal_eval(f'"{patch_value}"')
+                return fields
+            except:
+                pass
+            
+        if pattern:
+            try:
+                patch_value = pattern.group(1)
+                fields['patch'] = ast.literal_eval(f'"{patch_value}"')
+                return fields
+            except:
+                pass
+        
+        raise OutputParserException(f"Could not extract fields from the JSON string: {json_str}")
+        
 
     def parse(self, text: str) -> Union[AgentAction, AgentFinish]:
-        # if not text.startswith("Thought:"):
-        #     text = text.replace(text.split("Thought:")[0], "")
         if "Final Answer" not in text:
             if "editor_file" not in text:
                 action_match = self.pattern.search(text)
@@ -215,7 +227,9 @@ class StructuredGeneratorChatOutputParser(AgentOutputParser):
                     try:
                         response = json.loads(action_match.group(1).strip(), strict=False)
                     except:
-                        raise OutputParserException(f"{message}: {text}")
+                        text = text.split("Action:")[1]
+                        action_match = self.pattern.search(text)
+                        response = json.loads(action_match.group(1).strip(), strict=False)
                     if isinstance(response, list):
                         # gpt turbo frequently ignores the directive to emit a single action
                         logger.warning("Got multiple action responses: %s", response)

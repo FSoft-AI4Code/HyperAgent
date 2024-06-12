@@ -30,6 +30,7 @@ Agent scratchpad:
 """
 
 GENERATOR_HUMAN_MESSAGE_TEMPLATE = """Objective: {current_step}
+Editing Context: {context}
 File Path To Edit: {file_path}
 Agent scratchpad:
 {agent_scratchpad}"""

@@ -3,10 +3,8 @@ import openai
 from langchain.tools import BaseTool
 from repopilot.agents.plan_seeking import filter_response
 from repopilot.agents.base import ChainExecutor
-from repopilot.utils import find_abs_path
 from repopilot.agents.llms import LLM
 from typing import Optional
-import re
 
 class NavigationArgs(BaseModel):
     request: str = Field(..., description="a detailed request, maybe multiple queries in the same request for navigator to give you neccessary contexts to resolve thought process questions.")
@@ -24,7 +22,9 @@ class Navigation(BaseTool):
         self.navigator = _agent
         self.summarizer = summarizer
     
-    def _run(self, request: str, title: str = ""):
+    def _run(self, request: str = "", title: str = ""):
+        if len(request) == 0:
+            return "Please provide a detailed request to collect relevant information about the codebase."
         current_notes = ""
         nav_inputs = {"current_step": request, "nav_memory": self.nav_memory}
         response, intermediate_steps = self.navigator.step(nav_inputs)
@@ -44,6 +44,8 @@ class Navigation(BaseTool):
 
 class CodeGeneratorArgs(BaseModel):
     request: str = Field(..., description="a very detailed request to generate the code snippet or patch, also give it a context. (Important). Also give it a full path to the file you want to edit in format like this `somefolder/somefile.py` (notes `` quote).")
+    file_path: str = Field(None, description="The relative path the file that you want to edit.")
+    context: str = Field(None, description="The context of why, what, how for the code snippet or patch. You might include the information about the object to edit, which file, what are necessary things to care about.")
     
 class CodeGenerator(BaseTool):
     name: str = "code_generator"
@@ -59,32 +61,11 @@ class CodeGenerator(BaseTool):
         self.summarizer = summarizer
         self.repo_dir = repo_dir
     
-    def _run(self, request: str):
-        pattern = r'`([^`]*)`'
-        # Find all matches
-        matches = re.findall(pattern, request)
-        if matches:
-            file_paths = [match for match in matches if match.endswith(".py")]
-            if len(file_paths) > 0:
-                full_path = find_abs_path(self.repo_dir, file_paths[0])
-            else:
-                full_path = None
-        else:
-            pattern = r"'([^\']*)'"
-            matches = re.findall(pattern, request)
-            file_paths = [match for match in matches if match.endswith(".py")]
-            if len(file_paths) > 0:
-                full_path = find_abs_path(self.repo_dir, file_paths[0])
-            else:
-                full_path = None
-                
-        if full_path is None:
-            full_path = [path for path in request.split(" ") if path.endswith(".py")]
-            if len(full_path) > 0:
-                full_path = find_abs_path(self.repo_dir, full_path[0])
-            
-        if full_path is not None:
-            generator_inputs = {"current_step": request, "file_path": file_paths[0] if file_paths else None}
+    def _run(self, request: str = "", file_path: str = None, context: str = ""):
+        if len(request) == 0:
+            return "Please provide a detailed request to generate the code snippet or patch."
+        if file_path:
+            generator_inputs = {"current_step": request, "file_path": file_path, "context": context}
             response, intermediate_steps = self.generator.step(generator_inputs)
             current_notes = response.response
         else:

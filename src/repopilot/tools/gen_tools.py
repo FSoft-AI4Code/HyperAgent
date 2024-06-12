@@ -13,7 +13,9 @@ class EditorArgs(BaseModel):
     relative_file_path: str = Field(..., description="The relative file path of the file that is need to be edited")
     start_line: int = Field(..., description="The starting line number of the block of code that is need to be replaced")
     end_line: int = Field(..., description="The ending line number of the block of code that is need to be replaced")
-    patch: str = Field(..., description="A single block of code that you can replace into the file, make sure the code is syntactically correct, identation is correct, and the code resolved the request. Remember to add indentation to the block if the original code position is indented.")
+    patch: str = Field(..., description="""A single block of code that you can replace into the file, make sure the code is syntactically correct, identation is correct, and the code resolved the request. Remember to add indentation to the block if the original code position is indented.
+    Example: patch: "    def something(self, s):\n    # Check if something is something\n        return something" if the original code is indented with 4 spaces or "def something(self, s):\n    # Check if something is something\n        return something" if the original block is not indented. And "        def something(self, s):\n    # Check if something is something\n" if the block is idented with 8 spaces.
+                       """)
 
 class EditorTool(BaseTool):
     name = "editor_file"
@@ -25,7 +27,7 @@ class EditorTool(BaseTool):
         super().__init__()
         self.path = path
     
-    def _run(self, relative_file_path: str, start_line:int = None, end_line: int = None, patch: str = None):
+    def _run(self, relative_file_path: str = None, start_line:int = None, end_line: int = None, patch: str = None):
         """
         Opens the specified file and returns its content.
 
@@ -39,8 +41,10 @@ class EditorTool(BaseTool):
         """
         # if "/" not in relative_file_path:
         #     return "Invalid relative file path, please check the path again"
+        if relative_file_path is None:
+            return "Please specify the relative file path that you want to edit."
         
-        if not os.exists(osp.join(self.path, relative_file_path)):
+        if not os.path.exists(osp.join(self.path, relative_file_path)):
             return "File not found, please check the path again"
         
         with open(osp.join(self.path, relative_file_path), 'r') as file:
@@ -55,12 +59,13 @@ class EditorTool(BaseTool):
         if patch is None:
             return "Please specify the alterative code to replace the original code"
         
+        
         start_index = start_line - 1
         end_index = end_line
-        updated_lines = lines[:start_index] + [patch + '\n'] + lines[end_index:]
+        updated_lines = lines[:start_index] + ['\n' + patch + '\n'] + lines[end_index:]
         
         patch_file_path = osp.join(self.path, relative_file_path.split('.')[0] + '_patched.' + relative_file_path.split('.')[1])
-        
+                
         with open(patch_file_path, "w") as file:
             file.writelines(updated_lines)
         
