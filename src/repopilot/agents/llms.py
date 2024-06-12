@@ -97,6 +97,7 @@ class AzureLLM(LLM):
             azure_endpoint=os.environ["AZURE_ENDPOINT_GPT35"] if "gpt35" in self.config["model"] else os.environ["AZURE_ENDPOINT_GPT4"],
             api_key=openai_api_key,
             api_version=os.environ["API_VERSION"],
+            azure_deployment="ai4code-research-gpt4o"
         )
 
     def __call__(self, prompt: str):

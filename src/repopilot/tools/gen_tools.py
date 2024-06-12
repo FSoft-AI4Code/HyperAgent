@@ -4,18 +4,21 @@ from langchain.tools import BaseTool
 import subprocess
 from typing import List, Optional
 from repopilot.llm_multilspy import add_num_line
-from repopilot.agents.llms import LocalLLM
+from repopilot.agents.llms import LocalLLM, AzureLLM
 import os
+import re
 
 summarizer = LocalLLM({"model": "mistralai/Mixtral-8x7B-Instruct-v0.1", "system_prompt": "Describe this error message in plain text.", "max_tokens": 25000})
+reviewer = AzureLLM({"model": "gpt-4-turbo", "system_prompt": "You're a software engineer working on a project, given a hint of code replacement of original file, you need to generate a block of code that can be replaced into the original. Do not generate additional line if it's unecessary to the hint. Pay attention to line number and indentation", "max_tokens": 10000})
 
 class EditorArgs(BaseModel):
     relative_file_path: str = Field(..., description="The relative file path of the file that is need to be edited")
-    start_line: int = Field(..., description="The starting line number of the block of code that is need to be replaced")
-    end_line: int = Field(..., description="The ending line number of the block of code that is need to be replaced")
-    patch: str = Field(..., description="""A single block of code that you can replace into the file, make sure the code is syntactically correct, identation is correct, and the code resolved the request. Remember to add indentation to the block if the original code position is indented.
+    start_line: int = Field(..., description="The line number to start the edit at")
+    end_line: int = Field(..., description="The line number to end the edit at (inclusive)")
+    patch: str = Field(..., description="""the code to replace the current selection with, make sure the code is syntactically correct, identation is correct, and the code resolved the request. Remember to add indentation to the block if the original code position is indented.
     Example: patch: "    def something(self, s):\n    # Check if something is something\n        return something" if the original code is indented with 4 spaces or "def something(self, s):\n    # Check if something is something\n        return something" if the original block is not indented. And "        def something(self, s):\n    # Check if something is something\n" if the block is idented with 8 spaces.
                        """)
+    context: Optional[str] = Field(..., description="The context of why you are editing the file")
 
 class EditorTool(BaseTool):
     name = "editor_file"
@@ -27,7 +30,7 @@ class EditorTool(BaseTool):
         super().__init__()
         self.path = path
     
-    def _run(self, relative_file_path: str = None, start_line:int = None, end_line: int = None, patch: str = None):
+    def _run(self, relative_file_path: str = None, start_line:int = None, end_line: int = None, patch: str = None, context: Optional[str] = None):
         """
         Opens the specified file and returns its content.
 
@@ -62,19 +65,58 @@ class EditorTool(BaseTool):
         
         start_index = start_line - 1
         end_index = end_line
-        updated_lines = lines[:start_index] + ['\n' + patch + '\n'] + lines[end_index:]
+        updated_lines = lines[:start_index] + [patch+ "\n"] + lines[end_index:]
+        
+        
+        initial_patch_lines_region = lines[max(0, start_index-10):start_index] + [patch + "\n"] + lines[end_index: min((end_index+10), len(lines))]
+        initial_patch_block = "\n".join(initial_patch_lines_region)
+        initial_patch_block = add_num_line(initial_patch_block, max(1, start_index-10)+1)
+        
+        original_lines_region = lines[max(0,start_index-10):min(end_index + 10, len(lines))]
+        original_block = "\n".join(original_lines_region)
+        original_block = add_num_line(original_block, max(0, start_index-10)+1)
         
         patch_file_path = osp.join(self.path, relative_file_path.split('.')[0] + '_patched.' + relative_file_path.split('.')[1])
+        
+        review_command = f"Context of Editing: {context}\nStart and End line of Original Target Block: {start_line}:{end_line}. Your should only edit inside this range of lines.\nFile Name: {patch_file_path}\nOriginal Target Block with Surrounding Lines:\n```python\n{original_block}\n```\n\nProposed Block:\n```python\n{initial_patch_block}\n```\n\nThink step by step, understanding the original block of code and intention of Proposed Hint Patch generate a python block that is syntactically correct, identation is correct to both harmonize the original code and satisfy the intention of the proposed hint patch. Think about indetation, intent then generate a block in ```python ``` format without line numbers inside block but with identation. Your Thought:"
+        reviewer_output = reviewer(review_command)
+        pattern = re.compile(r'```python(.*?)```', re.DOTALL)
+        reviewed_patch = pattern.search(reviewer_output)
+        
+        os.chdir(self.path)
+        
+        review_success = False
+        
+        if reviewed_patch:
+            #apply the github diff patch
+            updated_reviewed_lines = lines[:start_index] + [reviewed_patch.group(1)] + lines[end_index:]
+            with open(patch_file_path, "w") as file:
+                file.writelines(updated_reviewed_lines)
+            command_fix = f"autopep8 --in-place --aggressive {patch_file_path}"
+            result = subprocess.run(command_fix, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+            
+            command = f"flake8 --isolated --select=F821,F822,F831,E111,E112,E113,E999,E902 {patch_file_path}"
+            result = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
                 
-        with open(patch_file_path, "w") as file:
-            file.writelines(updated_lines)
+            stderr_output = result.stderr
+            stdout_output = result.stdout
+            exit_code = result.returncode
+            if exit_code == 0:
+                with open(osp.join(self.path, relative_file_path), 'w') as file:
+                    file.writelines(updated_reviewed_lines)
+                os.remove(patch_file_path)
+                return f"Successfully edited the file {relative_file_path} from line {start_line} to {end_line}"
+            
+        if not review_success:
+            with open(patch_file_path, "w") as file:
+                file.writelines(updated_lines)
         
         command_fix = f"autopep8 --in-place --aggressive {patch_file_path}"
         result = subprocess.run(command_fix, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
         
         command = f"flake8 --isolated --select=F821,F822,F831,E111,E112,E113,E999,E902 {patch_file_path}"
         result = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
-        
+            
         stderr_output = result.stderr
         stdout_output = result.stdout
         exit_code = result.returncode

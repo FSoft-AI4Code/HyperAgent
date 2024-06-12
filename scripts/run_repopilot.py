@@ -36,7 +36,7 @@ def inference_per_instance(instance, output_folder, model_nick_name, llm_configs
         raise TimeoutError("Execution timed out")
 
     # Set the timeout duration in seconds
-    timeout_duration = 120000  # for example, 10 seconds
+    timeout_duration = 420  # for example, 10 seconds
 
     # Set the signal handler and a timeout
     signal.signal(signal.SIGALRM, handler)
@@ -83,7 +83,7 @@ def main():
     dataset = load_dataset("princeton-nlp/SWE-bench_Lite")[args.split]
     config = load_yaml_config(args.config)
     dataset = dataset.filter(lambda x: "django" not in x["repo"])
-    for instance in tqdm(dataset.select(range(5,100))):
+    for instance in tqdm(dataset.select(range(28,100))):
         inference_per_instance(instance, args.output_folder, config["name"], config)
 
 if __name__ == "__main__":

@@ -31,6 +31,7 @@ Agent scratchpad:
 
 GENERATOR_HUMAN_MESSAGE_TEMPLATE = """Objective: {current_step}
 Editing Context: {context}
+Provided Hints: {hints}
 File Path To Edit: {file_path}
 Agent scratchpad:
 {agent_scratchpad}"""
@@ -140,7 +141,7 @@ def load_agent_generator(
     Returns:
         ChainExecutor
     """
-    input_variables = ["current_step", "agent_scratchpad", "file_path", "file_content"]
+    input_variables = ["current_step", "agent_scratchpad", "file_path", "file_content", "context", "hints"]
     template = GENERATOR_HUMAN_MESSAGE_TEMPLATE
     format_instructions = FORMAT_INSTRUCTIONS
 

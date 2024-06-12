@@ -46,6 +46,7 @@ class CodeGeneratorArgs(BaseModel):
     request: str = Field(..., description="a very detailed request to generate the code snippet or patch, also give it a context. (Important). Also give it a full path to the file you want to edit in format like this `somefolder/somefile.py` (notes `` quote).")
     file_path: str = Field(None, description="The relative path the file that you want to edit.")
     context: str = Field(None, description="The context of why, what, how for the code snippet or patch. You might include the information about the object to edit, which file, what are necessary things to care about.")
+    hints: str = Field(None, description="Any hints or additional information that can help the code generator to generate or find the relevant code snippet or patch. (line number or keyword or function name etc.)")
     
 class CodeGenerator(BaseTool):
     name: str = "code_generator"
@@ -61,11 +62,11 @@ class CodeGenerator(BaseTool):
         self.summarizer = summarizer
         self.repo_dir = repo_dir
     
-    def _run(self, request: str = "", file_path: str = None, context: str = ""):
+    def _run(self, request: str = "", file_path: str = None, context: str = "", title: str = "", hints: str = ""):
         if len(request) == 0:
-            return "Please provide a detailed request to generate the code snippet or patch."
+            return "You provided no request, request field is empty. Please provide a detailed request to generate the code snippet or patch."
         if file_path:
-            generator_inputs = {"current_step": request, "file_path": file_path, "context": context}
+            generator_inputs = {"current_step": request, "file_path": file_path, "context": context, "hints": hints}
             response, intermediate_steps = self.generator.step(generator_inputs)
             current_notes = response.response
         else:
