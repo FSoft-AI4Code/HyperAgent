@@ -13,11 +13,11 @@ class EditorArgs(BaseModel):
     relative_file_path: str = Field(..., description="The relative file path of the file that is need to be edited")
     start_line: int = Field(..., description="The starting line number of the block of code that is need to be replaced")
     end_line: int = Field(..., description="The ending line number of the block of code that is need to be replaced")
-    patch: str = Field(..., description="A single block of code that you can replace into the file, make sure the code is syntactically correct, identation is correct, and the code resolved the request. Remember to add indentation to the patch if the original code position is indented.")
+    patch: str = Field(..., description="A single block of code that you can replace into the file, make sure the code is syntactically correct, identation is correct, and the code resolved the request. Remember to add indentation to the block if the original code position is indented.")
 
 class EditorTool(BaseTool):
     name = "editor_file"
-    description = """Useful when you want to edit a file inside a repo with a patch."""
+    description = """Useful when you want to edit a file inside a repo with alternative code."""
     args_schema = EditorArgs
     path = ""
     
@@ -40,6 +40,9 @@ class EditorTool(BaseTool):
         # if "/" not in relative_file_path:
         #     return "Invalid relative file path, please check the path again"
         
+        if not os.exists(osp.join(self.path, relative_file_path)):
+            return "File not found, please check the path again"
+        
         with open(osp.join(self.path, relative_file_path), 'r') as file:
             lines = file.readlines()
             
@@ -48,6 +51,9 @@ class EditorTool(BaseTool):
         
         if start_line < 1 or end_line > len(lines) or start_line > end_line:
             return "Invalid start and end line, please check the line number again"
+        
+        if patch is None:
+            return "Please specify the alterative code to replace the original code"
         
         start_index = start_line - 1
         end_index = end_line
@@ -103,7 +109,7 @@ class OpenFileToolForGenerator(BaseTool):
     """
 
     name = "open_file"
-    description = """Useful when you want to open a file inside a repo for editing. If you have a keyword in mind, you can use it to search the keyword in the file. Otherwise, you can specify the start and end line to view the content of the file. The number of lines to show is limited at 20 for example (100:120) or (240:260).
+    description = """Useful when you want to open a file inside a repo for editing. If you have a keyword in mind, you can use it to search the keyword in the file. Otherwise, you can specify the start and end line to view the content of the file. The number of lines to show is limited at 150 for example (100:250).
     """
     args_schema = OpenFileToolForGeneratorArgs
     path = ""

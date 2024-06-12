@@ -17,6 +17,8 @@ from langchain.output_parsers import OutputFixingParser
 
 logger = logging.getLogger(__name__)
 
+message = "Could not parse your response, make sure you don't include any ```python something``` string"
+
 def extract_action_and_input(text):
     pattern = r'```\n{\n.*?}\n```'
     # Find all matches
@@ -204,7 +206,6 @@ class StructuredGeneratorChatOutputParser(AgentOutputParser):
         return fields
 
     def parse(self, text: str) -> Union[AgentAction, AgentFinish]:
-        import ipdb; ipdb.set_trace()
         # if not text.startswith("Thought:"):
         #     text = text.replace(text.split("Thought:")[0], "")
         if "Final Answer" not in text:
@@ -214,7 +215,7 @@ class StructuredGeneratorChatOutputParser(AgentOutputParser):
                     try:
                         response = json.loads(action_match.group(1).strip(), strict=False)
                     except:
-                        raise OutputParserException(f"Could not parse LLM output: {text}")
+                        raise OutputParserException(f"{message}: {text}")
                     if isinstance(response, list):
                         # gpt turbo frequently ignores the directive to emit a single action
                         logger.warning("Got multiple action responses: %s", response)
@@ -226,17 +227,17 @@ class StructuredGeneratorChatOutputParser(AgentOutputParser):
                             response["action"], response.get("action_input", {}), text
                         )
                 else:
-                    raise OutputParserException(f"Could not parse LLM output: {text}")
+                    raise OutputParserException(f"{message}: {text}")
             else:
                 try:
                     response = self.extract_fields(text)
                 except:
-                    raise OutputParserException(f"Could not parse LLM output: {text}")
+                    raise OutputParserException(f"{message}: {text}")
                 return AgentAction(
                     "editor_file", response, text
                 )
         else:
-            text = text.split("Final Answer")[1]
+            # text = text.split("Final Answer")[1]
             return AgentFinish({"output": text}, text)
 
     @property
@@ -264,7 +265,7 @@ class StructuredChatOutputParserWithRetries(AgentOutputParser):
                 parsed_obj = self.base_parser.parse(text)
             return parsed_obj
         except Exception as e:
-            raise OutputParserException(f"Could not parse LLM output: {text}") from e
+            raise OutputParserException(f"{message}: {text}") from e
 
     @classmethod
     def from_llm(

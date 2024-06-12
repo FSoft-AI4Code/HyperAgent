@@ -4,9 +4,9 @@ If your request is not specified, considering setup the environment first (using
 
 Remember these things:
     1. Your environment code name is `repopilot`, create it if it doesn't exist. Activate it before running the tests.
-    2. You should setup your environment for development current project. For example, if your project named sympy, you do not `pip install sympy`. You should install from the source, since you are working on the source code.
-    3. Do not install the same package twice.
-    4. Check the requirements and environment of the project.
+    2. No need to create new environments, use the existing one. 
+    3. Check the requirements or setup instruction via opening docs files.
+    4. You should setup the developing environment before running the tests, for example running pip3 install -e . or something similar.
 
 Important Tips:
     1. When you observe (y/[n]) in the terminal, you should respond only with y or n. Similarly, when you see (yes/[no]), you should respond with yes or no.

@@ -205,15 +205,32 @@ def search_zoekt_elements_inside_project(names: list, backend: object, num_resul
         if len(search_results[name]) < num_result//2:
             for file in files:
                 source = open(os.path.join(backend.repo_path, file["FileName"]), "r").read()
-                for line, line_idx in enumerate(source.split("\n")):
+                lines = source.split("\n")
+                for line_idx, line in enumerate(lines):
                     if name in line:
                         result = {
                             "file": file["FileName"],
-                            "implementation": add_num_line(line, line_idx+1)
+                            "implementation": add_num_line("\n".join(lines[max(0, line_idx-2): min(line_idx+2, len(lines))]), max(0, line_idx-2))
                         }
                         search_results[name].append(result)
-        
-    return {name: search_results[name][:num_result] for name in names}
+    
+    search_results = {name: search_results[name][:num_result] for name in names}
+    
+    out_str = ""
+    for name in names:
+        out_str += f"Results for {name}:\n"
+        out_str += f"{'='*20}\n"
+        for result in search_results[name]:
+            out_str += f"File: {result['file']}\n"
+            if "name" in result:
+                out_str += f"Name: {result['name']}\n"
+            if "documentation" in result:
+                out_str += f"Documentation: {result['documentation']}\n"
+            if "implementation" in result:
+                out_str += f"Implementation:\n{result['implementation']}\n"
+            out_str += f"{'-'*20}\n"
+    
+    return out_str
     
 def search_elements_inside_project(names, backend, verbose, language):
     return search_zoekt_elements_inside_project(names, backend, verbose=verbose)

@@ -74,6 +74,7 @@ def Setup(
     summarizer = load_summarizer()
     
     agents = initialize_agents(navigator, generator, executor, summarizer, repo_dir)
+    agents = agents[:2]
         
     planner = load_agent_planner(
         llm_plan,
@@ -117,4 +118,4 @@ class RepoPilot:
     def query_codebase(self, query):
         self.planner_input["current_step"] = query
         result = self.system.step(self.planner_input)
-        return result.response
+        return result[0].response

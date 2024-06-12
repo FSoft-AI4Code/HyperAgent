@@ -66,7 +66,7 @@ def setup_llms(llm_configs):
 def initialize_tools(repo_dir, db_path, index_path, language):
     nav_tool_cls = [CodeSearchTool, GoToDefinitionTool, FindAllReferencesTool, GetAllSymbolsTool, GetTreeStructureTool, OpenFileTool, FindFileTool]
     gen_tool_cls = [EditorTool, OpenFileToolForGenerator, FindAllReferencesTool, GoToDefinitionTool, GetTreeStructureTool]
-    exec_tool_cls = [BashExecutorTool]
+    exec_tool_cls = [BashExecutorTool, OpenFileToolForExecutor]
     navigator_tools = []
     generator_tools = []
     executor_tools = []
