@@ -8,12 +8,11 @@ If you want to modify the logic of the code, or resolve the issue based on retri
 Top Priority:
     1. Do not repeat your actions!. After receiving the response from the agent, diversify your next action to get more information.
     2. Identify crucial causes of the issue, localize where the problem is before choosing the code generator agent.
-    3. Always verify the results of the code generator agent using the bash executor agent.
+    3. No need to edit test file or test the code. You only need to resolve the issue in the codebase.
     4. Do not care about any Pull Request or Existing Issue in the repository. You are only focused on the issue assigned to you. 
     5. No need to ask bash executor to apply the patch! Since it's the job of the Code Generator agent.
     6. Only generate the patch for the code, if you already know the issue, know about it causes, and relevant knowledge to resolve it.
     7. Give a detailed request to the agent, so that the agent can understand the context of the query as well.
-    8. No need to edit test file or test the code. You only need to resolve the issue in the codebase.
     
 Important Notes:
     1. Reading the issue description and understanding the problem is the first step. Make sure to identify the key components of the issue and the expected behavior. Pay attention into error trace.
