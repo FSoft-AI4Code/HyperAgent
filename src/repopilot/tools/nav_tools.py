@@ -1,5 +1,5 @@
 import os
-from typing import Type, List, Optional
+from typing import Type, List, Optional, Callable
 from pydantic import BaseModel, Field
 from langchain.tools import BaseTool, Tool
 from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -13,6 +13,8 @@ from repopilot.utils import identify_extension, find_non_utf8_files, find_all_fi
 from langchain_community.embeddings.cohere import CohereEmbeddings
 from langchain_community.vectorstores import Chroma
 from repopilot.utils import get_symbol_verbose
+from codetext.utils import parse_code
+from repopilot.code_search import get_parser
 import jedi
 import uuid
 from repopilot.multilspy import lsp_protocol_handler
@@ -54,7 +56,7 @@ class CodeSearchTool(BaseTool):
     path = ""
     verbose = False
     language = "python"
-    backend: jedi.Project | ZoektServer = None
+    backend: ZoektServer = None
     
     def __init__(self, path: str, language: str, index_path: Optional[str] = None, build: bool = False):
         super().__init__()
@@ -70,13 +72,11 @@ class CodeSearchTool(BaseTool):
 
     
     def _run(self, names: list[str], verbose: bool = True):
-        # try:
+        if any ("." in name for name in names):
+            return "Please check the word again, the word should be identifier only, not `something.something`"
         result = search_elements_inside_project(names, self.backend, verbose=verbose, language=self.language)
         return result
-        # except TypeError:
-        #     return "The search engine is not available, please check the word again, the word should be identifier only"
-    def _arun(self, names: list[str], verbose: bool = True):
-        return NotImplementedError("Code Search Tool is not available for async run")
+
 
 class GoToDefinitionArgs(BaseModel):
     word: str = Field(..., description="The name of the symbol to search")
@@ -317,10 +317,14 @@ class OpenFileTool(BaseTool):
     """
     args_schema = OpenFileArgs
     path = ""
+    language = ""
+    parser: Optional[Callable] = None
     
     def __init__(self, path, language=None):
         super().__init__()
         self.path = path
+        self.parser = get_parser(language)
+        self.language = language
     
     def _run(self, relative_file_path: str, start_line: Optional[int] = None, end_line: Optional[int] = None, keywords: Optional[List[str]] = [], preview_size: int = 10, max_num_result: int = 5):
         """
@@ -340,8 +344,8 @@ class OpenFileTool(BaseTool):
         abs_path = os.path.join(self.path, relative_file_path)
         try:
             if start_line is not None and end_line is not None and len(keywords) == 0:
-                if end_line - start_line > 40:
-                    return f"The number of lines to show is limited at 40, the requested number of lines is {end_line - start_line}, please specify the start and end line again or using keyword instead. For example {start_line}:{start_line+40}"
+                if end_line - start_line > 90:
+                    return f"The number of lines to show is limited at 90, the requested number of lines is {end_line - start_line}, please specify the start and end line again or using keyword instead. For example {start_line}:{start_line+90}"
                 source = open(abs_path, "r").read()
                 lines = source.split("\n")
                 
@@ -361,15 +365,36 @@ class OpenFileTool(BaseTool):
                         if keyword in line:
                             line_idx.append(i)
                     
-                    
                     line_idx = line_idx[:max_num_result]
+                    line_ranges = [None for _ in line_idx]
                     
+                    root_node = parse_code(source, self.language).root_node
+                    function_list = self.parser.get_function_list(root_node)
+                    class_list = self.parser.get_class_list(root_node)
+                    
+                    for func in function_list:
+
+                        for i, idx in enumerate(line_idx):
+                            if func.start_point[0] <= idx <= func.end_point[0]:
+                                line_ranges[i] = (func.start_point[0], func.end_point[0]+1)
+                    
+                    for class_ in class_list:
+
+                        for i, idx in enumerate(line_idx):
+                            if class_.start_point[0] <= idx <= class_.end_point[0]:
+                                line_ranges[i] = (class_.start_point[0], class_.end_point[0]+1)
                     if len(line_idx) == 0:
                         out_str += f"No keyword found in the file, please check the keyword again or use the start and end line instead for this keyword {keyword}"
                     else:
                         for i in range(len(line_idx)):
-                            expanded_source = "\n".join(lines[max(0, line_idx[i]-preview_size):min(len(lines), line_idx[i]+preview_size)])
-                            expanded_source = add_num_line(expanded_source, max(1, line_idx[i]-preview_size)+1)
+                            if line_ranges[i] in line_ranges[:i]:
+                                continue
+                            if line_ranges[i] is None:
+                                expanded_source = "\n".join(lines[max(0, line_idx[i]-preview_size):min(len(lines), line_idx[i]+preview_size)])
+                                expanded_source = add_num_line(expanded_source, max(1, line_idx[i]-preview_size)+1)
+                            else:
+                                expanded_source = "\n".join(lines[max(0, line_ranges[i][0]):min(len(lines), line_ranges[i][1])])
+                                expanded_source = add_num_line(expanded_source, max(1, line_ranges[i][0])+1)
                             returned_source.append(expanded_source)
                         out_str += "\n".join(returned_source)
                 return out_str
@@ -480,3 +505,13 @@ class FindFileTool(BaseTool):
         if len(file_paths) == 0:
             return "The file is not found, please check the file name again"
         return "The file is found at: " + "\n".join(file_paths)
+    
+if __name__ == "__main__":
+    open_file = OpenFileTool(path='/datadrive5/huypn16/autogen_repo/repos/repo__astropy__astropy__commit__a5917978be39d13cd90b517e1de4e7a539ffaa48', language="python")
+    find_all_refs = FindAllReferencesTool(path='/datadrive5/huypn16/autogen_repo/repos/repo__astropy__astropy__commit__a5917978be39d13cd90b517e1de4e7a539ffaa48', language="python")
+    code_search = CodeSearchTool(path='/datadrive5/huypn16/autogen_repo/repos/repo__astropy__astropy__commit__a5917978be39d13cd90b517e1de4e7a539ffaa48', language="python", index_path="/datadrive5/huypn16/RepoPilot/data/indexes")
+    # result = open_file._run(relative_file_path="astropy/io/ascii/rst.py", keywords=["RST"], start_line=0, end_line=40)
+    result = find_all_refs._run(word="RST", relative_file_path="astropy/io/ascii/rst.py", line=33)
+    result = code_search._run(names=["RST"])
+    result = open_file._run(relative_file_path="astropy/io/ascii/ui.py", keywords=["get_writer"], start_line=770, end_line=820)
+    print(result)

@@ -2,10 +2,12 @@ import os.path as osp
 from pydantic import BaseModel, Field
 from langchain.tools import BaseTool
 import subprocess
-from typing import List, Optional
+from typing import List, Optional, Callable
 from repopilot.llm_multilspy import add_num_line
 from repopilot.agents.llms import LocalLLM, AzureLLM
 import os
+from repopilot.code_search import get_parser
+from codetext.utils import parse_code
 import re
 
 summarizer = LocalLLM({"model": "mistralai/Mixtral-8x7B-Instruct-v0.1", "system_prompt": "Describe this error message in plain text.", "max_tokens": 25000})
@@ -41,9 +43,7 @@ class EditorTool(BaseTool):
         Returns:
             str: The content of the file.
 
-        """
-        # if "/" not in relative_file_path:
-        #     return "Invalid relative file path, please check the path again"
+        """        
         if relative_file_path is None:
             return "Please specify the relative file path that you want to edit."
         
@@ -56,11 +56,14 @@ class EditorTool(BaseTool):
         if end_line is  None or end_line is None:
             return "Please specify either start and end line"
         
-        if start_line < 1 or end_line > len(lines) or start_line > end_line:
-            return "Invalid start and end line, please check the line number again"
+        if start_line < 1 or start_line > end_line:
+            return f"Invalid start and end line (start line must be >0 and end line  < {len(lines)}), please check the line number again"
         
         if patch is None:
             return "Please specify the alterative code to replace the original code"
+        
+    
+        # extracted_element = code_extract(lines, start_line, end_line)
         
         
         start_index = start_line - 1
@@ -78,38 +81,38 @@ class EditorTool(BaseTool):
         
         patch_file_path = osp.join(self.path, relative_file_path.split('.')[0] + '_patched.' + relative_file_path.split('.')[1])
         
-        review_command = f"Context of Editing: {context}\nStart and End line of Original Target Block: {start_line}:{end_line}. Your should only edit inside this range of lines.\nFile Name: {patch_file_path}\nOriginal Target Block with Surrounding Lines:\n```python\n{original_block}\n```\n\nProposed Block:\n```python\n{initial_patch_block}\n```\n\nThink step by step, understanding the original block of code and intention of Proposed Hint Patch generate a python block that is syntactically correct, identation is correct to both harmonize the original code and satisfy the intention of the proposed hint patch. Think about indetation, intent then generate a block in ```python ``` format without line numbers inside block but with identation. Your Thought:"
-        reviewer_output = reviewer(review_command)
-        pattern = re.compile(r'```python(.*?)```', re.DOTALL)
-        reviewed_patch = pattern.search(reviewer_output)
+        # review_command = f"Context of Editing: {context}\nStart and End line of Original Target Block: {start_line}:{end_line}. Your should only edit inside this range of lines.\nFile Name: {patch_file_path}\nOriginal Target Block with Surrounding Lines:\n```python\n{original_block}\n```\n\nProposed Block:\n```python\n{initial_patch_block}\n```\n\nThink step by step, understanding the original block of code and intention of Proposed Hint Patch generate a python block that is syntactically correct, identation is correct to both harmonize the original code and satisfy the intention of the proposed hint patch. Think about indetation, intent then generate a block in ```python ``` format without line numbers inside block but with identation. Your Thought:"
+        # reviewer_output = reviewer(review_command)
+        # pattern = re.compile(r'```python(.*?)```', re.DOTALL)
+        # reviewed_patch = pattern.search(reviewer_output)
         
         os.chdir(self.path)
         
         review_success = False
         
-        if reviewed_patch:
-            #apply the github diff patch
-            updated_reviewed_lines = lines[:start_index] + [reviewed_patch.group(1)] + lines[end_index:]
-            with open(patch_file_path, "w") as file:
-                file.writelines(updated_reviewed_lines)
-            command_fix = f"autopep8 --in-place --aggressive {patch_file_path}"
-            result = subprocess.run(command_fix, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+        # if reviewed_patch:
+        #     #apply the github diff patch
+        #     updated_reviewed_lines = lines[:start_index] + [reviewed_patch.group(1)] + lines[end_index:]
+        #     with open(patch_file_path, "w") as file:
+        #         file.writelines(updated_reviewed_lines)
+        #     command_fix = f"autopep8 --in-place --aggressive {patch_file_path}"
+        #     result = subprocess.run(command_fix, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
             
-            command = f"flake8 --isolated --select=F821,F822,F831,E111,E112,E113,E999,E902 {patch_file_path}"
-            result = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+        #     command = f"flake8 --isolated --select=F821,F822,F831,E111,E112,E113,E999,E902 {patch_file_path}"
+        #     result = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
                 
-            stderr_output = result.stderr
-            stdout_output = result.stdout
-            exit_code = result.returncode
-            if exit_code == 0:
-                with open(osp.join(self.path, relative_file_path), 'w') as file:
-                    file.writelines(updated_reviewed_lines)
-                os.remove(patch_file_path)
-                return f"Successfully edited the file {relative_file_path} from line {start_line} to {end_line}"
+        #     stderr_output = result.stderr
+        #     stdout_output = result.stdout
+        #     exit_code = result.returncode
+        #     if exit_code == 0:
+        #         with open(osp.join(self.path, relative_file_path), 'w') as file:
+        #             file.writelines(updated_reviewed_lines)
+        #         os.remove(patch_file_path)
+        #         return f"Successfully edited the file {relative_file_path} from line {start_line} to {end_line}"
             
-        if not review_success:
-            with open(patch_file_path, "w") as file:
-                file.writelines(updated_lines)
+        # if not review_success:
+        with open(patch_file_path, "w") as file:
+            file.writelines(updated_lines)
         
         command_fix = f"autopep8 --in-place --aggressive {patch_file_path}"
         result = subprocess.run(command_fix, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
@@ -131,7 +134,7 @@ class EditorTool(BaseTool):
 
 class OpenFileToolForGeneratorArgs(BaseModel):
     relative_file_path: str = Field(..., description="The relative path of the file we want to open")
-    keyword: Optional[str] = Field(..., description="The keyword we want to search in the file")
+    keywords: List[str] = Field(..., description="The list of keywords you want to search in the file, it's should be a single word like grpc but not grpcio.grpc")
     start_line: Optional[int] = Field(..., description="The starting line number of the file we want to open")
     end_line: Optional[int] = Field(..., description="The ending line number of the file we want to open")
 
@@ -160,12 +163,16 @@ class OpenFileToolForGenerator(BaseTool):
     """
     args_schema = OpenFileToolForGeneratorArgs
     path = ""
+    language = ""
+    parser: Optional[Callable] = None
     
     def __init__(self, path, language=None):
         super().__init__()
         self.path = path
+        self.parser = get_parser(language)
+        self.language = language
     
-    def _run(self, relative_file_path: str, start_line: Optional[int] = None, end_line: Optional[int] = None, keyword: Optional[str] = None, preview_size: int = 10, max_num_result: int = 5):
+    def _run(self, relative_file_path: str, start_line: Optional[int] = None, end_line: Optional[int] = None, keywords: List[str] = [], preview_size: int = 10, max_num_result: int = 5):
         """
         Opens the specified file and returns its content.
 
@@ -178,6 +185,12 @@ class OpenFileToolForGenerator(BaseTool):
 
         """
         abs_path = os.path.join(self.path, relative_file_path)
+        if not os.path.exists(abs_path):
+            return "File not found, please check the path again"
+        
+        if len(keywords) == 0 and start_line is None and end_line is None:
+            return "Please specify the keyword or start and end line to view the content of the file."
+        
         try:
             if start_line is not None and end_line is not None:
                 if end_line - start_line > 150:
@@ -193,21 +206,50 @@ class OpenFileToolForGenerator(BaseTool):
                 else:
                     return "Your path is not a file, please check the path again. Use the get_folder_structure tool to see the structure of the folder"
                 lines = source.split("\n")
-                for i, line in enumerate(lines):
-                    if keyword in line:
-                        line_idx.append(i)
-                
+                out_str = "The content of " + relative_file_path.replace(self.path, "") + " is: \n"
+                for keyword in keywords:
+                    out_str += f"Results for keyword: {keyword}\n"
+                    line_idx = []
+                    returned_source = []
+                    source = open(abs_path, "r").read()
+                    lines = source.split("\n")
+                    for i, line in enumerate(lines):
+                        if keyword in line:
+                            line_idx.append(i)
+                            
                 line_idx = line_idx[:max_num_result]
+                line_ranges = [None for _ in line_idx]
+                # get class, func list
+                root_node = parse_code(source, self.language).root_node
+                function_list = self.parser.get_function_list(root_node)
+                class_list = self.parser.get_class_list(root_node)
                 
+                for func in function_list:
+
+                    for i, idx in enumerate(line_idx):
+                        if func.start_point[0] <= idx <= func.end_point[0]:
+                            line_ranges[i] = (func.start_point[0], func.end_point[0]+1)
+                
+                for class_ in class_list:
+
+                    for i, idx in enumerate(line_idx):
+                        if class_.start_point[0] <= idx <= class_.end_point[0]:
+                            line_ranges[i] = (class_.start_point[0], class_.end_point[0]+1)
+                        
+                    
                 if len(line_idx) == 0:
                     return "No keyword found in the file, please check the keyword again or use the start and end line instead"
                 else:
                     import_source = add_num_line("\n".join(lines[:80]), 1)
                     for i in range(len(line_idx)):
-                        expanded_source = "\n".join(lines[max(0, line_idx[i]-preview_size):min(len(lines), line_idx[i]+preview_size)])
-                        expanded_source = add_num_line(expanded_source, max(1, line_idx[i]-preview_size)+1)
+                        if line_ranges[i] is None:
+                            expanded_source = "\n".join(lines[max(0, line_idx[i]-preview_size):min(len(lines), line_idx[i]+preview_size)])
+                            expanded_source = add_num_line(expanded_source, max(1, line_idx[i]-preview_size)+1)
+                        else:
+                            expanded_source = "\n".join(lines[max(0, line_ranges[i][0]-preview_size):min(len(lines), line_ranges[i][1]+preview_size)])
+                            expanded_source = add_num_line(expanded_source, max(1, line_ranges[i][0]-preview_size)+1)
                         returned_source.append(expanded_source)
-                    return "The content of " + relative_file_path.replace(self.path, "") + " is: \n" + import_source + "\n".join(returned_source)
+                    return "The content of " + relative_file_path.replace(self.path, "") + " is: \n" + import_source + "\n" + "\n".join(returned_source)
         except FileNotFoundError:
             return "File not found, please check the path again"
         except TypeError:

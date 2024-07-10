@@ -1,257 +1,228 @@
-from typing import List
-from langchain.schema.language_model import BaseLanguageModel
-from langchain.tools import BaseTool
-from typing import Any, Dict, List
-
-from langchain.agents.structured_chat.prompt import PREFIX, SUFFIX
-from repopilot.agents.base import ChainExecutor, StructuredChatAgent
-from repopilot.agents.agent_executor import AgentExecutor
+from autogen import UserProxyAgent, AssistantAgent, GroupChat, GroupChatManager, Agent, ConversableAgent
+from autogen.agentchat.contrib.society_of_mind_agent import SocietyOfMindAgent 
 from repopilot.agents.llms import LocalLLM
-from repopilot.langchain_parsers.struct_parser import StructuredGeneratorChatOutputParser, StructuredBashChatOutputParser
-from langchain_community.callbacks import get_openai_callback
-from repopilot.constants import DEFAULT_TRAJECTORIES_PATH
-
-PLANNER_HUMAN_MESSAGE_TEMPLATE = """Objective: {current_step}
-Project Structure:
-{struct}
-Planner scratchpad:
-{agent_scratchpad}
-"""
-
-EXEC_HUMAN_MESSAGE_TEMPLATE = """Objective: {current_step}
-Execution Memory:
-{bash_memory}
-Agent scratchpad:
-{agent_scratchpad}"""
-
-NAV_HUMAN_MESSAGE_TEMPLATE = """Objective: {current_step}
-Agent scratchpad:
-{agent_scratchpad}
-"""
-
-GENERATOR_HUMAN_MESSAGE_TEMPLATE = """Objective: {current_step}
-Editing Context: {context}
-Provided Hints: {hints}
-File Path To Edit: {file_path}
-Agent scratchpad:
-{agent_scratchpad}"""
-
-
-FORMAT_INSTRUCTIONS = """Use a json blob to specify a tool by providing an action key (tool name) and an action_input key (tool input).
-
-Valid "action" values: "Final Answer" or {tool_names}
-
-Provide only ONE action per $JSON_BLOB, as shown:
-
-```
-{{{{
-  "action": $TOOL_NAME,
-  "action_input": $INPUT
-}}}}
-```
-
-Follow this format:
-
-Thought: consider previous and subsequent steps, notes down some useful information (like code snippet) from observation
-Action:
-```
-$JSON_BLOB
-```
-Observation: action result
-... (repeat Thought/Action/Observation N times)
-Thought: I know what to respond
-Action:
-```
-{{{{
-  "action": "Final Answer",
-  "action_input": "Final response to human"
-}}}}
-```"""
-def filter_response(text):
-    text = text.replace('"action_input":', "")
-    text = text.replace('"action:"', "")
-    text = text.replace("```json", "")
-    text = text.replace("Action:", "")
-    text = text.replace("action", "")
-    text = text.replace("action: ", "")
-    text = text.replace("Final Answer", "")
-    text = text.replace("action_input", "")
-    return text
-
-def load_agent_navigator(
-    llm: BaseLanguageModel,
-    tools: List[BaseTool],
-    prefix: str = PREFIX,
-    suffix: str = SUFFIX,
-    verbose: int = 1,
-    include_task_in_prompt: bool = False,
-    save_trajectories_path: str = DEFAULT_TRAJECTORIES_PATH,
-    
-) -> ChainExecutor:
-    """
-    Load an agent executor.
-
-    Args:
-        llm: BaseLanguageModel
-        tools: List[BaseTool]
-        verbose: bool. Defaults to False.
-        include_task_in_prompt: bool. Defaults to False.
-
-    Returns:
-        ChainExecutor
-    """
-    input_variables = ["current_step", "agent_scratchpad", "nav_memory"]
-    template = NAV_HUMAN_MESSAGE_TEMPLATE
-    format_instructions = FORMAT_INSTRUCTIONS
-
-    agent = StructuredChatAgent.from_llm_and_tools(
-        llm,
-        tools,
-        human_message_template=template,
-        input_variables=input_variables,
-        prefix=prefix,
-        suffix=suffix,
-        format_instructions=format_instructions,
-    )
-    agent.save_trajectories_path = save_trajectories_path
-    agent_executor = AgentExecutor.from_agent_and_tools(
-        agent=agent, tools=tools, verbose=verbose, return_intermediate_steps=True 
-    )
-    agent_executor.handle_parsing_errors = True
-    return ChainExecutor(chain=agent_executor, name="Codebase Navigator", description="Navigate the codebase to find relevant information or code snippets.")
-
-def load_agent_generator(
-    llm: BaseLanguageModel,
-    tools: List[BaseTool],
-    prefix: str = PREFIX,
-    suffix: str = SUFFIX,
-    verbose: int = 1,
-    save_trajectories_path: str = DEFAULT_TRAJECTORIES_PATH,
-    
-) -> ChainExecutor:
-    """
-    Load an agent executor.
-
-    Args:
-        llm: BaseLanguageModel
-        tools: List[BaseTool]
-        verbose: bool. Defaults to False.
-        include_task_in_prompt: bool. Defaults to False.
-
-    Returns:
-        ChainExecutor
-    """
-    input_variables = ["current_step", "agent_scratchpad", "file_path", "file_content", "context", "hints"]
-    template = GENERATOR_HUMAN_MESSAGE_TEMPLATE
-    format_instructions = FORMAT_INSTRUCTIONS
-
-    agent = StructuredChatAgent.from_llm_and_tools(
-        llm,
-        tools,
-        human_message_template=template,
-        output_parser=StructuredGeneratorChatOutputParser(),
-        input_variables=input_variables,
-        prefix=prefix,
-        suffix=suffix,
-        format_instructions=format_instructions,
-    )
-    agent.save_trajectories_path = save_trajectories_path
-    agent_executor = AgentExecutor.from_agent_and_tools(
-        agent=agent, tools=tools, verbose=verbose, return_intermediate_steps=True 
-    )
-    agent_executor.handle_parsing_errors = True
-    return ChainExecutor(chain=agent_executor, name="Code Generator", description="Generate code snippets or patch that can be applied to the codebase.")
-
-def load_agent_executor(
-    llm: BaseLanguageModel,
-    tools: List[BaseTool],
-    prefix: str = PREFIX,
-    suffix: str = SUFFIX,
-    verbose: int = 1,
-    commit_hash: str = "",
-    save_trajectories_path: str = DEFAULT_TRAJECTORIES_PATH,
-    
-) -> ChainExecutor:
-    """
-    Load an agent executor.
-
-    Args:
-        llm: BaseLanguageModel
-        tools: List[BaseTool]
-        verbose: bool. Defaults to False.
-        include_task_in_prompt: bool. Defaults to False.
-
-    Returns:
-        ChainExecutor
-    """
-    if commit_hash == "":
-        commit_hash = input("You did not provide a commit hash, please provide a default name for your environment that executor is going to build.")
-    
-    
-    input_variables = ["current_step", "agent_scratchpad"]
-    template = EXEC_HUMAN_MESSAGE_TEMPLATE
-    format_instructions = FORMAT_INSTRUCTIONS
-    
-    agent = StructuredChatAgent.from_llm_and_tools(
-        llm,
-        tools,
-        human_message_template=template,
-        input_variables=input_variables,
-        output_parser=StructuredBashChatOutputParser(),
-        prefix=prefix,
-        suffix=suffix,
-        format_instructions=format_instructions,
-    )
-    agent.save_trajectories_path = save_trajectories_path
-    agent_executor = AgentExecutor.from_agent_and_tools(
-        agent=agent, tools=tools, verbose=verbose, return_intermediate_steps=True 
-    )
-    agent_executor.handle_parsing_errors = True
-    return ChainExecutor(chain=agent_executor, name="Bash Executor", description="Execute bash commands on the codebase. Suitable for running scripts or commands or testing.")
 
 def load_summarizer():
-    config = {"model": "mistralai/Mixtral-8x7B-Instruct-v0.1", "system_prompt": "Summarize the analysis, while remain details such as code snippet that is important.", "max_tokens": 25000}
+    config = {"model": "mistralai/Mixtral-8x7B-Instruct-v0.1", "system_prompt": "Summarize the analysis, while remain details such as code snippet or found classes or functions that is important for query.", "max_tokens": 25000}
     summarizer = LocalLLM(config)
     return summarizer
 
-def load_agent_planner(
-    llm: BaseLanguageModel,
-    tools: List[BaseTool],
-    prefix: str = PREFIX,
-    suffix: str = SUFFIX,
-    verbose: int = 1,
-    save_trajectories_path: str = DEFAULT_TRAJECTORIES_PATH,
+def load_agent_navigator(
+    llm_config,
+    jupyter_executor,
+    sys_prompt,
+    summarizer
+):
+    terminate_condition = lambda x: x.get("content", "").find("Final Answer:") > 0 or "_run" not in x.get("content", "")
+    def response_preparer(self, messages):
+        plain_messages = [message["content"] for message in messages]
+        query = plain_messages[0].split("Query: ")[-1].strip()
+        analysis = summarizer(f"Summarize the analysis for following {query} in the codebase. Analysis: {' '.join(plain_messages[1:-1])}")
+        analysis += plain_messages[-1].replace("Final Answer:", "")
+        return analysis
     
-) -> ChainExecutor:
-    """
-    Load an agent executor.
-
-    Args:
-        llm: BaseLanguageModel
-        tools: List[BaseTool]
-        verbose: bool. Defaults to False.
-        include_task_in_prompt: bool. Defaults to False.
-
-    Returns:
-        ChainExecutor
-    """
-    input_variables = ["current_step", "agent_scratchpad", "struct"]
-    template = PLANNER_HUMAN_MESSAGE_TEMPLATE
-    format_instructions = FORMAT_INSTRUCTIONS
-
-    agent = StructuredChatAgent.from_llm_and_tools(
-        llm,
-        tools,
-        human_message_template=template,
-        input_variables=input_variables,
-        prefix=prefix,
-        suffix=suffix,
-        format_instructions=format_instructions,
+    navigator_assistant = AssistantAgent(
+        "Inner-Navigator-Assistant",
+        system_message=sys_prompt,
+        llm_config={"config_list": llm_config},
+        human_input_mode="NEVER",
     )
-    agent.save_trajectories_path = save_trajectories_path
-    agent_executor = AgentExecutor.from_agent_and_tools(
-        agent=agent, tools=tools, verbose=verbose, return_intermediate_steps=True, max_iterations=10
+    
+    navigator_interpreter = UserProxyAgent(
+        name="Navigator Interpreter",
+        is_termination_msg=terminate_condition,
+        llm_config=False,
+        code_execution_config={
+            "executor": jupyter_executor,
+        },
+        human_input_mode="NEVER",
+        default_auto_reply="",
     )
-    agent_executor.handle_parsing_errors = True
-    return ChainExecutor(chain=agent_executor, name="Planner", description="Plan the next steps to resolve the query"
-)
+    
+    groupchat_nav = GroupChat(
+        agents=[navigator_assistant, navigator_interpreter],
+        messages=[],
+        speaker_selection_method="round_robin",  # With two agents, this is equivalent to a 1:1 conversation.
+        allow_repeat_speaker=False,
+        max_round=15,
+    )
+    
+    manager_nav = GroupChatManager(
+        groupchat=groupchat_nav,
+        name="Navigator Manager",
+        llm_config={"config_list": llm_config},
+        max_consecutive_auto_reply=0
+    )
+    
+    navigator = SocietyOfMindAgent(
+        "Navigator",
+        chat_manager=manager_nav,
+        llm_config={"config_list": llm_config},
+        response_preparer=response_preparer
+    )
+    
+    navigator.register_hook(
+        "process_last_received_message",
+        lambda content: content.split("Request:")[-1].split("Context:")[0],
+    )
+    return navigator
+
+def load_agent_editor(
+    llm_config,
+    jupyter_executor,
+    sys_prompt,
+    summarizer
+):
+    terminate_condition = lambda x: x.get("content", "").find("Final Answer:") > 0 or "_run" not in x.get("content", "")
+    def response_preparer(self, messages):
+        plain_messages = [message["content"] for message in messages]
+        query = plain_messages[0].split("Query: ")[-1].strip()
+        analysis = summarizer(f"Summarize the analysis for following {query} in the codebase. Analysis: {' '.join(plain_messages[1:-1])}")
+        analysis += plain_messages[-1].replace("Final Answer:", "")
+        return analysis
+    
+    editor_assistant = AssistantAgent(
+        "Inner-Editor-Assistant",
+        system_message=sys_prompt,
+        llm_config={"config_list": llm_config},
+        human_input_mode="NEVER",
+    )
+    
+    editor_interpreter = UserProxyAgent(
+        name="Editor Interpreter",
+        is_termination_msg=terminate_condition,
+        llm_config=False,
+        code_execution_config={
+            "executor": jupyter_executor,
+        },
+        human_input_mode="NEVER",
+        default_auto_reply="",
+    )
+    
+    groupchat_edit = GroupChat(
+        agents=[editor_assistant, editor_interpreter],
+        messages=[],
+        speaker_selection_method="round_robin",  # With two agents, this is equivalent to a 1:1 conversation.
+        allow_repeat_speaker=False,
+        max_round=15,
+    )
+    
+    manager_edit = GroupChatManager(
+        groupchat=groupchat_edit,
+        name="Editor Manager",
+        llm_config={"config_list": llm_config},
+        max_consecutive_auto_reply=0
+    )
+    
+    editor = SocietyOfMindAgent(
+        "Editor",
+        chat_manager=manager_edit,
+        llm_config={"config_list": llm_config},
+        response_preparer=response_preparer
+    )
+    
+    editor.register_hook(
+        "process_last_received_message",
+        lambda content: content.split("Request:")[-1].split("Context:")[0],
+    )
+    return editor
+
+def load_agent_executor(
+    llm_config,
+    jupyter_executor,
+    sys_prompt,
+    summarizer
+):
+    terminate_condition = lambda x: x.get("content", "").find("Final Answer:") > 0 or "_run" not in x.get("content", "")
+    def response_preparer(self, messages):
+        plain_messages = [message["content"] for message in messages]
+        query = plain_messages[0].split("Query: ")[-1].strip()
+        analysis = summarizer(f"Summarize the analysis for following {query} in the codebase. Analysis: {' '.join(plain_messages[1:-1])}")
+        analysis += plain_messages[-1].replace("Final Answer:", "")
+        return analysis
+    
+    executor_assistant = AssistantAgent(
+        "Inner-Executor-Assistant",
+        system_message=sys_prompt,
+        llm_config={"config_list": llm_config},
+        human_input_mode="NEVER",
+    )
+    
+    executor_interpreter = UserProxyAgent(
+        name="Editor Interpreter",
+        is_termination_msg=terminate_condition,
+        llm_config=False,
+        code_execution_config={
+            "executor": jupyter_executor,
+        },
+        human_input_mode="NEVER",
+        default_auto_reply="",
+    )
+    
+    groupchat_exec = GroupChat(
+        agents=[executor_assistant, executor_interpreter],
+        messages=[],
+        speaker_selection_method="round_robin",  # With two agents, this is equivalent to a 1:1 conversation.
+        allow_repeat_speaker=False,
+        max_round=15,
+    )
+    
+    manager_exec = GroupChatManager(
+        groupchat=groupchat_exec,
+        name="Executor Manager",
+        llm_config={"config_list": llm_config},
+        max_consecutive_auto_reply=0
+    )
+    
+    executor = SocietyOfMindAgent(
+        "Executor",
+        chat_manager=manager_exec,
+        llm_config={"config_list": llm_config},
+        response_preparer=response_preparer
+    )
+    
+    executor.register_hook(
+        "process_last_received_message",
+        lambda content: content.split("Request:")[-1].split("Context:")[0],
+    )
+    return executor
+
+def load_agent_planner(system_plan, llm_config):
+    
+    planner = ConversableAgent(
+        "Planner",
+        system_message=system_plan,
+        llm_config={"config_list": llm_config},
+        code_execution_config=False,
+        human_input_mode="NEVER",
+    )
+    
+    return planner
+
+def load_manager(user_proxy, planner, navigator, editor, executor, llm_config):
+    
+    def custom_speaker_selection_func(last_speaker: Agent, groupchat: GroupChat):
+        """Define a customized speaker selection function.
+        A recommended way is to define a transition for each speaker in the groupchat.
+
+        Returns:
+            Return an `Agent` class or a string from ['auto', 'manual', 'random', 'round_robin'] to select a default method to use.
+        """
+        messages = groupchat.messages
+
+        # if len(messages) <= 1:
+        #     return simple
+        if last_speaker is user_proxy:
+            return planner
+        elif "Navigator" in messages[-1]["content"] and last_speaker == planner:
+            return navigator
+        elif "Editor" in messages[-1]["content"] and last_speaker == planner:
+            return editor
+        elif "Executor" in messages[-1]["content"] and last_speaker == planner:
+            return executor
+        else:
+            return planner
+            
+    groupchat = GroupChat(agents=[navigator, editor, executor, planner], messages=[], max_round=20, speaker_selection_method=custom_speaker_selection_func)
+    manager = GroupChatManager(groupchat=groupchat, llm_config={"config_list": llm_config}, is_termination_msg=lambda msg: "Final Answer"in msg["content"])
+    return manager

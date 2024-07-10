@@ -2,13 +2,14 @@ import subprocess
 import os
 import warnings
 from typing import Optional
+from autogen import UserProxyAgent
 from repopilot.utils import clone_repo, check_local_or_remote, setup_logger
-from repopilot.agents.plan_seeking import load_agent_navigator, load_agent_generator, load_agent_executor, load_summarizer, load_agent_planner
-from repopilot.prompts import navigator as navigator_prompt
-from repopilot.prompts import generator as generator_prompt
-from repopilot.prompts import executor as executor_prompt
-from repopilot.prompts import planner as planner_prompt
-from repopilot.build import setup_llms, initialize_tools, initialize_agents
+from repopilot.agents.plan_seeking import load_agent_navigator, load_agent_editor, load_agent_executor, load_summarizer, load_agent_planner, load_manager
+from repopilot.prompts.navigator import system_nav
+from repopilot.prompts.editor import system_edit
+from repopilot.prompts.executor import system_exec
+from repopilot.prompts.planner import system_plan
+from repopilot.build import initialize_tools
 from repopilot.constants import DEFAULT_VERBOSE_LEVEL, DEFAULT_LLM_CONFIGS, DEFAULT_TRAJECTORIES_PATH
         
 warnings.filterwarnings("ignore", category=DeprecationWarning)
@@ -26,6 +27,7 @@ def Setup(
     index_path: Optional[str] = "data/indexes",
     llm_configs: Optional[dict] = None,
     verbose: int = DEFAULT_VERBOSE_LEVEL,
+    issue: str = ""
 ):
     
     # initialize the github repository
@@ -37,59 +39,59 @@ def Setup(
     if save_trajectories_path and not os.path.exists(save_trajectories_path):
         os.makedirs(save_trajectories_path)
         
-    # Set up the tools
-    nav_tools, gen_tools, exec_tools = initialize_tools(repo_dir, db_path, index_path, language)
-    logger.info("Initialized tools")
-    # Set up the LLM
-    llm_nav, llm_gen, llm_exec, llm_plan = setup_llms(llm_configs)
-    logger.info("Initialized LLMs")
-    
+    # Set up the tool kernel
+    jupyter_executor = initialize_tools(repo_dir, db_path, index_path, language)
+    logger.info("Initialized tools")    
     # Set up the navigator, executor and generator agent (the system)
-    navigator = load_agent_navigator(
-        llm_nav,
-        nav_tools,
-        navigator_prompt.PREFIX,
-        navigator_prompt.SUFFIX,
-        verbose=verbose,
-        include_task_in_prompt=False,
+    summarizer = load_summarizer()
+    
+    user_proxy = UserProxyAgent(
+        name="Admin",
+        system_message="A human admin. Interact with the planner to discuss the plan to resolve a codebase-related query.",
+        human_input_mode="ALWAYS",
+        code_execution_config=False,
+        default_auto_reply="",
+        max_consecutive_auto_reply=0
     )
     
-    generator = load_agent_generator(
-        llm_gen,
-        gen_tools,
-        generator_prompt.PREFIX,
-        generator_prompt.SUFFIX,
-        verbose=verbose
+    navigator = load_agent_navigator(
+        llm_configs["nav"],
+        jupyter_executor,
+        system_nav,
+        summarizer
+    )
+    
+    editor = load_agent_editor(
+        llm_configs["edit"],
+        jupyter_executor,
+        system_edit,
+        summarizer
     )
     
     executor = load_agent_executor(
-        llm_exec,
-        exec_tools,
-        executor_prompt.PREFIX,
-        executor_prompt.SUFFIX,
-        verbose=verbose,
-        commit_hash=commit
+        llm_configs["exec"],
+        jupyter_executor,
+        system_exec,
+        summarizer
     )
-    
-    summarizer = load_summarizer()
-    
-    agents = initialize_agents(navigator, generator, executor, summarizer, repo_dir)
-    agents = agents[:2]
-        
+         
     planner = load_agent_planner(
-        llm_plan,
-        agents,
-        planner_prompt.PREFIX,
-        planner_prompt.SUFFIX,
-        verbose=verbose
+        system_plan,
+        llm_configs["plan"]
     )
     
+    manager = load_manager(
+        user_proxy=user_proxy,
+        planner=planner,
+        navigator=navigator,
+        editor=editor,
+        executor=executor,
+        llm_config=llm_configs["plan"]
+    )
+        
     struct = subprocess.check_output(["tree", "-L","2", "-d", repo_dir]).decode("utf-8")
-    planner_input = {
-        "struct": struct,
-    }
     
-    return planner, repo_dir, planner_input
+    return manager, user_proxy, repo_dir
 
 class RepoPilot:
     def __init__(
@@ -101,21 +103,23 @@ class RepoPilot:
         save_trajectories_path=DEFAULT_TRAJECTORIES_PATH,
         llm_configs = DEFAULT_LLM_CONFIGS,
         verbose = DEFAULT_VERBOSE_LEVEL,
+        issue=""
     ):
         self.repo_path = repo_path
         self.language = language
-        self.system, repo_dir, self.planner_input = Setup(
+        self.system, self.user_proxy, repo_dir = Setup(
             self.repo_path,
             commit,
             language=language,
             clone_dir=clone_dir,
             save_trajectories_path=save_trajectories_path,
             llm_configs=llm_configs,
-            verbose=verbose
+            verbose=verbose,
+            issue=issue
         )
         self.repo_dir = repo_dir
 
     def query_codebase(self, query):
-        self.planner_input["current_step"] = query
-        result = self.system.step(self.planner_input)
-        return result[0].response
+        self.user_proxy.initiate_chat(
+            self.system, message=query
+        )

@@ -1,13 +1,13 @@
 # Description: Configuration for GPT4O
-name: "wizardlm2"
+name: "wizardlm2-extend"
 planner: 
     model_name: MaziyarPanahi/WizardLM-2-8x22B-AWQ
     is_local: true
 navigator:
     model_name: claude-3-haiku-20240307
     is_local: false
-generator:
-    model_name: claude-3-sonnet-20240229
+generator: 
+    model_name: "gpt_azure/"
     is_local: false
 executor:
     model_name: "gemini-1.5-pro-latest"

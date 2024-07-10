@@ -168,7 +168,7 @@ def search_zoekt_elements_inside_project(names: list, backend: object, num_resul
         zoekt_results = backend.search([f"{name}" for name in names], num_result=num_result)
     for name in names:
         files = zoekt_results[f'{name}']["result"]["FileMatches"]
-
+        
         if not files:
             continue
 
@@ -177,6 +177,7 @@ def search_zoekt_elements_inside_project(names: list, backend: object, num_resul
             root_node = parse_code(source, backend.language).root_node
             function_list = parser.get_function_list(root_node)
             class_list = parser.get_class_list(root_node)
+            
 
             for func in function_list:
                 metadata = parser.get_function_metadata(func, source)
@@ -186,6 +187,7 @@ def search_zoekt_elements_inside_project(names: list, backend: object, num_resul
                         "file": file["FileName"].replace(backend.repo_path, ""),
                         "name": metadata["identifier"],
                         "documentation": parser.get_docstring(func, source),
+                        "range": (func.start_point[0], func.end_point[0]+1)
                         # "implementation": add_num_line(get_node_text(func.start_byte, func.end_byte, source), func.start_point[0])
                     }
                     search_results[name].append(result)
@@ -198,6 +200,7 @@ def search_zoekt_elements_inside_project(names: list, backend: object, num_resul
                         "file": file["FileName"],
                         "name": metadata["identifier"],
                         "documentation": parser.get_docstring(cls, source),
+                        "range": (func.start_point[0], func.end_point[0]+1)
                         # "implementation": add_num_line(get_node_text(cls.start_byte, cls.end_byte, source), cls.start_point[0])
                     }
                     search_results[name].append(result)
@@ -224,6 +227,8 @@ def search_zoekt_elements_inside_project(names: list, backend: object, num_resul
             out_str += f"File: {result['file']}\n"
             if "name" in result:
                 out_str += f"Name: {result['name']}\n"
+            if "range" in result:
+                out_str += f"Line Range: {result['range']}\n" 
             if "documentation" in result:
                 out_str += f"Documentation: {result['documentation']}\n"
             if "implementation" in result:

@@ -75,7 +75,7 @@ def clone_repo(repo, commit, root_dir, token, logger):
     
     if not repo_dir.exists():
         repo_url = f"https://{token}@github.com/{repo}.git"
-        logger.info(f"Cloning {repo} {os.getpid()}")
+        # logger.info(f"Cloning {repo} {os.getpid()}")
         Repo.clone_from(repo_url, repo_dir)
         cmd = f"cd {repo_dir} && git reset --hard {commit} && git clean -fdxq"
         subprocess.run(
@@ -168,7 +168,7 @@ def matching_kind_symbol(symbol):
     else:
         return "Unknown"
     
-def word_to_position(source: str, word: str, line: None|int|list = None, offset: int = 0):
+def word_to_position(source: str, word: str, line = None, offset: int = 0):
     """
     Find the position of a word in a source.
 

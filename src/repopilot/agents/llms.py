@@ -1,7 +1,7 @@
 from typing import Any
 from openai import OpenAI, AzureOpenAI
 from vllm import LLM as vLLM
-from vertexvista.utils import truncate_tokens
+# from vertexvista.utils import truncate_tokens
 from groq import Groq
 import os
 
@@ -71,7 +71,12 @@ class OpenAILLM(LLM):
         )
 
     def __call__(self, prompt: str):
-        prompt = truncate_tokens(prompt, encoding_name=self.config["model"], max_length=self.config["max_tokens"])
+        # The line `prompt = truncate_tokens(prompt, encoding_name=self.config["model"],
+        # max_length=self.config["max_tokens"])` is calling a function named `truncate_tokens` with
+        # three arguments: `prompt`, `encoding_name`, and `max_length`. This function is likely used
+        # to truncate the input `prompt` to a specified maximum length based on the model being used
+        # and the maximum tokens allowed.
+        # prompt = truncate_tokens(prompt, encoding_name=self.config["model"], max_length=self.config["max_tokens"])
         response = self.client.chat.completions.create(
             temperature=0,
             model=self.config["model"],
@@ -101,7 +106,7 @@ class AzureLLM(LLM):
         )
 
     def __call__(self, prompt: str):
-        prompt = truncate_tokens(prompt, encoding_name=self.config["model"], max_length=self.config["max_tokens"])
+        # prompt = truncate_tokens(prompt, encoding_name=self.config["model"], max_length=self.config["max_tokens"])
         response = self.client.chat.completions.create(
             temperature=0,
             model=self.config["model"],
