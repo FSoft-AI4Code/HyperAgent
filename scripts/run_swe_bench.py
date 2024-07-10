@@ -91,37 +91,37 @@ def main():
     
     config = {
         "name": "claude",
-        "nav": {
+        "nav": [{
             "model": "claude-3-haiku-20240307",
             # "model": "claude-3-5-sonnet-20240620",
             "api_type": os.environ.get("ANTHROPIC_API_KEY"),
             "stop_sequences": ["\nObservation:"],
             "base_url": "https://api.anthropic.com",
             "api_type": "anthropic",
-        },
-        "edit": {
+        }],
+        "edit": [{
             "model": "claude-3-5-sonnet-20240620",
             "api_type": os.environ.get("ANTHROPIC_API_KEY"),
             "stop_sequences": ["\nObservation:"],
             "price": [0.003, 0.015],
             "base_url": "https://api.anthropic.com",
             "api_type": "anthropic",
-        },
-        "exec": {
+        }],
+        "exec": [{
             "model": "claude-3-haiku-20240307",
             "api_type": os.environ.get("ANTHROPIC_API_KEY"),
             "stop_sequences": ["\nObservation:"],
             "price": [0.003, 0.015],
             "base_url": "https://api.anthropic.com",
             "api_type": "anthropic",
-        },
-        "plan": {
+        }],
+        "plan": [{
             "model": "claude-3-5-sonnet-20240620",
             "api_type": os.environ.get("ANTHROPIC_API_KEY"),
             "price": [0.003, 0.015],
             "base_url": "https://api.anthropic.com",
             "api_type": "anthropic",
-        }
+        }]
     }
     
     dataset = dataset.filter(lambda x: "django" not in x["repo"] or "sphinx" not in x["repo"])

@@ -121,5 +121,5 @@ class RepoPilot:
 
     def query_codebase(self, query):
         self.user_proxy.initiate_chat(
-            self.system, message=query
+            self.system, message=query["input"]
         )
