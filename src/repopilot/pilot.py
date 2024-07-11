@@ -27,7 +27,6 @@ def Setup(
     index_path: Optional[str] = "data/indexes",
     llm_configs: Optional[dict] = None,
     verbose: int = DEFAULT_VERBOSE_LEVEL,
-    issue: str = ""
 ):
     
     # initialize the github repository
@@ -103,7 +102,6 @@ class RepoPilot:
         save_trajectories_path=DEFAULT_TRAJECTORIES_PATH,
         llm_configs = DEFAULT_LLM_CONFIGS,
         verbose = DEFAULT_VERBOSE_LEVEL,
-        issue=""
     ):
         self.repo_path = repo_path
         self.language = language
@@ -115,11 +113,10 @@ class RepoPilot:
             save_trajectories_path=save_trajectories_path,
             llm_configs=llm_configs,
             verbose=verbose,
-            issue=issue
         )
         self.repo_dir = repo_dir
 
     def query_codebase(self, query):
         self.user_proxy.initiate_chat(
-            self.system, message=query["input"]
+            self.system, message=query
         )

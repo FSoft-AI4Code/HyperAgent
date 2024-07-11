@@ -1,22 +1,29 @@
 import os
 import re
+import json
+from subprocess import PIPE, run
 from repopilot.tasks.utils.bl import name_utils, sequence_utils
 from repopilot.tasks.base import BaseTask, Result
 
-BUG_INFO_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+BUG_INFO_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))),
                             "data/defects4j/")
 
-class BugLocalization(BaseTask):
-    def __init__(self, max_repetitions, max_num_tests, logdir, split, **kwargs):
-        self.max_repetitions = max_repetitions
-        self.max_num_tests = max_num_tests
+class FaultLocalization(BaseTask):
+    RANGE_REGEX = "\(line (?P<beginline>\d+),col (?P<begincol>\d+)\)-\(line (?P<endline>\d+),col (?P<endcol>\d+)\)"
+    def __init__(self, logdir, split, **kwargs):
+        self.max_repetitions = kwargs.get("max_repetitions", 3)
+        self.max_num_tests = kwargs.get("max_num_tests", 1)
         super().__init__(logdir, split, type="pred", **kwargs)
         self.task_template = """Given following failed test case, localize which method in the codebase is responsible for the failure.
             Failed Test: {test}
             The test looks like: \n\n```java\n{test_snippets}\n```\n\n
             It failed with the following error message and call stack:\n\n```\n{failing_traces}\n```\n\n
             Please provide the method name in the format 'package.ClassName.methodName' that you think is responsible for the failure."""
-    
+        
+        self._max_repetition_in_stack = 5
+        self.defects4j_path = kwargs.get("defects4j_path")
+        self.java_home = kwargs.get("java_home", "/usr/bin/java")
+        
     def failing_test_signatures(self, _fail_info):
         return list(_fail_info.keys())
     
@@ -28,11 +35,11 @@ class BugLocalization(BaseTask):
         fail_info = self._load_fail_info(bug_name)
         fail_test_signatures = [
             signature for signature in self.failing_test_signatures(fail_info)
-            if self.get_test_snippet(signature) is not None
+            if self.get_test_snippet(signature, bug_name) is not None
         ]
         fail_test_signatures = fail_test_signatures[:self.max_num_tests]
-        test_snippets = "\n\n".join(self.get_test_snippet(signature).rstrip() for signature in fail_test_signatures)
-        failing_traces = "\n\n".join(self.get_fail_info(signature, minimize=True).rstrip() for signature in fail_test_signatures)
+        test_snippets = "\n\n".join(self.get_test_snippet(signature, bug_name).rstrip() for signature in fail_test_signatures)
+        failing_traces = "\n\n".join(self.get_fail_info(signature, bug_name, minimize=False).rstrip() for signature in fail_test_signatures)
         
         prompt = self.task_template.format(test=fail_test_signatures, test_snippets=test_snippets, failing_traces=failing_traces)
         return prompt
@@ -42,6 +49,17 @@ class BugLocalization(BaseTask):
         with open(os.path.join(BUG_INFO_DIR, bug_name, "snippet.json")) as f:
             data = f.read().strip()
         return data
+    
+    def __len__(self):
+        return len(self.bug_names)
+    
+    def __getitem__(self, idx):
+        bug_name = self.bug_names[idx]
+        project = bug_name.split("_")[0]
+        bug_id = bug_name.split("_")[1]
+        self.run_bash("checkout_bug", project, bug_id)
+        repo_dir = f"data/repos/{project}-{bug_id}"
+        return repo_dir 
     
     def run(self, system, idx) -> Result:
         prompt = self.construct_prompt(idx)
@@ -71,7 +89,7 @@ class BugLocalization(BaseTask):
                         "stack_trace" if l.startswith("\tat") else "error_message"] += l
         return fail_info
     
-    def get_test_snippet(self, signature):
+    def get_test_snippet(self, signature, bug_name):
         def _get_error_location(signature, fail_info):
             """
             Extracts the line number from the provided failure information related to a test case.
@@ -115,7 +133,8 @@ class BugLocalization(BaseTask):
         matching_test_case = None
         test_class_name = name_utils.drop_base_name(
             name_utils.get_method_name(signature, simple_name=False))
-        for test_case in self._test_lists:
+        _test_lists = self._load_test_lists(bug_name) # list of dict
+        for test_case in _test_lists:
             if signature == test_case["signature"]: # exact matching
                 matching_test_case = test_case
                 break
@@ -133,11 +152,11 @@ class BugLocalization(BaseTask):
         snippet = test_case["snippet"]
         begin_lineno = int(test_case["begin_line"])
 
-        if signature in self._fail_info and self._postprocess_test_snippet:
+        if signature in self._load_fail_info(bug_name):
             # if the test is failed and the postprocessing is on,
             # find and annotate error location
             error_lineno = _get_error_location(test_case["signature"], # name of actual matching test case
-                                               self.get_fail_info(signature, minimize=False))
+                                               self.get_fail_info(signature, bug_name, minimize=False))
             annotate_error_location = error_lineno is not None
         else:
             annotate_error_location = False
@@ -180,13 +199,12 @@ class BugLocalization(BaseTask):
             line_numbers = range(begin_lineno, begin_lineno + len(snippet_lines))
 
         # append line numbers
-        if self._show_line_number:
-            snippet_lines = sequence_utils.concat_strings(
-                line_numbers, snippet_lines, sep=" : ", align=True)
+        snippet_lines = sequence_utils.concat_strings(
+            line_numbers, snippet_lines, sep=" : ", align=True)
 
         return "\n".join(snippet_lines)
     
-    def get_fail_info(self, tc_signature, minimize=False, verbose=False):
+    def get_fail_info(self, tc_signature, bug_name, minimize=False, verbose=False):
         def _clean_error_message(error_message, max_lines=5, verbose=False):
             error_message = "\n".join(error_message.splitlines()[:max_lines])
             return error_message
@@ -224,11 +242,27 @@ class BugLocalization(BaseTask):
 
             return "\n".join(cleaned_stack)
 
-        error_message = self._fail_info[tc_signature]["error_message"].rstrip()
-        stack_trace = self._fail_info[tc_signature]["stack_trace"].rstrip()
+        _fail_info = self._load_fail_info(bug_name)
+        
+        error_message = _fail_info[tc_signature]["error_message"].rstrip()
+        stack_trace = _fail_info[tc_signature]["stack_trace"].rstrip()
 
         if minimize:
             error_message = _clean_error_message(error_message, verbose=verbose)
             stack_trace = _clean_stack_trace(stack_trace, verbose=verbose)
 
         return error_message + "\n" + stack_trace
+    
+    def run_bash(self, function, project, bug_id, extra_arg1=None, extra_arg2=None):
+        work_dir = f"data/repos/{project}-{bug_id}"
+        command = ['bash', "src/repopilot/tasks/utils/bl/defects4j.sh", function, f"{project}", f"{bug_id}", f"{work_dir}", f"{self.java_home}", f"{self.defects4j_path}", f"{extra_arg1}", f"{extra_arg2}"]
+        result = run(command, stdout=PIPE, stderr=PIPE, universal_newlines=True)
+        if len(result.stdout) > 0:
+            if result.stdout[-1] == "\n":
+                result.stdout = result.stdout[:-1]
+        return result
+    
+    def _load_test_lists(self, bug_name):
+        with open(os.path.join(BUG_INFO_DIR, bug_name, "test_snippet.json")) as f:
+            test_list = json.load(f)
+        return test_list
