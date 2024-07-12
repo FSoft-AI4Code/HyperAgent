@@ -517,6 +517,16 @@ def extract_patch(
         patch = f.read()
     return patch
 
+def find_matching_abs_path(parent_folder, sub_path):
+    # Walk through the parent folder to find matching sub-path
+    for root, dirs, files in os.walk(parent_folder):
+        for name in dirs + files:
+            full_path = os.path.join(root, name)
+            # Check if the sub_path matches the end of the full path
+            if full_path.endswith(sub_path):
+                return os.path.abspath(full_path)
+    return None
+
 def find_all_file_paths(parent_folder, file_name):
   """Finds all paths of files with the given name in a parent folder.
 

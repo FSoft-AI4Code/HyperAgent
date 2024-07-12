@@ -26,7 +26,6 @@ def Setup(
     db_path: Optional[str] = None,  
     index_path: Optional[str] = "data/indexes",
     llm_configs: Optional[dict] = None,
-    verbose: int = DEFAULT_VERBOSE_LEVEL,
 ):
     
     # initialize the github repository
@@ -85,11 +84,9 @@ def Setup(
         navigator=navigator,
         editor=editor,
         executor=executor,
-        llm_config=llm_configs["plan"]
+        llm_config=llm_configs
     )
         
-    struct = subprocess.check_output(["tree", "-L","2", "-d", repo_dir]).decode("utf-8")
-    
     return manager, user_proxy, repo_dir
 
 class RepoPilot:
@@ -112,11 +109,10 @@ class RepoPilot:
             clone_dir=clone_dir,
             save_trajectories_path=save_trajectories_path,
             llm_configs=llm_configs,
-            verbose=verbose,
         )
         self.repo_dir = repo_dir
 
     def query_codebase(self, query):
-        self.user_proxy.initiate_chat(
+        return self.user_proxy.initiate_chat(
             self.system, message=query
         )

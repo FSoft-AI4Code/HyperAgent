@@ -18,6 +18,7 @@ from repopilot.code_search import get_parser
 import jedi
 import uuid
 from repopilot.multilspy import lsp_protocol_handler
+from repopilot.utils import find_all_file_paths, find_matching_abs_path
 from repopilot.constants import SEMANTIC_CODE_SEARCH_DB_PATH
 import os.path as osp
 
@@ -341,26 +342,33 @@ class OpenFileTool(BaseTool):
         if len(keywords) == 0 and start_line is None and end_line is None:
             return "Please specify the keyword or start and end line to view the content of the file."
         
-        abs_path = os.path.join(self.path, relative_file_path)
+        abs_path = find_matching_abs_path(self.path, relative_file_path)
+        # abs_path = os.path.join(self.path, relative_file_path)
+        source = open(abs_path, "r").read()
+        lines = source.split("\n")
+
         try:
             if start_line is not None and end_line is not None and len(keywords) == 0:
                 if end_line - start_line > 90:
                     return f"The number of lines to show is limited at 90, the requested number of lines is {end_line - start_line}, please specify the start and end line again or using keyword instead. For example {start_line}:{start_line+90}"
-                source = open(abs_path, "r").read()
-                lines = source.split("\n")
                 
                 if start_line > len(lines):
                     return f"Invalid start line, the start line is greater than the total number of lines in the file, the total number of lines in the file is {len(lines)}"
                 
                 source = "\n".join(lines[start_line:end_line]) 
             else:
-                out_str = "The content of " + relative_file_path.replace(self.path, "") + " is: \n"
+                returned_source = []
+                out_str = "The content of " + relative_file_path.replace(self.path, "") + " is: \n"     
+
                 for keyword in keywords:
-                    out_str += f"Results for keyword: {keyword}\n"
+                    out_str += f"Results for keyword: {keyword}\n"           
+                    if any([keyword in line for line in lines[start_line:end_line]]):
+                        expanded_source = "\n".join(lines[start_line:end_line])
+                        expanded_source = add_num_line(expanded_source, start_line)
+                        returned_source.append(expanded_source)
+                        # continue
+                        
                     line_idx = []
-                    returned_source = []
-                    source = open(abs_path, "r").read()
-                    lines = source.split("\n")
                     for i, line in enumerate(lines):
                         if keyword in line:
                             line_idx.append(i)
@@ -371,18 +379,20 @@ class OpenFileTool(BaseTool):
                     root_node = parse_code(source, self.language).root_node
                     function_list = self.parser.get_function_list(root_node)
                     class_list = self.parser.get_class_list(root_node)
-                    
-                    for func in function_list:
 
-                        for i, idx in enumerate(line_idx):
-                            if func.start_point[0] <= idx <= func.end_point[0]:
-                                line_ranges[i] = (func.start_point[0], func.end_point[0]+1)
-                    
+
                     for class_ in class_list:
 
                         for i, idx in enumerate(line_idx):
                             if class_.start_point[0] <= idx <= class_.end_point[0]:
                                 line_ranges[i] = (class_.start_point[0], class_.end_point[0]+1)
+
+                    for func in function_list:
+
+                        for i, idx in enumerate(line_idx):
+                            if func.start_point[0] <= idx <= func.end_point[0]:
+                                line_ranges[i] = (func.start_point[0], func.end_point[0]+1)   
+                
                     if len(line_idx) == 0:
                         out_str += f"No keyword found in the file, please check the keyword again or use the start and end line instead for this keyword {keyword}"
                     else:
@@ -507,11 +517,14 @@ class FindFileTool(BaseTool):
         return "The file is found at: " + "\n".join(file_paths)
     
 if __name__ == "__main__":
-    open_file = OpenFileTool(path='/datadrive5/huypn16/autogen_repo/repos/repo__astropy__astropy__commit__a5917978be39d13cd90b517e1de4e7a539ffaa48', language="python")
-    find_all_refs = FindAllReferencesTool(path='/datadrive5/huypn16/autogen_repo/repos/repo__astropy__astropy__commit__a5917978be39d13cd90b517e1de4e7a539ffaa48', language="python")
-    code_search = CodeSearchTool(path='/datadrive5/huypn16/autogen_repo/repos/repo__astropy__astropy__commit__a5917978be39d13cd90b517e1de4e7a539ffaa48', language="python", index_path="/datadrive5/huypn16/RepoPilot/data/indexes")
-    # result = open_file._run(relative_file_path="astropy/io/ascii/rst.py", keywords=["RST"], start_line=0, end_line=40)
-    result = find_all_refs._run(word="RST", relative_file_path="astropy/io/ascii/rst.py", line=33)
-    result = code_search._run(names=["RST"])
-    result = open_file._run(relative_file_path="astropy/io/ascii/ui.py", keywords=["get_writer"], start_line=770, end_line=820)
+    # open_file = OpenFileTool(path='/datadrive5/huypn16/autogen_repo/repos/repo__astropy__astropy__commit__a5917978be39d13cd90b517e1de4e7a539ffaa48', language="python")
+    # find_all_refs = FindAllReferencesTool(path='/datadrive5/huypn16/autogen_repo/repos/repo__astropy__astropy__commit__a5917978be39d13cd90b517e1de4e7a539ffaa48', language="python")
+    # code_search = CodeSearchTool(path='/datadrive5/huypn16/autogen_repo/repos/repo__astropy__astropy__commit__a5917978be39d13cd90b517e1de4e7a539ffaa48', language="python", index_path="/datadrive5/huypn16/RepoPilot/data/indexes")
+    # # result = open_file._run(relative_file_path="astropy/io/ascii/rst.py", keywords=["RST"], start_line=0, end_line=40)
+    # result = find_all_refs._run(word="RST", relative_file_path="astropy/io/ascii/rst.py", line=33)
+    # result = code_search._run(names=["RST"])
+    # result = open_file._run(relative_file_path="astropy/io/ascii/ui.py", keywords=["get_writer"], start_line=770, end_line=820)
+
+    open_file = OpenFileTool(path='/datadrive5/huypn16/RepoPilot-Master/data/repos/Closure-23', language="java")
+    result = open_file._run(relative_file_path="test/com/google/javascript/jscomp/CodePrinterTest.java", keywords=["testPrintInOperatorInForLoop"], start_line=438, end_line=486)
     print(result)

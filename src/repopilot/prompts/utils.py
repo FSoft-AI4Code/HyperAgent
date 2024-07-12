@@ -75,7 +75,7 @@ Query: {input}"""
 
 jupyter_prompt = """from repopilot.tools.tools import *
 repo_dir = "{repo_dir}"
-language = "python"
+language = "{language}"
 index_path = "{index_path}"
 
 nav_tool_cls = [CodeSearchTool, GoToDefinitionTool, FindAllReferencesTool, GetAllSymbolsTool, GetTreeStructureTool, OpenFileTool, FindFileTool]
@@ -95,5 +95,8 @@ editor = EditorTool(repo_dir, language=language)
 open_file_gen = OpenFileToolForGenerator(repo_dir, language=language)"""
 
 def react_prompt_message(content):
-   # request = content.split("Request:")[-1]
-   return ReAct_prompt.format(input=content)
+   request = content.split("Request:")[-1]
+   request = request.split("Navigator:")[-1]
+   request = request.split("Editor:")[-1]
+   request = request.split("Executor:")[-1]
+   return ReAct_prompt.format(input=request)

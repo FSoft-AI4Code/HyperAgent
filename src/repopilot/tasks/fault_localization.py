@@ -3,6 +3,7 @@ import re
 import json
 from subprocess import PIPE, run
 from repopilot.tasks.utils.bl import name_utils, sequence_utils
+from repopilot.agents.llms import LocalLLM
 from repopilot.tasks.base import BaseTask, Result
 
 BUG_INFO_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))),
@@ -18,15 +19,21 @@ class FaultLocalization(BaseTask):
             Failed Test: {test}
             The test looks like: \n\n```java\n{test_snippets}\n```\n\n
             It failed with the following error message and call stack:\n\n```\n{failing_traces}\n```\n\n
-            Please provide the method name in the format 'package.ClassName.methodName' that you think is responsible for the failure."""
+            <output> provide the method name in the format 'package.ClassName.methodName' that you think is responsible for the failure. No need to call editor to fix the fault.<\output>"""
         
         self._max_repetition_in_stack = 5
         self.defects4j_path = kwargs.get("defects4j_path")
         self.java_home = kwargs.get("java_home", "/usr/bin/java")
+        self.llm = LocalLLM({"model": "mistralai/Mixtral-8x7B-Instruct-v0.1", "system_prompt": "Given following answer and true buggy methods, output True or False whether the predicted method is matched with buggy methods or not.", "max_tokens": 25000})
         
     def failing_test_signatures(self, _fail_info):
         return list(_fail_info.keys())
     
+    def report(self, results):
+        correct = sum(r.kwargs["correct"] for r in results)
+        total = len(results)
+        return {"correct": correct, "total": total}
+
     def setup(self):
         self.bug_names = os.listdir(BUG_INFO_DIR)
     
@@ -47,7 +54,7 @@ class FaultLocalization(BaseTask):
     def load_data(self, idx):
         bug_name = self.bug_names[idx]
         with open(os.path.join(BUG_INFO_DIR, bug_name, "snippet.json")) as f:
-            data = f.read().strip()
+            data = json.load(f)
         return data
     
     def __len__(self):
@@ -64,18 +71,23 @@ class FaultLocalization(BaseTask):
     def run(self, system, idx) -> Result:
         prompt = self.construct_prompt(idx)
         data = self.load_data(idx)
-        prediction = system.query_codebase(prompt)
+        system.query_codebase(prompt)
+        prediction = system.system._groupchat.messages[-1]["content"]
         result = self.validate(prediction, data)
         return result
+
+    def match(self, prediction, buggy_methods):
+        match_str = self.llm(f"Here is the answer: {prediction} and buggy methods {''.join(buggy_methods)}")
+        if "true" in match_str.lower():
+            return True
+        return False
     
     def validate(self, prediction, data):
-        buggy_methods = [method for method in data if method["is_bug"]]
-        import ipdb; ipdb.set_trace()
-        if prediction in buggy_methods:
+        buggy_methods = [method["name"] for method in data if method["is_bug"]]
+        if self.match(prediction, buggy_methods):
             return Result(task="bug localization", correct=True)
         return Result(task="bug localization", correct=False)
 
-    
     def _load_fail_info(self, bug_name):
         fail_info = dict()
         with open(os.path.join(BUG_INFO_DIR, bug_name, "failing_tests")) as f:

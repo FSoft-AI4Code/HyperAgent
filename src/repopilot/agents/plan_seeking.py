@@ -1,6 +1,7 @@
 from autogen import UserProxyAgent, AssistantAgent, GroupChat, GroupChatManager, Agent, ConversableAgent
 from autogen.agentchat.contrib.society_of_mind_agent import SocietyOfMindAgent 
 from repopilot.agents.llms import LocalLLM
+from repopilot.prompts.utils import react_prompt_message
 
 def load_summarizer():
     config = {"model": "mistralai/Mixtral-8x7B-Instruct-v0.1", "system_prompt": "Summarize the analysis, while remain details such as code snippet or found classes or functions that is important for query.", "max_tokens": 25000}
@@ -63,7 +64,7 @@ def load_agent_navigator(
     
     navigator.register_hook(
         "process_last_received_message",
-        lambda content: content.split("Request:")[-1].split("Context:")[0],
+        lambda content: react_prompt_message(content),
     )
     return navigator
 
@@ -212,17 +213,35 @@ def load_manager(user_proxy, planner, navigator, editor, executor, llm_config):
 
         # if len(messages) <= 1:
         #     return simple
-        if last_speaker is user_proxy:
-            return planner
-        elif "Navigator" in messages[-1]["content"] and last_speaker == planner:
-            return navigator
-        elif "Editor" in messages[-1]["content"] and last_speaker == planner:
-            return editor
-        elif "Executor" in messages[-1]["content"] and last_speaker == planner:
-            return executor
+        if llm_config["type"] == "patch":
+            if last_speaker is user_proxy:
+                return planner
+            elif "Navigator" in messages[-1]["content"] and last_speaker == planner:
+                return navigator
+            elif "Editor" in messages[-1]["content"] and last_speaker == planner:
+                return editor
+            elif "Executor" in messages[-1]["content"] and last_speaker == planner:
+                return executor
+            else:
+                return planner
         else:
-            return planner
+            if last_speaker is user_proxy:
+                return planner
+            elif "Navigator" in messages[-1]["content"] and last_speaker == planner:
+                return navigator
+            elif "Executor" in messages[-1]["content"] and last_speaker == planner:
+                return executor
+            else:
+                return planner
             
     groupchat = GroupChat(agents=[navigator, editor, executor, planner], messages=[], max_round=20, speaker_selection_method=custom_speaker_selection_func)
-    manager = GroupChatManager(groupchat=groupchat, llm_config={"config_list": llm_config}, is_termination_msg=lambda msg: "Final Answer"in msg["content"])
+    
+    def stop_condition(msg):
+        if "Final Answer"in msg["content"]:
+            return True
+        elif all([agent_name not in msg["content"] for agent_name in ["Navigator", "Editor", "Executor"]]) and msg["name"] == "Planner":
+            return True
+        else:
+            return False
+    manager = GroupChatManager(name="repopilot", groupchat=groupchat, llm_config={"config_list": llm_config["plan"]}, is_termination_msg=lambda msg: stop_condition(msg))
     return manager

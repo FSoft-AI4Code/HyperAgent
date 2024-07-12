@@ -52,12 +52,13 @@ def main():
             "price": [0.003, 0.015],
             "base_url": "https://api.anthropic.com",
             "api_type": "anthropic",
-        }]
+        }],
+        "type": "pred"
     }
     
     task = FaultLocalization("results/defects4j_fl", "test", max_repetitions=1, max_num_tests=2, defects4j="/datadrive5/huypn16/defects4j")
     result_list = []
-    for idx in range(len(task)):
+    for idx in range(20, 300):
         repo_dir = task[idx]
         pilot = RepoPilot(
             repo_path=repo_dir,
@@ -66,11 +67,10 @@ def main():
             llm_configs=config,
             verbose=2,
         )
-        
         result = task.run(pilot, idx)
         result_list.append(result)
-    performance_table = task.report(result_list)
-    print(performance_table)
+        performance_table = task.report(result_list)
+        print(performance_table)
     
 if __name__ == "__main__":
     main()

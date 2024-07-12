@@ -1,10 +1,21 @@
 from typing import Any
 from openai import OpenAI, AzureOpenAI
 from vllm import LLM as vLLM
-# from vertexvista.utils import truncate_tokens
+from transformers import AutoTokenizer, AutoConfig
 from groq import Groq
 import os
 
+def truncate_tokens_hf(string: str, encoding_name: str) -> str:
+    """Truncates a text string based on max number of tokens."""
+    tokenizer = AutoTokenizer.from_pretrained(encoding_name)
+    max_tokens = AutoConfig.from_pretrained(encoding_name).max_position_embeddings
+    encoded_string = tokenizer.encode(string, return_tensors="pt")
+    num_tokens = len(encoded_string[0])
+
+    if num_tokens > max_tokens:
+        string = tokenizer.decode(encoded_string[0][-30000:])
+
+    return string
 
 class LLM:
     def __init__(self, config):
@@ -35,8 +46,11 @@ class GroqLLM(LLM):
 class LocalLLM(LLM):
     def __init__(self, config):
         super().__init__(config)
-        openai_api_key = os.environ["TOGETHER_API_KEY"]
-        openai_api_base = "https://api.together.xyz"
+        # openai_api_key = os.environ["TOGETHER_API_KEY"]
+        # openai_api_base = "https://api.together.xyz"
+        openai_api_base = "http://localhost:8000/v1"
+        openai_api_key="token-abc123"
+
 
         self.client = OpenAI(
             api_key=openai_api_key,
@@ -44,7 +58,7 @@ class LocalLLM(LLM):
         )
 
     def __call__(self, prompt: str):
-        # prompt = truncate_tokens_hf(prompt, encoding_name=self.config["model"])
+        prompt = truncate_tokens_hf(prompt, encoding_name=self.config["model"])
         response = self.client.chat.completions.create(
             temperature=0,
             model=self.config["model"],
