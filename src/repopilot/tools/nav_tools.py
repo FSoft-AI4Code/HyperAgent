@@ -362,12 +362,11 @@ class OpenFileTool(BaseTool):
 
                 for keyword in keywords:
                     out_str += f"Results for keyword: {keyword}\n"           
-                    if any([keyword in line for line in lines[start_line:end_line]]):
+                    if any([keyword in line for line in lines[start_line:end_line]]) and start_line is not None and end_line is not None:
                         expanded_source = "\n".join(lines[start_line:end_line])
                         expanded_source = add_num_line(expanded_source, start_line)
                         returned_source.append(expanded_source)
-                        # continue
-                        
+
                     line_idx = []
                     for i, line in enumerate(lines):
                         if keyword in line:
@@ -526,5 +525,5 @@ if __name__ == "__main__":
     # result = open_file._run(relative_file_path="astropy/io/ascii/ui.py", keywords=["get_writer"], start_line=770, end_line=820)
 
     open_file = OpenFileTool(path='/datadrive5/huypn16/RepoPilot-Master/data/repos/Closure-23', language="java")
-    result = open_file._run(relative_file_path="test/com/google/javascript/jscomp/CodePrinterTest.java", keywords=["testPrintInOperatorInForLoop"], start_line=438, end_line=486)
+    result = open_file._run(relative_file_path="test/com/google/javascript/jscomp/CodePrinterTest.java", keywords=["assertPrint"])
     print(result)
