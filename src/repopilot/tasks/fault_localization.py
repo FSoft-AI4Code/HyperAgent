@@ -11,10 +11,10 @@ BUG_INFO_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.p
 
 class FaultLocalization(BaseTask):
     RANGE_REGEX = "\(line (?P<beginline>\d+),col (?P<begincol>\d+)\)-\(line (?P<endline>\d+),col (?P<endcol>\d+)\)"
-    def __init__(self, logdir, split, **kwargs):
+    def __init__(self, logdir, split, _type="pred", **kwargs):
         self.max_repetitions = kwargs.get("max_repetitions", 3)
         self.max_num_tests = kwargs.get("max_num_tests", 1)
-        super().__init__(logdir, split, type="pred", **kwargs)
+        super().__init__(logdir, split, _type=_type, **kwargs)
         self.task_template = """Given following failed test case, localize which method in the codebase is responsible for the failure.
             Failed Test: {test}
             The test looks like: \n\n```java\n{test_snippets}\n```\n\n

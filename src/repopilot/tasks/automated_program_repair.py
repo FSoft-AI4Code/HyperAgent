@@ -10,14 +10,14 @@ from repopilot.tasks.fault_localization import FaultLocalizationTask
 
 
 class AutomatedProgramRepairTask(FaultLocalizationTask):
-    def __init__(self, repo_dir, db_path, index_path, language, fault_localization_result, **kwargs):
-        super().__init__(repo_dir, db_path, index_path, language, fault_localization_result, **kwargs)
+    def __init__(self, repo_dir, db_path, index_path, language, **kwargs):
+        super().__init__(repo_dir, db_path, index_path, language, _type="patch", **kwargs)
         self.task_template = """Given following failed test case, fix the code is responsible for the failure. If there are multiple faults, find and fix them.
             Failed Test: {test}
             The test looks like: \n\n```java\n{test_snippets}\n```\n\n
             It failed with the following error message and call stack:\n\n```\n{failing_traces}\n```\n\n
             <output> Provide the method name in the format 'package.ClassName.methodName' that you think is responsible for the failure. You also need to edit the code to fix the fault.<\output>"""
-        
+
     def construct_prompt(self, idx):
         bug_name = self.bug_names[idx]
         fail_info = self._load_fail_info(bug_name)
