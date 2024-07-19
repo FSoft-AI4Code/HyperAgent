@@ -22,5 +22,5 @@ data/agent_trajectories/*
 .vscode/*
 swe_bench.zip
 .aider*
-.cache/
+.cache/*
 log.txt
