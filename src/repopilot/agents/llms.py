@@ -46,10 +46,10 @@ class GroqLLM(LLM):
 class LocalLLM(LLM):
     def __init__(self, config):
         super().__init__(config)
-        # openai_api_key = os.environ["TOGETHER_API_KEY"]
-        # openai_api_base = "https://api.together.xyz"
-        openai_api_base = "http://localhost:8000/v1"
-        openai_api_key="token-abc123"
+        openai_api_key = os.environ["TOGETHER_API_KEY"]
+        openai_api_base = "https://api.together.xyz"
+        # openai_api_base = "http://localhost:8004/v1"
+        # openai_api_key="token-abc123"
 
 
         self.client = OpenAI(
@@ -58,7 +58,7 @@ class LocalLLM(LLM):
         )
 
     def __call__(self, prompt: str):
-        prompt = truncate_tokens_hf(prompt, encoding_name=self.config["model"])
+        prompt = truncate_tokens_hf(prompt, encoding_name="google/gemma-7b")
         response = self.client.chat.completions.create(
             temperature=0,
             model=self.config["model"],

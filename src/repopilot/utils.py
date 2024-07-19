@@ -408,7 +408,7 @@ def get_symbol_per_file(file_path: str, primary_symbols, parent_path, keyword):
     return out_file_symbols
 
 def get_symbol_verbose(file_path: str, parent_path: str, keyword: str = None):
-    primary_symbols = [SymbolKind.Class, SymbolKind.Method, SymbolKind.Function]
+    primary_symbols = [SymbolKind.Class, SymbolKind.Method, SymbolKind.Function, SymbolKind.Interface]
     with open(file_path, 'r+') as f:
         try:
             if not f.read().endswith('\n'):
@@ -544,3 +544,21 @@ def find_all_file_paths(parent_folder, file_name):
       file_paths.append(os.path.join(root, file_name))
 
   return file_paths
+
+from pathlib import Path
+
+def find_matching_file_path(parent_folder, sub_file_path):
+    for root, dirs, files in os.walk(parent_folder):
+        for name in dirs + files:
+            full_path = os.path.join(root, name)
+            if full_path.endswith(sub_file_path):
+                return Path(full_path).resolve()
+    
+    file_paths = find_all_file_paths(parent_folder, sub_file_path.split("/")[-1])
+    if len(file_paths) == 1:
+        return Path(file_paths[0]).resolve()
+
+    return None
+
+if __name__ == "__main__":
+    print(find_matching_file_path("/datadrive5/huypn16/RepoPilot-Master", "repopilot/prompts/executor.py"))

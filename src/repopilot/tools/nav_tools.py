@@ -209,7 +209,7 @@ class GetAllSymbolsTool(BaseTool):
     """
 
     name = "get_all_symbols"
-    description = "Useful when you want to find all symbols (functions, classes, methods) of source files. If you want to look for a specific keyword, specify it, otherwise if you want to see all the symbols, do not provide the keyword. Prioritize using keyword to shorten the search."
+    description = "Useful when you want to find all symbols (functions, classes, methods) of source files. If you want to look for a specific keyword inside the name of the symbol, specify it, otherwise if you want to see all the symbols, do not provide the keyword. Prioritize using keyword to shorten the search."
     args_schema = GetAllSymbolsArgs
     lsptoolkit: LSPToolKit = None
     path = ""
@@ -327,7 +327,7 @@ class OpenFileTool(BaseTool):
         self.parser = get_parser(language)
         self.language = language
     
-    def _run(self, relative_file_path: str, start_line: Optional[int] = None, end_line: Optional[int] = None, keywords: Optional[List[str]] = [], preview_size: int = 10, max_num_result: int = 5):
+    def _run(self, relative_file_path: str, start_line: Optional[int] = None, end_line: Optional[int] = None, keywords: Optional[List[str]] = [], preview_size: int = 8, max_num_result: int = 5):
         """
         Opens the specified file and returns its content.
 
@@ -357,15 +357,15 @@ class OpenFileTool(BaseTool):
                 
                 source = "\n".join(lines[start_line:end_line]) 
             else:
-                returned_source = []
                 out_str = "The content of " + relative_file_path.replace(self.path, "") + " is: \n"     
 
                 for keyword in keywords:
-                    out_str += f"Results for keyword: {keyword}\n"           
-                    if any([keyword in line for line in lines[start_line:end_line]]) and start_line is not None and end_line is not None:
-                        expanded_source = "\n".join(lines[start_line:end_line])
-                        expanded_source = add_num_line(expanded_source, start_line)
-                        returned_source.append(expanded_source)
+                    returned_source = []
+                    out_str += f"\nResults for keyword: {keyword}\n"           
+                    # if any([keyword in line for line in lines[start_line:end_line]]) and start_line is not None and end_line is not None:
+                    #     expanded_source = "\n".join(lines[start_line:end_line])
+                    #     expanded_source = add_num_line(expanded_source, start_line)
+                    #     returned_source.append(expanded_source)
 
                     line_idx = []
                     for i, line in enumerate(lines):
@@ -374,7 +374,7 @@ class OpenFileTool(BaseTool):
                     
                     line_idx = line_idx[:max_num_result]
                     line_ranges = [None for _ in line_idx]
-                    
+
                     root_node = parse_code(source, self.language).root_node
                     function_list = self.parser.get_function_list(root_node)
                     class_list = self.parser.get_class_list(root_node)
@@ -383,29 +383,41 @@ class OpenFileTool(BaseTool):
                     for class_ in class_list:
 
                         for i, idx in enumerate(line_idx):
-                            if class_.start_point[0] <= idx <= class_.end_point[0]:
+                            if class_.start_point[0]== idx:
                                 line_ranges[i] = (class_.start_point[0], class_.end_point[0]+1)
 
                     for func in function_list:
 
                         for i, idx in enumerate(line_idx):
-                            if func.start_point[0] <= idx <= func.end_point[0]:
-                                line_ranges[i] = (func.start_point[0], func.end_point[0]+1)   
-                
+                            if func.start_point[0] == idx:
+                                line_ranges[i] = (func.start_point[0], func.end_point[0]+1) 
+
                     if len(line_idx) == 0:
                         out_str += f"No keyword found in the file, please check the keyword again or use the start and end line instead for this keyword {keyword}"
                     else:
                         for i in range(len(line_idx)):
-                            if line_ranges[i] in line_ranges[:i]:
-                                continue
                             if line_ranges[i] is None:
+                                # keyword found not in function or class
                                 expanded_source = "\n".join(lines[max(0, line_idx[i]-preview_size):min(len(lines), line_idx[i]+preview_size)])
                                 expanded_source = add_num_line(expanded_source, max(1, line_idx[i]-preview_size)+1)
+                                returned_source.append(expanded_source)
                             else:
-                                expanded_source = "\n".join(lines[max(0, line_ranges[i][0]):min(len(lines), line_ranges[i][1])])
-                                expanded_source = add_num_line(expanded_source, max(1, line_ranges[i][0])+1)
-                            returned_source.append(expanded_source)
-                        out_str += "\n".join(returned_source)
+                                def checkcover(target, line_ranges_lst):
+                                    for _range in line_ranges_lst:
+                                        if _range is None:
+                                            continue
+                                        if target is None:
+                                            continue
+                                        if _range[0] > target[0] and _range[1] < target[1]:
+                                            return True
+                                    return False
+                                if checkcover(line_ranges[i], line_ranges[:i]):
+                                    continue
+                                else:
+                                    expanded_source = "\n".join(lines[max(0, line_ranges[i][0]):min(len(lines), line_ranges[i][1])])
+                                    expanded_source = add_num_line(expanded_source, max(1, line_ranges[i][0])+1)
+                                    returned_source.append(expanded_source)
+                        out_str += "\n--------------\n".join(returned_source)
                 return out_str
             # else:
             #     out_str = "The content of " + relative_file_path.replace(self.path, "") + f"with keyword {keywords} is: \n"
@@ -524,6 +536,10 @@ if __name__ == "__main__":
     # result = code_search._run(names=["RST"])
     # result = open_file._run(relative_file_path="astropy/io/ascii/ui.py", keywords=["get_writer"], start_line=770, end_line=820)
 
-    open_file = OpenFileTool(path='/datadrive5/huypn16/RepoPilot-Master/data/repos/Closure-23', language="java")
-    result = open_file._run(relative_file_path="test/com/google/javascript/jscomp/CodePrinterTest.java", keywords=["assertPrint"])
+    get_all_symbols = GetAllSymbolsTool(path='/datadrive5/huypn16/RepoPilot-Master/data/repos/Chart-7', language="java")
+    # result = open_file._run(relative_file_path="test/com/google/javascript/jscomp/CodePrinterTest.java", keywords=["assertPrint"])
+    # result = open_file._run(relative_file_path="test/com/google/javascript/jscomp/FoldConstantsTest.java", keywords=["string", "join", "constant"], start_line=0, end_line=1000)
+    # result = open_file._run(relative_file_path="source/org/jfree/data/time/TimePeriodValues.java", keywords=["add"], start_line=235, end_line=249)
+    # result = open_file._run(relative_file_path="source/org/jfree/data/time/TimePeriodValues.java", keywords=["getMaxMiddleIndex"], start_line=0, end_line=900)
+    result = get_all_symbols._run(path_to_file="source/org/jfree/data/time/TimePeriodValues.java", keyword="maxMiddleIndex")
     print(result)

@@ -7,10 +7,11 @@ from repopilot.llm_multilspy import add_num_line
 from repopilot.agents.llms import LocalLLM, AzureLLM
 import os
 from repopilot.code_search import get_parser
+from repopilot.utils import find_matching_file_path
 from codetext.utils import parse_code
 import re
 
-summarizer = LocalLLM({"model": "google/gemma-2-27b-it", "system_prompt": "Describe this error message in plain text.", "max_tokens": 25000})
+summarizer = LocalLLM({"model": "mistralai/Mixtral-8x7B-Instruct-v0.1", "system_prompt": "Describe this error message in plain text.", "max_tokens": 25000})
 reviewer = AzureLLM({"model": "gpt-4-turbo", "system_prompt": "You're a software engineer working on a project, given a hint of code replacement of original file, you need to generate a block of code that can be replaced into the original. Do not generate additional line if it's unecessary to the hint. Pay attention to line number and indentation", "max_tokens": 10000})
 
 class EditorArgs(BaseModel):
@@ -25,12 +26,14 @@ class EditorArgs(BaseModel):
 class EditorTool(BaseTool):
     name = "editor_file"
     description = """Useful when you want to edit a file inside a repo with alternative code."""
+    language = ""
     args_schema = EditorArgs
     path = ""
     
     def __init__(self, path, language=None):
         super().__init__()
         self.path = path
+        self.language = language
     
     def _run(self, relative_file_path: str = None, start_line:int = None, end_line: int = None, patch: str = None, context: Optional[str] = None):
         """
@@ -46,11 +49,15 @@ class EditorTool(BaseTool):
         """        
         if relative_file_path is None:
             return "Please specify the relative file path that you want to edit."
+
+        abs_path = os.path.join(self.path, relative_file_path)
+
+        if not os.path.exists(abs_path):
+            abs_path = find_matching_file_path(self.path, relative_file_path)
+            if abs_path is None:
+                return "File not found, please check the path again"
         
-        if not os.path.exists(osp.join(self.path, relative_file_path)):
-            return "File not found, please check the path again"
-        
-        with open(osp.join(self.path, relative_file_path), 'r') as file:
+        with open(abs_path, 'r') as file:
             lines = file.readlines()
             
         if end_line is  None or end_line is None:
@@ -79,7 +86,7 @@ class EditorTool(BaseTool):
         original_block = "\n".join(original_lines_region)
         original_block = add_num_line(original_block, max(0, start_index-10)+1)
         
-        patch_file_path = osp.join(self.path, relative_file_path.split('.')[0] + '_patched.' + relative_file_path.split('.')[1])
+        patch_file_path = str(abs_path).split('.')[0] + '_patched.' + str(abs_path).split('.')[1]
         
         # review_command = f"Context of Editing: {context}\nStart and End line of Original Target Block: {start_line}:{end_line}. Your should only edit inside this range of lines.\nFile Name: {patch_file_path}\nOriginal Target Block with Surrounding Lines:\n```python\n{original_block}\n```\n\nProposed Block:\n```python\n{initial_patch_block}\n```\n\nThink step by step, understanding the original block of code and intention of Proposed Hint Patch generate a python block that is syntactically correct, identation is correct to both harmonize the original code and satisfy the intention of the proposed hint patch. Think about indetation, intent then generate a block in ```python ``` format without line numbers inside block but with identation. Your Thought:"
         # reviewer_output = reviewer(review_command)
@@ -114,17 +121,24 @@ class EditorTool(BaseTool):
         with open(patch_file_path, "w") as file:
             file.writelines(updated_lines)
         
-        command_fix = f"autopep8 --in-place --aggressive {patch_file_path}"
-        result = subprocess.run(command_fix, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+        if self.language == "python":
         
-        command = f"flake8 --isolated --select=F821,F822,F831,E111,E112,E113,E999,E902 {patch_file_path}"
-        result = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+            command_fix = f"autopep8 --in-place --aggressive {patch_file_path}"
+            result = subprocess.run(command_fix, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
             
-        stderr_output = result.stderr
-        stdout_output = result.stdout
-        exit_code = result.returncode
+            command = f"flake8 --isolated --select=F821,F822,F831,E111,E112,E113,E999,E902 {patch_file_path}"
+            result = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+                
+            stderr_output = result.stderr
+            stdout_output = result.stdout
+            exit_code = result.returncode
+        elif self.language == "java":
+            exit_code = 0
+        else:
+            raise ValueError("Unsupported language")
+            
         if exit_code == 0:
-            with open(osp.join(self.path, relative_file_path), 'w') as file:
+            with open(abs_path, 'w') as file:
                 file.writelines(updated_lines)
             os.remove(patch_file_path)
             return f"Successfully edited the file {relative_file_path} from line {start_line} to {end_line}"
@@ -186,73 +200,105 @@ class OpenFileToolForGenerator(BaseTool):
         """
         abs_path = os.path.join(self.path, relative_file_path)
         if not os.path.exists(abs_path):
-            return "File not found, please check the path again"
+            abs_path = find_matching_file_path(self.path, relative_file_path)
+            if abs_path is None:
+                return "File not found, please check the path again"
         
         if len(keywords) == 0 and start_line is None and end_line is None:
             return "Please specify the keyword or start and end line to view the content of the file."
         
+        source = open(abs_path, "r").read()
+        lines = source.split("\n")
+
+        #TODO: heuristics to limit the number of lines to show
+        import_source = add_num_line("\n".join(lines[:80]), 1)
+
         try:
-            if start_line is not None and end_line is not None:
-                if end_line - start_line > 150:
-                    return f"The number of lines to show is limited at 150, the requested number of lines is {end_line - start_line}, please specify the start and end line again (smaller |end_line-start_line|) or using keyword instead."
-                source = open(abs_path, "r").read()
-                lines = source.split("\n")
+            if start_line is not None and end_line is not None and len(keywords) == 0:
+                if end_line - start_line > 90:
+                    return f"The number of lines to show is limited at 90, the requested number of lines is {end_line - start_line}, please specify the start and end line again or using keyword instead. For example {start_line}:{start_line+90}"
+                
+                if start_line > len(lines):
+                    return f"Invalid start line, the start line is greater than the total number of lines in the file, the total number of lines in the file is {len(lines)}"
+                
                 source = "\n".join(lines[start_line:end_line]) 
             else:
-                line_idx = []
-                returned_source = []
-                if osp.isfile(abs_path):
-                    source = open(abs_path, "r").read()
-                else:
-                    return "Your path is not a file, please check the path again. Use the get_folder_structure tool to see the structure of the folder"
-                lines = source.split("\n")
-                out_str = "The content of " + relative_file_path.replace(self.path, "") + " is: \n"
+                out_str = "The content of " + relative_file_path.replace(self.path, "") + f" is: {import_source}\n"     
+                line_ranges_overall = []
                 for keyword in keywords:
-                    out_str += f"Results for keyword: {keyword}\n"
-                    line_idx = []
                     returned_source = []
-                    source = open(abs_path, "r").read()
-                    lines = source.split("\n")
+                    out_str += f"\nResults for keyword: {keyword}\n"           
+                    # if any([keyword in line for line in lines[start_line:end_line]]) and start_line is not None and end_line is not None:
+                    #     expanded_source = "\n".join(lines[start_line:end_line])
+                    #     expanded_source = add_num_line(expanded_source, start_line)
+                    #     returned_source.append(expanded_source)
+
+                    line_idx = []
                     for i, line in enumerate(lines):
                         if keyword in line:
                             line_idx.append(i)
-                            
-                line_idx = line_idx[:max_num_result]
-                line_ranges = [None for _ in line_idx]
-                # get class, func list
-                root_node = parse_code(source, self.language).root_node
-                function_list = self.parser.get_function_list(root_node)
-                class_list = self.parser.get_class_list(root_node)
-                
-                for func in function_list:
-
-                    for i, idx in enumerate(line_idx):
-                        if func.start_point[0] <= idx <= func.end_point[0]:
-                            line_ranges[i] = (func.start_point[0], func.end_point[0]+1)
-                
-                for class_ in class_list:
-
-                    for i, idx in enumerate(line_idx):
-                        if class_.start_point[0] <= idx <= class_.end_point[0]:
-                            line_ranges[i] = (class_.start_point[0], class_.end_point[0]+1)
-                        
                     
-                if len(line_idx) == 0:
-                    return "No keyword found in the file, please check the keyword again or use the start and end line instead"
-                else:
-                    import_source = add_num_line("\n".join(lines[:80]), 1)
-                    for i in range(len(line_idx)):
-                        if line_ranges[i] is None:
-                            expanded_source = "\n".join(lines[max(0, line_idx[i]-preview_size):min(len(lines), line_idx[i]+preview_size)])
-                            expanded_source = add_num_line(expanded_source, max(1, line_idx[i]-preview_size)+1)
-                        else:
-                            expanded_source = "\n".join(lines[max(0, line_ranges[i][0]-preview_size):min(len(lines), line_ranges[i][1]+preview_size)])
-                            expanded_source = add_num_line(expanded_source, max(1, line_ranges[i][0]-preview_size)+1)
-                        returned_source.append(expanded_source)
-                    return "The content of " + relative_file_path.replace(self.path, "") + " is: \n" + import_source + "\n" + "\n".join(returned_source)
+                    line_idx = line_idx[:max_num_result]
+                    line_ranges = [None for _ in line_idx]
+                    
+                    root_node = parse_code(source, self.language).root_node
+                    function_list = self.parser.get_function_list(root_node)
+                    class_list = self.parser.get_class_list(root_node)
+
+
+                    for class_ in class_list:
+
+                        for i, idx in enumerate(line_idx):
+                            if class_.start_point[0]== idx:
+                                line_ranges[i] = (class_.start_point[0], class_.end_point[0]+1)
+
+                    for func in function_list:
+
+                        for i, idx in enumerate(line_idx):
+                            if func.start_point[0] == idx:
+                                line_ranges[i] = (func.start_point[0], func.end_point[0]+1)    
+                    
+                    if len(line_idx) > 1:
+                        # if there are more than 1 keyword found, we will not show the expanded source
+                        for i in range(len(line_idx)):
+                            line_ranges[i] = None
+
+                    if len(line_idx) == 0:
+                        out_str += f"No keyword found in the file, please check the keyword again or use the start and end line instead for this keyword {keyword}"
+                    else:
+                        for i in range(len(line_idx)):
+                            if line_ranges[i] is None:
+                                # keyword found not in function or class
+                                expanded_source = "\n".join(lines[max(0, line_idx[i]-preview_size):min(len(lines), line_idx[i]+preview_size)])
+                                expanded_source = add_num_line(expanded_source, max(1, line_idx[i]-preview_size)+1)
+                                returned_source.append(expanded_source)
+                            else:
+                                def checkcover(target, line_ranges_lst):
+                                    for _range in line_ranges_lst:
+                                        if _range is None:
+                                            continue
+                                        if target is None:
+                                            continue
+                                        if _range[0] > target[0] and _range[1] < target[1]:
+                                            return True
+                                    return False
+                                if checkcover(line_ranges[i], line_ranges_overall):
+                                    continue
+                                else:
+                                    expanded_source = "\n".join(lines[max(0, line_ranges[i][0]):min(len(lines), line_ranges[i][1])])
+                                    expanded_source = add_num_line(expanded_source, max(1, line_ranges[i][0])+1)
+                                    returned_source.append(expanded_source)
+                                    line_ranges_overall.append(line_ranges[i])
+                        out_str += "\n--------------\n".join(returned_source)
+                return out_str
         except FileNotFoundError:
             return "File not found, please check the path again"
         except TypeError:
             source = open(abs_path, "r").read()
         source = add_num_line(source, start_line)
         return "The content of " + relative_file_path.replace(self.path, "") + " is: \n" + source
+
+if __name__ == "__main__":
+    open_file_gen = OpenFileToolForGenerator(path='/datadrive5/huypn16/RepoPilot-Master/data/repos/Chart-7', language="java")
+    result = open_file_gen._run(relative_file_path="src/main/java/org/jfree/data/time/TimePeriodValues.java", keywords=["class TimePeriodValues", "updateBounds"])
+    print(result)
