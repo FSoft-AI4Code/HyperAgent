@@ -10,7 +10,7 @@ from repopilot.code_search import get_parser
 from codetext.utils import parse_code
 import re
 
-summarizer = LocalLLM({"model": "mistralai/Mixtral-8x7B-Instruct-v0.1", "system_prompt": "Describe this error message in plain text.", "max_tokens": 25000})
+summarizer = LocalLLM({"model": "google/gemma-2-27b-it", "system_prompt": "Describe this error message in plain text.", "max_tokens": 25000})
 reviewer = AzureLLM({"model": "gpt-4-turbo", "system_prompt": "You're a software engineer working on a project, given a hint of code replacement of original file, you need to generate a block of code that can be replaced into the original. Do not generate additional line if it's unecessary to the hint. Pay attention to line number and indentation", "max_tokens": 10000})
 
 class EditorArgs(BaseModel):
