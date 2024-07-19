@@ -23,4 +23,8 @@ data/agent_trajectories/*
 swe_bench.zip
 .aider*
 .cache/*
+<<<<<<< HEAD
 log.txt
+=======
+.history/*
+>>>>>>> 9bc97d1de934675aa46339a11bbce918eca094fc
