@@ -542,4 +542,4 @@ if __name__ == "__main__":
     # result = open_file._run(relative_file_path="source/org/jfree/data/time/TimePeriodValues.java", keywords=["add"], start_line=235, end_line=249)
     # result = open_file._run(relative_file_path="source/org/jfree/data/time/TimePeriodValues.java", keywords=["getMaxMiddleIndex"], start_line=0, end_line=900)
     result = get_all_symbols._run(path_to_file="source/org/jfree/data/time/TimePeriodValues.java", keyword="maxMiddleIndex")
-    print(result)
+    # print(result)
