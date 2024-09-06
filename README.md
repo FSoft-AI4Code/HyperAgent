@@ -1,7 +1,7 @@
     
 <p align="center">
     <br>
-    <img src="assets/metagent-logo-zip-file/svg/logo-no-background.svg" width="600"/>
+    <img src="assets/hypergent-logo-zip-file/svg/logo-no-background.svg" width="600"/>
     <br>
 <p>
 <div align="center">
@@ -18,7 +18,7 @@
 
 
     
-# MegaGent: Generalist Software Agents to Solve Coding Tasks at Scale
+# HyperGent: Generalist Software Agents to Solve Coding Tasks at Scale
 
 <!-- 
 [![Code License](https://img.shields.io/badge/Code%20License-Apache_2.0-green.svg)](https://github.com/bdqnghi/CodeTF_personal/blob/main/LICENSE)
