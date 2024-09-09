@@ -12,8 +12,7 @@
   <img alt="python" src="https://img.shields.io/badge/python-3.10+-green.svg"/>
   </a> 
 
-<a href="">Technical Report (to appear)</a>,
-<a href="">Examples</a>,
+<a href="paper/main.pdf">Technical Report</a>
 
 
 
@@ -26,19 +25,17 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black) -->
  </div>   
     
-## Table of Contents
-  - [Introduction](#overview)
-  - [Architecture](#architecture)
-  - [Installation](#installation)
-      - [Quick Demo](#quick-demo)
-  - [CLI Usage](#cli-usage)
-      - [Set Up](#setup)
-      - [Query](#query)    
-  - [Licence](#license)
-
 ## Overview
 
-HyperAgent is the first generalist multi-agent system designed to tackle a wide range of software engineering tasks. By emulating the typical workflow of software engineers, HyperAgent offers a versatile solution for complex software development challenges.
+HyperAgent is a generalist multi-agent system designed to tackle a wide spectrum of software engineering (SE) tasks across various programming languages. Unlike existing LLM-based software agents that typically specialize in specific tasks, HyperAgent mimics human developers' workflows to address diverse SE challenges. Comprising four specialized agents (Planner, Navigator, Code Editor, and Executor), it manages the full lifecycle of SE tasks from conception to verification. 
+
+HyperAgent demonstrates state-of-the-art performance in:
+
+- GitHub issue resolution ([SWE-Bench-Python](https://www.swebench.com/))
+- Repository-level code generation ([RepoExec-Python](https://github.com/FSoft-AI4Code/RepoExec))
+- Fault localization and program repair ([Defects4J-Java](https://github.com/rjust/defects4j))
+
+Notably, HyperAgent is designed to handle a codebase written in a wide range of programming languages. We currently support Python and Java and plan to expand to other languages on other tasks/benchmarks in the future.
 
 ### Key Features
 - Generalizability: Easily adapts to various tasks with minimal configuration changes.
@@ -47,7 +44,7 @@ HyperAgent is the first generalist multi-agent system designed to tackle a wide 
 - Multi-task Proficiency: Excels in GitHub issue resolution, code generation, fault localization, and program repair. existing development workflow with its Python API, allowing for flexible and powerful code interactions.
 
 ## Evaluation Results
-
+### SWE-Bench
 <p align="center">
     <br>
     <img src="assets/swe-bench.png" width="950"/>
