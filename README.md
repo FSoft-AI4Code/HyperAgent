@@ -38,7 +38,7 @@
 
 ## Overview
 
-HyperAgent is a first generalist multi-agent system designed to tackle a wide range of software engineering tasks. By emulating the typical workflow of software engineers, HyperAgent offers a versatile solution for complex software development challenges.
+HyperAgent is the first generalist multi-agent system designed to tackle a wide range of software engineering tasks. By emulating the typical workflow of software engineers, HyperAgent offers a versatile solution for complex software development challenges.
 
 ### Key Features
 - Generalizability: Easily adapts to various tasks with minimal configuration changes.
@@ -46,10 +46,18 @@ HyperAgent is a first generalist multi-agent system designed to tackle a wide ra
 - Scalability: Built to handle large-scale, real-world software engineering scenarios effectively.
 - Multi-task Proficiency: Excels in GitHub issue resolution, code generation, fault localization, and program repair. existing development workflow with its Python API, allowing for flexible and powerful code interactions.
 
+## Evaluation Results
+
+<p align="center">
+    <br>
+    <img src="assets/swe-bench.png" width="950"/>
+    <br>
+<p>
+    
 ## Architecture
 <p align="center">
     <br>
-    <img src="assets/RepoPilot.svg" width="950"/>
+    <img src="assets/method_overview.png" width="950"/>
     <br>
 <p>
 
