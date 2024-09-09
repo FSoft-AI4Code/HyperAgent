@@ -1,7 +1,7 @@
     
 <p align="center">
     <br>
-    <img src="assets/hypergent-logo-zip-file/svg/logo-no-background.svg" width="600"/>
+    <img src="assets/hyperagent-logo-zip-file/svg/logo-no-background.svg" width="600"/>
     <br>
 <p>
 <div align="center">
