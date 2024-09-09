@@ -1,7 +1,7 @@
     
 <p align="center">
     <br>
-    <img src="assets/hypergent-logo-zip-file/svg/logo-no-background.svg" width="600"/>
+    <img src="assets/hyperagent-logo-zip-file/svg/logo-no-background.svg" width="600"/>
     <br>
 <p>
 <div align="center">
@@ -18,7 +18,7 @@
 
 
     
-# HyperGent: Generalist Software Agents to Solve Coding Tasks at Scale
+# HyperAgent: Generalist Software Agents to Solve Coding Tasks at Scale
 
 <!-- 
 [![Code License](https://img.shields.io/badge/Code%20License-Apache_2.0-green.svg)](https://github.com/bdqnghi/CodeTF_personal/blob/main/LICENSE)
@@ -38,15 +38,13 @@
 
 ## Overview
 
-RepoPilot is a one-stop Python library that revolutionizes the way developers interact with and understand their codebases. Utilizing advanced Large Language Models (LLMs), RepoPilot acts as a multi-agent system, offering a next-generation **coding assistant** for comprehensive codebase exploration and impact analysis.
-Designed for developers who seek deeper insights into their projects, RepoPilot simplifies complex code analysis tasks, making it an indispensable tool for modern software development.
+HyperAgent is a first generalist multi-agent system designed to tackle a wide range of software engineering tasks. By emulating the typical workflow of software engineers, HyperAgent offers a versatile solution for complex software development challenges.
 
-Key Features
-- Whole Repository Understanding: Unlike other coding assistants, RepoPilot is engineered to grasp the full context of your entire codebase, enabling a more comprehensive analysis and more accurate recommendations.
-- Natural Language Queries: Interact with your codebase using conversational queries. Ask RepoPilot about specific features, code impacts, and more, just like talking to an AI assistant.
-- Codebase Exploration and Analysis: Delve into your codebase with ease. Understand how particular features are implemented and assess the impact of potential changes.
-Actionable Insights and Recommendations: Get practical suggestions and automated actions based on RepoPilot's deep understanding of your code.
-- Seamless Integration: Integrate RepoPilot into your existing development workflow with its Python API, allowing for flexible and powerful code interactions.
+### Key Features
+- Generalizability: Easily adapts to various tasks with minimal configuration changes.
+- Efficiency: Optimized agents manage processes of varying complexity using appropriate LLM capabilities.
+- Scalability: Built to handle large-scale, real-world software engineering scenarios effectively.
+- Multi-task Proficiency: Excels in GitHub issue resolution, code generation, fault localization, and program repair. existing development workflow with its Python API, allowing for flexible and powerful code interactions.
 
 ## Architecture
 <p align="center">
