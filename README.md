@@ -17,7 +17,7 @@
 
 
     
-# HyperAgent: Generalist Software Agents to Solve Coding Tasks at Scale
+# Generalist Software Agents to Solve Coding Tasks at Scale
 
 <!-- 
 [![Code License](https://img.shields.io/badge/Code%20License-Apache_2.0-green.svg)](https://github.com/bdqnghi/CodeTF_personal/blob/main/LICENSE)
