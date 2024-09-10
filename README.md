@@ -71,6 +71,10 @@ Notably, HyperAgent is designed to handle a codebase written in a wide range of 
     <br>
 <p>
 
+## Installation and Usage
+
+( Code will be updated very soon, stay tuned !)
+
 # Citing HyperAgent
 
 If you're using HyperAgent in your research or applications, please cite using this BibTeX:
