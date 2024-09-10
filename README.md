@@ -44,12 +44,25 @@ Notably, HyperAgent is designed to handle a codebase written in a wide range of 
 - Multi-task Proficiency: Excels in GitHub issue resolution, code generation, fault localization, and program repair. existing development workflow with its Python API, allowing for flexible and powerful code interactions.
 
 ## Evaluation Results
-### SWE-Bench
-<p align="center">
-    <br>
-    <img src="assets/swe-bench.png" width="950"/>
-    <br>
-<p>
+### Github Issue Resolution on SWE-Bench
+| **Method**                    | **Verified (%)** | **Lite (%)** | **Avg Time (s)** | **Avg Cost ($)** |
+|--------------------------------|------------------|--------------|------------------|------------------|
+| AutoCodeRover + GPT-4o         | 28.80            | 22.7         | 720              | 0.68             |
+| SWE-Agent + Claude 3.5 Sonnet  | 33.60            | 23.00        | --               | 1.79             |
+| SWE-Agent + GPT-4o             | 23.20            | 18.33        | --               | 2.55             |
+| Agentless + GPT-4o             | 33.20            | 24.30        | --               | 0.34             |
+| RAG + Claude 3 Opus            | 7.00             | 4.33         | --               | --               |
+| HyperAgent-Lite-1              | 27.33            | 21.67        | 132              | 0.45             |
+| HyperAgent-Lite-2              | 16.00            | 11.00        | 108              | 0.76             |
+| HyperAgent-Full-1              | 31.00            | 24.67        | 320              | 1.82             |
+| HyperAgent-Full-2              | **31.40**        | **25.00**    | 210              | 2.01             |
+| HyperAgent-Full-3              | --               | --           | --               | --               |
+
+*Performance comparison on SWE-Bench datasets. Verified (%) and Lite (%) columns show the percentage of resolved instances (out of 500 for Verified, 300 for Lite). Avg Time is in seconds, and Avg Cost is in US​⬤
+
+### Fault Localization on Defects4J
+
+### Program Repair on Defects4J
     
 ## Architecture
 <p align="center">
