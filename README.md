@@ -35,7 +35,7 @@ HyperAgent demonstrates state-of-the-art performance in:
 - Repository-level code generation ([RepoExec-Python](https://github.com/FSoft-AI4Code/RepoExec))
 - Fault localization and program repair ([Defects4J-Java](https://github.com/rjust/defects4j))
 
-Notably, HyperAgent is designed to handle a codebase written in a wide range of programming languages. We currently support Python and Java and plan to expand to other languages on other tasks/benchmarks in the future.
+Notably, HyperAgent is designed to handle a codebase written in a wide range of programming languages. We currently support Python and Java and plan to expand to other languages on other tasks/benchmarks in the future. We believe we are the first software engineering agent designed to handle a variety of software engineering tasks across multiple programming languages.
 
 ### Key Features
 - Generalizability: Easily adapts to various tasks with minimal configuration changes.
