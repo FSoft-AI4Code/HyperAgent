@@ -71,3 +71,22 @@ Notably, HyperAgent is designed to handle a codebase written in a wide range of 
     <br>
 <p>
 
+# Citing HyperAgent
+
+If you're using HyperAgent in your research or applications, please cite using this BibTeX:
+```bibtex
+@article{huy2024hyperagent,
+  title={HyperAgent: Generalist Software Engineering Agents to Solve Coding Tasks at Scale},
+  author={Phan, Huy Nhat and Nguyen, Phong X and Bui, Nghi DQ},
+  journal={arXiv preprint arXiv:2406.11912},
+  year={2024}
+}
+```
+
+# Contact us
+If you have any questions, comments or suggestions, please do not hesitate to contact us.
+- Website: [fpt-aicenter](https://www.fpt-aicenter.com/ai-residency/)
+- Email: bdqnghi@gmail.com
+
+# License
+[MIT License](LICENSE)
