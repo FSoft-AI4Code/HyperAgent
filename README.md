@@ -44,7 +44,7 @@ Notably, HyperAgent is designed to handle a codebase written in a wide range of 
 - Multi-task Proficiency: Excels in GitHub issue resolution, code generation, fault localization, and program repair. existing development workflow with its Python API, allowing for flexible and powerful code interactions.
 
 ## Evaluation Results
-### Github Issue Resolution on SWE-Bench
+### GitHub Issue Resolution on SWE-Bench
 | **Method**                    | **Verified (%)** | **Lite (%)** | **Avg Time (s)** | **Avg Cost ($)** |
 |--------------------------------|------------------|--------------|------------------|------------------|
 | AutoCodeRover + GPT-4o         | 28.80            | 22.7         | 720              | 0.68             |
