@@ -206,7 +206,7 @@
 		"path-browserify": "^1.0.1",
 		"request": "^2.88.2",
 		"request-progress": "3.0.0",
-		"semver": "5.5.0",
+		"semver": "5.7.2",
 		"stream-browserify": "^3.0.0",
 		"tslib": "^2.0.0",
 		"vscode-nls": "4.1.1"
