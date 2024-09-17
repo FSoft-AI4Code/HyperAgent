@@ -1,0 +1,15 @@
+{
+	"extension.description": "AI 辅助开发",
+	"setting.modelDownloadPath": "指定存储所下载的模型文件的文件夹路径。如果未指定，则默认为扩展安装目录。",
+	"setting.pythonEnabled": "为 Python 启用 Visual Studio IntelliCode 完成功能",
+	"setting.javaEnabled": "为 Java 启用 Visual Studio IntelliCode 完成功能",
+	"setting.typescriptEnabled": "为 TypeScript 和 JavaScript 启用 Visual Studio IntelliCode 完成功能",
+	"setting.sqlEnabled": "为 MSSQL 启用 Visual Studio IntelliCode 完成功能",
+	"setting.suggestSelection.markdown": "控制如果其设置为将导致 IntelliCode 建议的完成项不可见的值(`recentlyUsed`)，Visual Studio IntelliCode 是否将修改 \"editor.suggestSelection\"。",
+	"setting.suggestSelection.enabled": "允许 IntelliCode 代表你修改 editor.suggestSelection 设置。",
+	"setting.suggestSelection.disabled": "你已明确选择不让此配置受 IntelliCode 控制。",
+	"setting.suggestSelection.automaticallyOverrodeDefaultValue": "(请勿手动设置) IntelliCode 将设置此项来记录已将配置自动修改为替代默认值。",
+	"setting.suggestSelection.choseToUpdateConfiguration": "(请勿手动设置) IntelliCode 将设置此项来记录你已选择指示 IntelliCode 通过明确设置的值更改配置。",
+	"feature.apiExamples.markdown": "将 IntelliCode API 使用示例扩展提升为 vscode intellicode python 用户。",
+	"feature.apiExamplests.markdown": "将 IntelliCode API 使用示例扩展提升为 vscode intellicode typescript/javascript 用户。"
+}

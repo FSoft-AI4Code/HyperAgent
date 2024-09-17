@@ -1,0 +1,24 @@
+[project]
+name = "repopilot"
+version = "0.0.1"
+authors = [
+ { name="Huy Phan Nhat", email="HuyPN16@fpt.com" },
+]
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+[tool.poetry]
+readme = "README.md"
+description = "RepoPilot - A Next-Generation Coding Assistant for Codebase Exploration and Analysis"
+requires-python = ">=3.10"
+classifiers = [
+   "Programming Language :: Python :: 3",
+   "License :: OSI Approved :: MIT License",
+   "Operating System :: OS Independent",
+]
+[project.scripts]
+repopilot = "repopilot.cli.cli:app"
+
+[project.urls]
+Homepage = "https://github.com/FSoft-AI4Code/RepoPilot"
+Issues = "https://github.com/FSoft-AI4Code/RepoPilot/issues"

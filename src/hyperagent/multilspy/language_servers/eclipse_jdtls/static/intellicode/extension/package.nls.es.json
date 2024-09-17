@@ -1,0 +1,15 @@
+{
+	"extension.description": "Desarrollo asistido por inteligencia artificial",
+	"setting.modelDownloadPath": "Especifica la ruta de acceso a la carpeta donde se almacenan los archivos de modelo descargados. Si no se especifica, el valor predeterminado es el directorio de instalación de la extensión.",
+	"setting.pythonEnabled": "Habilitar las finalizaciones de Visual Studio IntelliCode para Python",
+	"setting.javaEnabled": "Habilitar las finalizaciones de Visual Studio IntelliCode para Java",
+	"setting.typescriptEnabled": "Habilitar las finalizaciones de Visual Studio IntelliCode para TypeScript y JavaScript",
+	"setting.sqlEnabled": "Habilitar la finalización de código de Visual Studio IntelliCode para MSSQL",
+	"setting.suggestSelection.markdown": "Controla si Visual Studio IntelliCode modificará la configuración de \"editor.suggestSelection\" cuando está establecida en un valor (\"recentlyUsed\") que hace que las sugerencias de finalización de IntelliCode no sean visibles.",
+	"setting.suggestSelection.enabled": "Permite que IntelliCode modifique la configuración de editor.suggestSelection en su nombre.",
+	"setting.suggestSelection.disabled": "Ha decidido explícitamente no permitir que IntelliCode controle esta configuración.",
+	"setting.suggestSelection.automaticallyOverrodeDefaultValue": "(NO ESTABLECER MANUALMENTE) IntelliCode establecerá esta opción para registrar que la configuración se ha modificado automáticamente para invalidar un valor predeterminado.",
+	"setting.suggestSelection.choseToUpdateConfiguration": "(NO ESTABLECER MANUALMENTE) IntelliCode establecerá esta opción para registrar que ha elegido dejar que IntelliCode cambie la configuración de un valor que se estableció explícitamente.",
+	"feature.apiExamples.markdown": "Promueve la extensión de ejemplos de uso de la API de IntelliCode para los usuarios de Python de IntelliCode.",
+	"feature.apiExamplests.markdown": "Promueve la extensión de ejemplos de uso de la API de IntelliCode para los usuarios de Typescript/Javascript de IntelliCode."
+}

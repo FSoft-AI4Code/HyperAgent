@@ -1,0 +1,15 @@
+{
+	"extension.description": "Programowanie wspomagane przez sztuczną inteligencję",
+	"setting.modelDownloadPath": "Określa ścieżkę folderu do przechowywania pobranych plików modeli. Jeśli nie zostanie określona, domyślnie będzie to katalog instalacyjny rozszerzenia.",
+	"setting.pythonEnabled": "Włącz uzupełnianie przez funkcję Visual Studio IntelliCode dla języka Python",
+	"setting.javaEnabled": "Włącz uzupełnianie przez funkcję Visual Studio IntelliCode dla języka Java",
+	"setting.typescriptEnabled": "Włącz uzupełnianie przez funkcję Visual Studio IntelliCode dla języków TypeScript i JavaScript",
+	"setting.sqlEnabled": "Włącz uzupełnianie przez funkcję Visual Studio IntelliCode dla programu MSSQL",
+	"setting.suggestSelection.markdown": "Określ, czy funkcja Visual Studio IntelliCode zmodyfikuje ustawienie „editor.suggestSelection”, jeśli jest ono ustawione na wartość („recentlyUsed”), co spowoduje, że sugerowane pozycje uzupełniania nie będą widoczne.",
+	"setting.suggestSelection.enabled": "Zezwala funkcji IntelliCode na modyfikowanie ustawienia editor.suggestSelection w Twoim imieniu.",
+	"setting.suggestSelection.disabled": "Dokonano jawnej rezygnacji z kontrolowania tej konfiguracji przez funkcję IntelliCode.",
+	"setting.suggestSelection.automaticallyOverrodeDefaultValue": "(NIE USTAWIAJ TEGO RĘCZNIE) Funkcja IntelliCode ustawi tę opcję, aby zarejestrować, że ta konfiguracja została automatycznie zmodyfikowana w celu przesłonięcia wartości domyślnej.",
+	"setting.suggestSelection.choseToUpdateConfiguration": "(NIE USTAWIAJ TEGO RĘCZNIE) Funkcja IntelliCode ustawi tę opcję, aby zarejestrować, że zostało przez Ciebie wydane zezwolenie, aby funkcja IntelliCode zmieniła konfigurację z jawnie ustawionej wartości.",
+	"feature.apiExamples.markdown": "Podwyższa poziom rozszerzenia Przykłady użycia interfejsu API funkcji IntelliCode dla użytkowników funkcji IntelliCode w programie Visual Studio Code ze wsparciem języka Python.",
+	"feature.apiExamplests.markdown": "Podwyższa poziom rozszerzenia Przykłady użycia interfejsu API funkcji IntelliCode dla użytkowników funkcji IntelliCode w programie Visual Studio Code ze wsparciem języka TypeScript/JavaScript."
+}

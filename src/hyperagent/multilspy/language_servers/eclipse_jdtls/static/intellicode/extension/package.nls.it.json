@@ -1,0 +1,15 @@
+{
+	"extension.description": "Sviluppo con supporto per intelligenza artificiale",
+	"setting.modelDownloadPath": "Consente di specificare il percorso della cartella in cui vengono archiviati i file di modello scaricati. Se non è specificato, per impostazione predefinita viene usata la directory di installazione dell'estensione.",
+	"setting.pythonEnabled": "Abilita completamenti di Visual Studio IntelliCode per Python",
+	"setting.javaEnabled": "Abilita completamenti di Visual Studio IntelliCode per Java",
+	"setting.typescriptEnabled": "Abilita completamenti di Visual Studio IntelliCode per TypeScript e JavaScript",
+	"setting.sqlEnabled": "Abilita completamenti di Visual Studio IntelliCode per MSSSQL",
+	"setting.suggestSelection.markdown": "Consente di controllare se Visual Studio IntelliCode modificherà l'impostazione `editor.suggestSelection` se è impostata su un valore (`recentlyUsed`) che impedirà la visualizzazione degli elementi di completamento suggeriti di IntelliCode.",
+	"setting.suggestSelection.enabled": "Consente a IntelliCode di modificare l'impostazione editor.suggestSelection per conto dell'utente.",
+	"setting.suggestSelection.disabled": "Si è scelto esplicitamente di disattivare il controllo IntelliCode su questa configurazione.",
+	"setting.suggestSelection.automaticallyOverrodeDefaultValue": "(NON IMPOSTARE MANUALMENTE) IntelliCode imposterà questa opzione per indicare che la configurazione è stata modificata automaticamente allo scopo di eseguire l'override di un valore predefinito.",
+	"setting.suggestSelection.choseToUpdateConfiguration": "(NON IMPOSTARE MANUALMENTE) IntelliCode imposterà questa opzione per indicare che si è scelto di consentire a IntelliCode di modificare la configurazione da un valore impostato in modo esplicito.",
+	"feature.apiExamples.markdown": "Promuove l'estensione Esempi di utilizzo dell'API IntelliCode per gli utenti Python VSCode IntelliCode.",
+	"feature.apiExamplests.markdown": "Promuove l'estensione Esempi di utilizzo dell'API IntelliCode per gli utenti JavaScript/TypeScript VSCode IntelliCode."
+}

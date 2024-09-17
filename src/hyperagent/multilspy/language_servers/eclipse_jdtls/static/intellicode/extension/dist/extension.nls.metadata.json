@@ -1,0 +1,21 @@
+{
+	"messages": [
+		"Sorry, something went wrong activating IntelliCode support for SQL. Please check the \"MSSQL\" and \"VS IntelliCode\" output windows for details.",
+		"Sorry, something went wrong activating IntelliCode support for TypeScript/JavaScript. Please check the \"VS IntelliCode\" output window for details.",
+		"Sorry, something went wrong activating IntelliCode support for Java. Please check the \"Language Support for Java\" and \"VS IntelliCode\" output windows for details.",
+		"Sorry, something went wrong activating IntelliCode support for Python. Please check the \"Python\" and \"VS IntelliCode\" output windows for details.",
+		"You can install the {0} extension to get an enhanced completion experience with IntelliCode",
+		"Please update the {0} extension to get an enhanced completion experience with IntelliCode.\nIntelliCode requires version {1} or newer.",
+		"View details"
+	],
+	"keys": [
+		"sqlErrorMessage",
+		"typescriptErrorMessage",
+		"javaErrorMessage",
+		"pythonErrorMessage",
+		"missingExtensionMessage",
+		"outOfDateExtensionMessage",
+		"viewDetails"
+	],
+	"filePath": "extension"
+}

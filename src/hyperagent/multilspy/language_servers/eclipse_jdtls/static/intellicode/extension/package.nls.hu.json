@@ -1,0 +1,15 @@
+{
+	"extension.description": "AI által támogatott fejlesztés",
+	"setting.modelDownloadPath": "Megadja a letöltött modellfájlok tárolására szolgáló mappa elérési útját. Alapértelmezés szerint a bővítmény telepítési könyvtára, ha nincs megadva.",
+	"setting.pythonEnabled": "Engedélyezze a Visual Studio IntelliCode-befejezéseket a Pythonhoz",
+	"setting.javaEnabled": "Engedélyezze a Visual Studio IntelliCode-befejezéseket a Javához",
+	"setting.typescriptEnabled": "Engedélyezze a Visual Studio IntelliCode-befejezéseket a TypeScripthez és a JavaScripthez",
+	"setting.sqlEnabled": "Engedélyezze a Visual Studio IntelliCode-befejezéseket az MSSQL-hez",
+	"setting.suggestSelection.markdown": "Annak szabályozása, hogy Visual Studio IntelliCode módosítja-e az „editor.suggestSelection“ elemet, ha olyan értékre („recentlyUsed“) van beállítva, amely miatt az IntelliCode által javasolt befejezési elemek nem lesznek láthatók.",
+	"setting.suggestSelection.enabled": "Engedélyezi az IntelliCode számára, hogy az Ön nevében módosítsa az editor.suggestSelection beállítást.",
+	"setting.suggestSelection.disabled": "Kifejezetten elutasította, hogy ezt a konfigurációt az IntelliCode szabályozza.",
+	"setting.suggestSelection.automaticallyOverrodeDefaultValue": "(NE ÁLLÍTSA BE MANUÁLISAN) Az IntelliCode ezt úgy állítja be, hogy rögzíti, hogy a konfiguráció automatikusan módosult egy alapértelmezett érték felülbírálása érdekében.",
+	"setting.suggestSelection.choseToUpdateConfiguration": "(NE ÁLLÍTSA BE MANUÁLISAN) Az IntelliCode ezt úgy állítja be, hogy rögzíti, amelyet választott, hogy az IntelliCode módosíthassa a konfigurációt az explicit módon beállított értékről.",
+	"feature.apiExamples.markdown": "Előlépteti az IntelliCode API-használati példák bővítményt a Vscode Intellicode Python felhasználói számára.",
+	"feature.apiExamplests.markdown": "Előlépteti az IntelliCode API-használati példák bővítményt a Vscode Intellicode Typescript/Javascript felhasználói számára."
+}

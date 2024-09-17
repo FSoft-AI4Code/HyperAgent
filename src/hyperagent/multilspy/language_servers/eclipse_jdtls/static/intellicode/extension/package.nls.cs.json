@@ -1,0 +1,15 @@
+{
+	"extension.description": "Vývoj s asistencí AI",
+	"setting.modelDownloadPath": "Určuje cestu ke složce, kde jsou uloženy soubory staženého modelu. Pokud nezadáte adresář, použije se výchozí instalační adresář rozšíření.",
+	"setting.pythonEnabled": "Povolit doplňování položek kódu pomocí Visual Studio IntelliCode pro Python",
+	"setting.javaEnabled": "Povolit doplňování položek kódu pomocí Visual Studio IntelliCode pro Javu",
+	"setting.typescriptEnabled": "Povolit doplňování položek kódu pomocí Visual Studio IntelliCode pro TypeScript a JavaScript",
+	"setting.sqlEnabled": "Povolit doplňování položek kódu pomocí Visual Studio IntelliCode pro MSSQL",
+	"setting.suggestSelection.markdown": "Řídí, jestli Visual Studio IntelliCode změní nastavení editor.suggestSelection, pokud je nastaveno na hodnotu (`recentlyUsed`), která bude mít za následek to, že se nebudou zobrazovat navrhované položky pro doplňování kódu pomocí IntelliCode.",
+	"setting.suggestSelection.enabled": "Umožňuje, aby IntelliCode změnil nastavení editor.suggestSelection za vás.",
+	"setting.suggestSelection.disabled": "Explicitně jste odhlásili řízení této konfigurace pomocí IntelliCode.",
+	"setting.suggestSelection.automaticallyOverrodeDefaultValue": "(NENASTAVUJTE RUČNĚ) IntelliCode nastaví tuto položku na záznam, že konfigurace byla automaticky změněna tak, aby přepsala výchozí hodnotu.",
+	"setting.suggestSelection.choseToUpdateConfiguration": "(NENASTAVUJTE RUČNĚ) IntelliCode nastaví tuto položku na záznam, že jste zvolili možnost, aby IntelliCode změnil konfiguraci z explicitně nastavené hodnoty.",
+	"feature.apiExamples.markdown": "Propaguje rozšíření Příklady použití rozhraní API IntelliCode u uživatelů vscode intellicode python.",
+	"feature.apiExamplests.markdown": "Propaguje rozšíření Příklady použití rozhraní API IntelliCode u uživatelů vscode intellicode typescript/javascript."
+}

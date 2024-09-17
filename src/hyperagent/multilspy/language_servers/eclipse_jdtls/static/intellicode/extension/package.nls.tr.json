@@ -1,0 +1,15 @@
+{
+	"extension.description": "Yapay zeka destekli geliştirme",
+	"setting.modelDownloadPath": "İndirilen model dosyalarının depolandığı klasör yolunu belirtir. Belirtilmemişse, varsayılan olarak uzantı yükleme dizini kullanılır.",
+	"setting.pythonEnabled": "Python için Visual Studio IntelliCode tamamlamalarını etkinleştir",
+	"setting.javaEnabled": "Java için Visual Studio IntelliCode tamamlamalarını etkinleştir",
+	"setting.typescriptEnabled": "TypeScript ve JavaScript için Visual Studio IntelliCode tamamlamalarını etkinleştir",
+	"setting.sqlEnabled": "MSSQL için Visual Studio IntelliCode tamamlamalarını etkinleştir",
+	"setting.suggestSelection.markdown": "Visual Studio IntelliCode'un, IntelliCode tarafından önerilen tamamlama öğelerinin görünür olmamasıyla sonuçlanacak bir değere (`recentlyUsed`) ayarlandıysa `editor.suggestSelection` değerini değiştirip değiştirmeyeceğini denetleyin.",
+	"setting.suggestSelection.enabled": "IntelliCode'un editor.suggestSelection ayarını sizin adınıza değiştirmesine izin verir.",
+	"setting.suggestSelection.disabled": "Bu yapılandırmanın IntelliCode tarafından denetlenmesini açıkça geri çevirdiniz.",
+	"setting.suggestSelection.automaticallyOverrodeDefaultValue": "(BUNU KENDİNİZ AYARLAMAYIN) IntelliCode bunu, yapılandırmanın varsayılan bir değeri geçersiz kılmak üzere otomatik olarak değiştirildiğini kaydetmek için ayarlar.",
+	"setting.suggestSelection.choseToUpdateConfiguration": "(BUNU KENDİNİZ AYARLAMAYIN) IntelliCode bunu, IntelliCode'un yapılandırmayı açıkça ayarlanan bir değerden değiştirmesine izin verdiğinizi kaydetmek için ayarlar.",
+	"feature.apiExamples.markdown": "Vscode intellicode Python kullanıcılarına IntelliCode API Kullanım Örnekleri uzantısını tanıtır.",
+	"feature.apiExamplests.markdown": "Vscode intellicode Typescript/Javascript kullanıcılarına IntelliCode API Kullanım Örnekleri uzantısını tanıtır."
+}

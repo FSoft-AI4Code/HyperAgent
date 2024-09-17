@@ -1,0 +1,15 @@
+{
+	"extension.description": "AI-gestützte Entwicklung",
+	"setting.modelDownloadPath": "Gibt den Ordnerpfad an, in dem heruntergeladene Modelldateien gespeichert werden. Standardmäßig wird das Installationsverzeichnis für die Erweiterung verwendet, sofern nicht anders angegeben.",
+	"setting.pythonEnabled": "Visual Studio IntelliCode-Vervollständigung für Python aktivieren",
+	"setting.javaEnabled": "Visual Studio IntelliCode-Vervollständigung für Java aktivieren",
+	"setting.typescriptEnabled": "Visual Studio IntelliCode-Vervollständigung für TypeScript und JavaScript aktivieren",
+	"setting.sqlEnabled": "Visual Studio IntelliCode-Vervollständigung für MSSQL aktivieren",
+	"setting.suggestSelection.markdown": "Steuern Sie, ob Visual Studio IntelliCode die Einstellung \"editor.suggestSelection\" ändert, wenn deren aktuell festgelegter Wert (\"recentlyUsed\") dazu führt, dass von IntelliCode vorgeschlagene Vervollständigungselemente nicht sichtbar sind.",
+	"setting.suggestSelection.enabled": "Ermöglicht es IntelliCode, die Einstellung \"editor.suggestSelection\" in Ihrem Namen zu ändern.",
+	"setting.suggestSelection.disabled": "Sie haben sich ausdrücklich dagegen entschieden, dass diese Konfiguration durch IntelliCode gesteuert wird.",
+	"setting.suggestSelection.automaticallyOverrodeDefaultValue": "(NICHT MANUELL FESTLEGEN) IntelliCode legt diese Einstellung fest, um zu kennzeichnen, dass diese Konfiguration automatisch geändert wurde, um einen Standardwert außer Kraft zu setzen.",
+	"setting.suggestSelection.choseToUpdateConfiguration": "(NICHT MANUELL FESTLEGEN) IntelliCode legt diese Einstellung fest, um zu kennzeichnen, dass Sie IntelliCode das Ändern der Konfiguration für einen Wert gestatten, der explizit festgelegt wurde.",
+	"feature.apiExamples.markdown": "Hiermit wird die Erweiterung „IntelliCode-API-Verwendungsbeispiele“ gegenüber vscode-IntelliCode-Python-Benutzern beworben.",
+	"feature.apiExamplests.markdown": "Hiermit wird die Erweiterung „IntelliCode-API-Verwendungsbeispiele“ gegenüber vscode-IntelliCode-TypeScript/JavaScript-Benutzern beworben."
+}

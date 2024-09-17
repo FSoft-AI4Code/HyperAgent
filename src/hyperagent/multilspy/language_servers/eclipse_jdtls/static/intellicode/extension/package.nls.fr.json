@@ -1,0 +1,15 @@
+{
+	"extension.description": "Développement assisté par l'IA",
+	"setting.modelDownloadPath": "Spécifie le chemin de dossier où sont stockés les fichiers de modèles téléchargés. En l'absence d'indication, le répertoire d'installation de l'extension représente la valeur par défaut.",
+	"setting.pythonEnabled": "Activer les complétions Visual Studio IntelliCode pour Python",
+	"setting.javaEnabled": "Activer les complétions Visual Studio IntelliCode pour Java",
+	"setting.typescriptEnabled": "Activer les complétions Visual Studio IntelliCode pour TypeScript et JavaScript",
+	"setting.sqlEnabled": "Activer les complétions Visual Studio IntelliCode pour MSSQL",
+	"setting.suggestSelection.markdown": "Permet de contrôler si Visual Studio IntelliCode modifie 'editor.suggestSelection', quand il a une valeur ('recentlyUsed') qui entraîne le masquage des éléments de suggestion de complétion IntelliCode.",
+	"setting.suggestSelection.enabled": "Permet à IntelliCode de modifier le paramètre editor.suggestSelection en votre nom.",
+	"setting.suggestSelection.disabled": "Vous avez explicitement refusé que cette configuration soit contrôlée par IntelliCode.",
+	"setting.suggestSelection.automaticallyOverrodeDefaultValue": "(NE PAS DÉFINIR CECI MANUELLEMENT) IntelliCode va définir ce paramètre. Cela permet d'enregistrer le fait que la configuration a été automatiquement modifiée pour remplacer une valeur par défaut.",
+	"setting.suggestSelection.choseToUpdateConfiguration": "(NE PAS DÉFINIR CECI MANUELLEMENT) IntelliCode va définir ce paramètre. Cela permet d'enregistrer le fait que vous avez choisi de laisser IntelliCode changer la configuration à partir d'une valeur définie explicitement.",
+	"feature.apiExamples.markdown": "Promotion de l'extension IntelliCode API Usage Examples auprès des utilisateurs de vscode intellicode python",
+	"feature.apiExamplests.markdown": "Promotion de l'extension IntelliCode API Usage Examples auprès des utilisateurs de vscode intellicode typescript/javascript"
+}

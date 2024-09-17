@@ -1,0 +1,129 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+  <file original="package" source-language="en" datatype="plaintext" target-language="zh-Hant">
+    <body>
+      <trans-unit id="extension.description">
+        <source xml:lang="en">AI-assisted development</source>
+        <target state="translated">AI 輔助的開發</target>
+      </trans-unit>
+      <trans-unit id="setting.modelDownloadPath">
+        <source xml:lang="en">Specifies the folder path where downloaded model files are stored. Defaults to the extension install directory if not specified.</source>
+        <target state="translated">指定儲存所下載模型檔案的資料夾路徑。如果未指定，會預設為延伸模組安裝目錄。</target>
+      </trans-unit>
+      <trans-unit id="setting.pythonEnabled">
+        <source xml:lang="en">Enable Visual Studio IntelliCode completions for Python</source>
+        <target state="translated">啟用適用於 Python 的 Visual Studio IntelliCode 完成</target>
+      </trans-unit>
+      <trans-unit id="setting.javaEnabled">
+        <source xml:lang="en">Enable Visual Studio IntelliCode completions for Java</source>
+        <target state="translated">啟用適用於 Java 的 Visual Studio IntelliCode 完成</target>
+      </trans-unit>
+      <trans-unit id="setting.typescriptEnabled">
+        <source xml:lang="en">Enable Visual Studio IntelliCode completions for TypeScript and JavaScript</source>
+        <target state="translated">啟用適用於 TypeScript 和 JavaScript 的 Visual Studio IntelliCode 完成</target>
+      </trans-unit>
+      <trans-unit id="setting.sqlEnabled">
+        <source xml:lang="en">Enable Visual Studio IntelliCode completions for MSSQL</source>
+        <target state="translated">啟用適用於 MSSQL 的 Visual Studio IntelliCode 完成</target>
+      </trans-unit>
+      <trans-unit id="setting.suggestSelection.markdown">
+        <source xml:lang="en">Control whether Visual Studio IntelliCode will modify `editor.suggestSelection` if it is set to a value (`recentlyUsed`) that will result in IntelliCode suggested completion items not being visible.</source>
+        <target state="translated">控制當 `editor.suggestSelection` 設定為值 (`recentlyUsed`)，而導致看不到 IntelliCode 建議的完成項目時，Visual Studio IntelliCode 是否會修改 `editor.suggestSelection`。</target>
+      </trans-unit>
+      <trans-unit id="setting.suggestSelection.enabled">
+        <source xml:lang="en">Allows IntelliCode to modify the editor.suggestSelection setting on your behalf.</source>
+        <target state="translated">允許 IntelliCode 代表您修改 editor.suggestSelection 設定。</target>
+      </trans-unit>
+      <trans-unit id="setting.suggestSelection.disabled">
+        <source xml:lang="en">You've explicitly opted out of having this configuration controlled by IntelliCode.</source>
+        <target state="translated">您已明確拒絕讓 IntelliCode 控制此組態。</target>
+      </trans-unit>
+      <trans-unit id="setting.suggestSelection.automaticallyOverrodeDefaultValue">
+        <source xml:lang="en">(DO NOT SET THIS MANUALLY) IntelliCode will set this to record that configuration has been automatically modified to override a default value.</source>
+        <target state="translated">(請勿手動設定此項目) IntelliCode 會設定此項目，來記錄組態已受到自動修改，以覆寫預設值。</target>
+      </trans-unit>
+      <trans-unit id="setting.suggestSelection.choseToUpdateConfiguration">
+        <source xml:lang="en">(DO NOT SET THIS MANUALLY) IntelliCode will set this to record that you've chosen to let IntelliCode change the configuration from a value that was explicitly set.</source>
+        <target state="translated">(請勿手動設定此項目) IntelliCode 會設定此項目，來記錄您已選擇允許從已明確設定的值變更組態。</target>
+      </trans-unit>
+      <trans-unit id="feature.apiExamples.markdown">
+        <source xml:lang="en">Promotes IntelliCode API Usage Examples extension to vscode intellicode python users.</source>
+        <target state="translated">將 IntelliCode API 使用方式範例延伸模組推廣至 VS Code IntelliCode Python 使用者。</target>
+      </trans-unit>
+      <trans-unit id="feature.apiExamplests.markdown">
+        <source xml:lang="en">Promotes IntelliCode API Usage Examples extension to vscode intellicode typescript/javascript users.</source>
+        <target state="translated">將 IntelliCode API 使用方式範例延伸模組推廣至 VS Code IntelliCode TypeScript/JavaScript 使用者。</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="out/extension" source-language="en" datatype="plaintext" target-language="zh-Hant">
+    <body>
+      <trans-unit id="sqlErrorMessage">
+        <source xml:lang="en">Sorry, something went wrong activating IntelliCode support for SQL. Please check the "MSSQL" and "VS IntelliCode" output windows for details.</source>
+        <target state="translated">抱歉，啟用適用於 SQL的 IntelliCode 支援時發生錯誤。如需詳細資料，請查看 [MSSQL] 和 [VS IntelliCode] 輸出視窗。</target>
+      </trans-unit>
+      <trans-unit id="typescriptErrorMessage">
+        <source xml:lang="en">Sorry, something went wrong activating IntelliCode support for TypeScript/JavaScript. Please check the "VS IntelliCode" output window for details.</source>
+        <target state="translated">抱歉，啟用適用於 TypeScript/JavaScript 的 IntelliCode 支援時發生錯誤。如需詳細資料，請查看和 [VS IntelliCode] 輸出視窗。</target>
+      </trans-unit>
+      <trans-unit id="javaErrorMessage">
+        <source xml:lang="en">Sorry, something went wrong activating IntelliCode support for Java. Please check the "Language Support for Java" and "VS IntelliCode" output windows for details.</source>
+        <target state="translated">抱歉，啟用適用於 Java 的 IntelliCode 支援時發生錯誤。如需詳細資料，請查看 [Language Support for Java] 和 [VS IntelliCode] 輸出視窗。</target>
+      </trans-unit>
+      <trans-unit id="pythonErrorMessage">
+        <source xml:lang="en">Sorry, something went wrong activating IntelliCode support for Python. Please check the "Python" and "VS IntelliCode" output windows for details.</source>
+        <target state="translated">抱歉，啟用適用於 Python 的 IntelliCode 支援時發生錯誤。如需詳細資料，請查看 [Python] 和 [VS IntelliCode] 輸出視窗。</target>
+      </trans-unit>
+      <trans-unit id="missingExtensionMessage">
+        <source xml:lang="en">You can install the {0} extension to get an enhanced completion experience with IntelliCode</source>
+        <target state="translated">您可以安裝 {0} 延伸模組，來獲得更強的 IntelliCode 完成體驗</target>
+      </trans-unit>
+      <trans-unit id="outOfDateExtensionMessage">
+        <source xml:lang="en">Please update the {0} extension to get an enhanced completion experience with IntelliCode.
+IntelliCode requires version {1} or newer.</source>
+        <target state="translated">請更新 {0} 延伸模組來取得更強的 IntelliCode 完成體驗。
+IntelliCode 需要 {1} 版或更新版本。</target>
+      </trans-unit>
+      <trans-unit id="viewDetails">
+        <source xml:lang="en">View details</source>
+        <target state="translated">檢視詳細資料</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="out/models/BlobStore" source-language="en" datatype="plaintext" target-language="zh-Hant">
+    <body>
+      <trans-unit id="downloadingStatusBarTitle">
+        <source xml:lang="en">Downloading IntelliCode models</source>
+        <target state="translated">正在下載 IntelliCode 模型</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="out/models/ModelProvider" source-language="en" datatype="plaintext" target-language="zh-Hant">
+    <body>
+      <trans-unit id="downloadModelError">
+        <source xml:lang="en">Couldn't download IntelliCode model. Please check your network connectivity or firewall settings.</source>
+        <target state="translated">無法下載 IntelliCode 模型。請檢查您的網路連線，或是防火牆設定。</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="out/util/config" source-language="en" datatype="plaintext" target-language="zh-Hant">
+    <body>
+      <trans-unit id="applySettingFailure">
+        <source xml:lang="en">IntelliCode wasn't able to apply the user setting '{0}.{1}': '{2}' automatically, please manually set it.</source>
+        <target state="translated">IntelliCode 無法自動套用使用者設定 '{0}.{1}': '{2}'，請手動予以設定。</target>
+      </trans-unit>
+      <trans-unit id="changeIncompatibleSetting">
+        <source xml:lang="en">Yes</source>
+        <target state="translated">是</target>
+      </trans-unit>
+      <trans-unit id="dontChangeIncompatibleSetting">
+        <source xml:lang="en">Don't ask again</source>
+        <target state="translated">不要再詢問</target>
+      </trans-unit>
+      <trans-unit id="changeIncompatibleSettingsPrompt">
+        <source xml:lang="en">The configuration 'editor.{0}': '{1}' may cause you to not see IntelliCode completions. Would you like to change it?</source>
+        <target state="translated">組態 'editor.{0}': '{1}' 可能會使您看不到 IntelliCode 完成。要予以變更嗎?</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

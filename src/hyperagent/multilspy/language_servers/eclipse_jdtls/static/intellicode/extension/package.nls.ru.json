@@ -1,0 +1,15 @@
+{
+	"extension.description": "Разработка с помощью ИИ",
+	"setting.modelDownloadPath": "Указывает путь к папке, где хранятся скачанные файлы модели. Если он не задан, по умолчанию используется каталог установки расширения.",
+	"setting.pythonEnabled": "Включить автозавершение Visual Studio IntelliCode для Python",
+	"setting.javaEnabled": "Включить автозавершение Visual Studio IntelliCode для Java",
+	"setting.typescriptEnabled": "Включить автозавершение Visual Studio IntelliCode для TypeScript и JavaScript",
+	"setting.sqlEnabled": "Включить автозавершение Visual Studio IntelliCode для MSSQL",
+	"setting.suggestSelection.markdown": "Определяет, будет ли Visual Studio IntelliCode изменять параметр \"editor.suggestSelection\", если для него задано значение (\"recentlyUsed\"), из-за которого элементы автозавершения IntelliCode не отображаются.",
+	"setting.suggestSelection.enabled": "Разрешает IntelliCode изменять параметр editor.suggestSelection от вашего имени.",
+	"setting.suggestSelection.disabled": "Вы явно отказались предоставить IntelliCode управление этой конфигурацией.",
+	"setting.suggestSelection.automaticallyOverrodeDefaultValue": "(Не задавайте вручную!) IntelliCode запишет здесь, что конфигурация была автоматически изменена для переопределения значения по умолчанию.",
+	"setting.suggestSelection.choseToUpdateConfiguration": "(Не задавайте вручную!) IntelliCode запишет здесь, что вы разрешили IntelliCode изменить в конфигурации явно заданное значение.",
+	"feature.apiExamples.markdown": "Повышение уровня расширения с примерами использования API IntelliCode до пользователей Python Intellicode Vscode.",
+	"feature.apiExamplests.markdown": "Повышение уровня расширения с примерами использования API IntelliCode до пользователей TypeScript/JavaScript Intellicode Vscode."
+}

@@ -1,0 +1,15 @@
+{
+	"extension.description": "AI 輔助的開發",
+	"setting.modelDownloadPath": "指定儲存所下載模型檔案的資料夾路徑。如果未指定，會預設為延伸模組安裝目錄。",
+	"setting.pythonEnabled": "啟用適用於 Python 的 Visual Studio IntelliCode 完成",
+	"setting.javaEnabled": "啟用適用於 Java 的 Visual Studio IntelliCode 完成",
+	"setting.typescriptEnabled": "啟用適用於 TypeScript 和 JavaScript 的 Visual Studio IntelliCode 完成",
+	"setting.sqlEnabled": "啟用適用於 MSSQL 的 Visual Studio IntelliCode 完成",
+	"setting.suggestSelection.markdown": "控制當 `editor.suggestSelection` 設定為值 (`recentlyUsed`)，而導致看不到 IntelliCode 建議的完成項目時，Visual Studio IntelliCode 是否會修改 `editor.suggestSelection`。",
+	"setting.suggestSelection.enabled": "允許 IntelliCode 代表您修改 editor.suggestSelection 設定。",
+	"setting.suggestSelection.disabled": "您已明確拒絕讓 IntelliCode 控制此組態。",
+	"setting.suggestSelection.automaticallyOverrodeDefaultValue": "(請勿手動設定此項目) IntelliCode 會設定此項目，來記錄組態已受到自動修改，以覆寫預設值。",
+	"setting.suggestSelection.choseToUpdateConfiguration": "(請勿手動設定此項目) IntelliCode 會設定此項目，來記錄您已選擇允許從已明確設定的值變更組態。",
+	"feature.apiExamples.markdown": "將 IntelliCode API 使用方式範例延伸模組推廣至 VS Code IntelliCode Python 使用者。",
+	"feature.apiExamplests.markdown": "將 IntelliCode API 使用方式範例延伸模組推廣至 VS Code IntelliCode TypeScript/JavaScript 使用者。"
+}

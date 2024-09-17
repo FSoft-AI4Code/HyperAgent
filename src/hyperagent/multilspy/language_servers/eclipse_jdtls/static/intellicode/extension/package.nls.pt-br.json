@@ -1,0 +1,15 @@
+{
+	"extension.description": "Desenvolvimento assistido por IA",
+	"setting.modelDownloadPath": "Especifica o caminho da pasta em que os arquivos de modelo baixados são armazenados. O padrão é o diretório de instalação da extensão, se não especificado.",
+	"setting.pythonEnabled": "Habilitar as conclusões de IntelliCode do Visual Studio para Python",
+	"setting.javaEnabled": "Habilitar as conclusões de IntelliCode do Visual Studio para Java",
+	"setting.typescriptEnabled": "Habilitar as conclusões de IntelliCode do Visual Studio para TypeScript e JavaScript",
+	"setting.sqlEnabled": "Habilitar as conclusões do IntelliCode do Visual Studio para MSSQL",
+	"setting.suggestSelection.markdown": "Controle se o IntelliCode do Visual Studio modificará `editor.suggestSelection` se estiver definido como um valor (`recentlyUsed`) que fará os itens de conclusão sugeridos pelo IntelliCode não estarem visíveis.",
+	"setting.suggestSelection.enabled": "Permite que o IntelliCode modifique a configuração editor.suggestSelection no seu nome.",
+	"setting.suggestSelection.disabled": "Você recusou explicitamente que essa configuração seja controlada pelo IntelliCode.",
+	"setting.suggestSelection.automaticallyOverrodeDefaultValue": "(NÃO DEFINA ISSO MANUALMENTE) O IntelliCode definirá isso para registrar que a configuração foi modificada automaticamente para substituir um valor padrão.",
+	"setting.suggestSelection.choseToUpdateConfiguration": "(NÃO DEFINA ISSO MANUALMENTE) O IntelliCode definirá isso para registrar que você escolheu permitir que ele altere a configuração de um valor definido explicitamente.",
+	"feature.apiExamples.markdown": "Promove a extensão Exemplos de Uso da API do IntelliCode para usuários do vscode intellicode python.",
+	"feature.apiExamplests.markdown": "Promove a extensão Exemplos de Uso da API do IntelliCode para usuários do vscode intellicode typescript/javascript."
+}

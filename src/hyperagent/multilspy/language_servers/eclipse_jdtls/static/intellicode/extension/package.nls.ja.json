@@ -1,0 +1,15 @@
+{
+	"extension.description": "AI 支援開発",
+	"setting.modelDownloadPath": "ダウンロードしたモデル ファイルを格納するフォルダーのパスを指定します。指定しない場合、既定で拡張機能のインストール ディレクトリに設定されます。",
+	"setting.pythonEnabled": "Python の Visual Studio IntelliCode 入力候補を有効にする",
+	"setting.javaEnabled": "Java の Visual Studio IntelliCode 入力候補を有効にする",
+	"setting.typescriptEnabled": "TypeScript および JavaScript の Visual Studio IntelliCode 入力候補を有効にする",
+	"setting.sqlEnabled": "MSSQL の Visual Studio IntelliCode 入力候補を有効にする",
+	"setting.suggestSelection.markdown": "`editor.suggestSelection` が IntelliCode の入力候補項目が表示されないようにする値 (`recentlyUsed`) に設定されている場合、Visual Studio IntelliCode が `editor.suggestSelection` を変更するかどうかを制御します。",
+	"setting.suggestSelection.enabled": "IntelliCode がお客様の代わりに editor.suggestSelection 設定を変更することを許可します。",
+	"setting.suggestSelection.disabled": "この構成を IntelliCode によって制御しないことが明示的に選択されました。",
+	"setting.suggestSelection.automaticallyOverrodeDefaultValue": "(手動で設定しないでください) 既定値をオーバーライドするように構成が自動的に変更されたことを記録するために、IntelliCode がこれを設定します。",
+	"setting.suggestSelection.choseToUpdateConfiguration": "(手動で設定しないでください) IntelliCode が明示的に設定された値から構成を変更できるようにしたことを記録するように、IntelliCode がこれを設定します。",
+	"feature.apiExamples.markdown": "IntelliCode API Usage Examples 拡張機能を VSCode Intellicode Python ユーザーに昇格させます。",
+	"feature.apiExamplests.markdown": "IntelliCode API Usage Examples 拡張機能を Vscode Intellicode TypeScript/JavaScript ユーザーに昇格させます。"
+}

@@ -1,0 +1,50 @@
+[
+    {
+        "language": "java",
+        "analyzer": "intellisense-members",
+        "modelId": "45788CA1782FEF17F07049DB4764F5647A62",
+        "outputId": "975CC5EC71E347A9B047E779B175B7D3",
+        "modifiedTimeUtc": "2019-05-03T15:48:15.8082175Z",
+        "fileName": "java_intellisense-members"
+    },
+    {
+        "language": "javascript",
+        "analyzer": "intellisense-members",
+        "modelId": "1A3F919CD5B7725108B03C349630A1C82B03",
+        "outputId": "4A84987F2428442A9EC84563BB2BC063",
+        "modifiedTimeUtc": "2020-09-28T23:11:53.7548054Z",
+        "fileName": "javascript_intellisense-members"
+    },
+    {
+        "language": "python",
+        "analyzer": "intellisense-members",
+        "modelId": "88630A1B4C077752096ECAA576B92C7D3FA1",
+        "outputId": "9BA695AD4C514C32A5D0AC9B02846CD7",
+        "modifiedTimeUtc": "2019-10-11T08:52:34.3058442Z",
+        "fileName": "python_intellisense-members"
+    },
+    {
+        "language": "python",
+        "analyzer": "intellisense-members-lstm",
+        "modelId": "15708AE89896CA5DF1690433B7A8D93D28B7",
+        "outputId": "215F8B4FAB1F4663ABD624559FD205B9",
+        "modifiedTimeUtc": "2019-12-13T22:18:51.237038Z",
+        "fileName": "python_intellisense-members-lstm"
+    },
+    {
+        "language": "python",
+        "analyzer": "intellisense-members-lstm-pylance",
+        "modelId": "E61945A9A512ED5E1A3EE3F1A2365B88F8FE",
+        "outputId": "E4E9EADA96734F01970E616FAB2FAC19",
+        "modifiedTimeUtc": "2020-08-11T14:06:50.8113342Z",
+        "fileName": "python_intellisense-members-lstm-pylance"
+    },
+    {
+        "language": "sql",
+        "analyzer": "intellisense-members",
+        "modelId": "99136CA159AB897D942412E976015B8C9EC2",
+        "outputId": "6D6727BA7E6347BE9124EF572943AC5C",
+        "modifiedTimeUtc": "2019-08-22T18:29:18.016152Z",
+        "fileName": "sql_intellisense-members"
+    }
+]

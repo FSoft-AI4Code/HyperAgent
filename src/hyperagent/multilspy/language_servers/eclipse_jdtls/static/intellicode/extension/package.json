@@ -1,0 +1,223 @@
+{
+	"name": "vscodeintellicode",
+	"displayName": "IntelliCode",
+	"description": "%extension.description%",
+	"version": "1.2.30",
+	"publisher": "VisualStudioExptTeam",
+	"author": {
+		"name": "Microsoft"
+	},
+	"engines": {
+		"vscode": "^1.58.1"
+	},
+	"repository": {
+		"url": "https://github.com/MicrosoftDocs/intellicode"
+	},
+	"bugs": {
+		"url": "https://go.microsoft.com/fwlink/?linkid=2005855"
+	},
+	"icon": "images/icon.png",
+	"categories": [
+		"Other"
+	],
+	"aiKey": "AIF-d9b70cd4-b9f9-4d70-929b-a071c400b217",
+	"activationEvents": [
+		"onLanguage:python",
+		"onLanguage:sql",
+		"onLanguage:typescript",
+		"onLanguage:typescriptreact",
+		"onLanguage:javascript",
+		"onLanguage:javascriptreact",
+		"onLanguage:java"
+	],
+	"main": "./dist/intellicode",
+	"browser": "./dist/web/extension.js",
+	"contributes": {
+		"configuration": {
+			"type": "object",
+			"title": "IntelliCode",
+			"properties": {
+				"vsintellicode.python.completionsEnabled": {
+					"type": "boolean",
+					"default": true,
+					"description": "%setting.pythonEnabled%"
+				},
+				"vsintellicode.sql.completionsEnabled": {
+					"type": "boolean",
+					"default": true,
+					"description": "%setting.sqlEnabled%"
+				},
+				"vsintellicode.java.completionsEnabled": {
+					"type": "boolean",
+					"default": true,
+					"description": "%setting.javaEnabled%"
+				},
+				"vsintellicode.typescript.completionsEnabled": {
+					"type": "boolean",
+					"default": true,
+					"description": "%setting.typescriptEnabled%"
+				},
+				"vsintellicode.modify.editor.suggestSelection": {
+					"type": "string",
+					"default": "enabled",
+					"markdownDescription": "%setting.suggestSelection.markdown%",
+					"enum": [
+						"enabled",
+						"disabled",
+						"automaticallyOverrodeDefaultValue",
+						"choseToUpdateConfiguration"
+					],
+					"enumDescriptions": [
+						"%setting.suggestSelection.enabled%",
+						"%setting.suggestSelection.disabled%",
+						"%setting.suggestSelection.automaticallyOverrodeDefaultValue%",
+						"%setting.suggestSelection.choseToUpdateConfiguration%"
+					]
+				},
+				"vsintellicode.modelDownloadPath": {
+					"type": [
+						"string",
+						"null"
+					],
+					"default": null,
+					"description": "%setting.modelDownloadPath%"
+				},
+				"vsintellicode.features.python.deepLearning": {
+					"type": "string",
+					"default": "default",
+					"enum": [
+						"default",
+						"enabled",
+						"disabled"
+					],
+					"featureDefault": true
+				}
+			}
+		},
+		"typescriptServerPlugins": [
+			{
+				"name": "@vsintellicode/typescript-intellicode-plugin",
+				"languages": [],
+				"enableForWorkspaceTypeScriptVersions": true
+			},
+			{
+				"name": "ms-vsintellicode-typescript"
+			}
+		],
+		"javaExtensions": [
+			"dist/com.microsoft.jdtls.intellicode.core-0.7.0.jar"
+		]
+	},
+	"importSort": {
+		".js, .jsx, .ts, .tsx": {
+			"style": "module"
+		}
+	},
+	"capabilities": {
+		"untrustedWorkspaces": {
+			"supported": true
+		},
+		"virtualWorkspaces": {
+			"supported": "limited",
+			"description": "Only typescript and javascript completions are supported. Settings do not work."
+		}
+	},
+	"scripts": {
+		"vscode:prepublish": "gulp prodBuild && npm run package-web",
+		"build": "gulp devBuild && npm run compile-web",
+		"eslint": "eslint src --ext ts",
+		"format": "prettier --write \"src/**/*.{ts,tsx}\"",
+		"test": "node ./out/test/runTests.js",
+		"server-test": "node ./out/test/runServerTests.js",
+		"pretest": "npm run build",
+		"posttest": "rmdir /s /q .vscode-test",
+		"install:shared": "cd ../ms-vsintellicode-shared && npm install",
+		"build:shared": "cd ../ms-vsintellicode-shared && npm run build",
+		"preinstall": "npm run install:shared && npm run build:shared && npm run build:tsplugin",
+		"vscode:uninstall": "node ./dist/uninstall",
+		"compile-web": "webpack --config web.webpack.config.js",
+		"watch-web": "webpack --config web.webpack.config.js --watch",
+		"package-web": "webpack --mode production --devtool hidden-source-map --config web.webpack.config.js",
+		"run-in-web": "vscode-test-web --browserType=chromium --extensionDevelopmentPath=. .",
+		"build:tsplugin": "npm run install:tsplugin && npm run compile-web --prefix ../ms-intellicode-typescript-plugin",
+		"install:tsplugin": "cd ../ms-intellicode-typescript-plugin && npm install",
+		"pack:tsplugin": "cd ../ms-intellicode-typescript-plugin/dist/web && npm pack",
+		"format:package-lock": "prettier package-lock.json -w --tab-width 4 --parser json"
+	},
+	"devDependencies": {
+		"@types/chai": "^4.1.7",
+		"@types/mocha": "^8.2.3",
+		"@types/node": "^12.20.15",
+		"@types/request": "^2.48.5",
+		"@types/rimraf": "^2.0.2",
+		"@types/semver": "^5.5.0",
+		"@types/sinon": "^7.0.2",
+		"@types/sinon-chai": "^3.2.2",
+		"@types/vscode": "1.58.0",
+		"@types/webpack-env": "^1.16.3",
+		"@typescript-eslint/eslint-plugin-tslint": "^4.13.0",
+		"@typescript-eslint/parser": "^4.13.0",
+		"@vscode/test-electron": "^2.1.3",
+		"@vscode/test-web": "^0.0.22",
+		"assert": "^2.0.0",
+		"chai": "^4.2.0",
+		"copy-webpack-plugin": "^11.0.0",
+		"del": "^4.1.1",
+		"eslint": "^7.32.0",
+		"eslint-config-prettier": "^7.1.0",
+		"eslint-plugin-prettier": "^3.3.1",
+		"gulp": "^4.0.0",
+		"gulp-filter": "^5.0.1",
+		"gulp-sourcemaps": "^2.6.5",
+		"gulp-typescript": "^5.0.0",
+		"import-sort-style-module": "^6.0.0",
+		"mocha": "^9.2.2",
+		"prettier": "^2.7.1",
+		"process": "^0.11.10",
+		"rimraf": "^2.6.3",
+		"sinon": "^7.2.2",
+		"sinon-chai": "^3.3.0",
+		"ts-loader": "^9.2.8",
+		"tslint": "^6.1.3",
+		"tslint-microsoft-contrib": "^6.2.0",
+		"typemoq": "^2.1.0",
+		"typescript": "^3.7.2",
+		"vsce": "^2.10.2",
+		"vscode-nls-dev": "^3.2.6",
+		"webpack": "^5.72.0",
+		"webpack-cli": "^4.9.2",
+		"webpack-merge": "^5.8.0",
+		"webpack-stream": "^7.0.0"
+	},
+	"dependencies": {
+		"@vscode/extension-telemetry": "0.6.2",
+		"@vsintellicode/http-client": "^0.0.2-SNAPSHOT.201902052332",
+		"@vsintellicode/typescript-intellicode-plugin": "0.26.0",
+		"@vsintellicode/vscode-intellicode-api": "0.1.0-ci-main-20210923.1",
+		"@vsintellicode/vscode-intellicode-java": "0.7.0",
+		"@vsintellicode/vscode-intellicode-python": "1.0.0-ci-master-4710082",
+		"@vsintellicode/vscode-intellicode-sql": "1.0.0-ci-master-4292976",
+		"async-file": "2.0.2",
+		"browserify-zlib": "^0.2.0",
+		"crypto-browserify": "^3.12.0",
+		"intellicode-vscode-models": "1.20220903.7",
+		"ms-vsintellicode-shared": "file:../ms-vsintellicode-shared/dist",
+		"ms-vsintellicode-typescript": "file:../ms-intellicode-typescript-plugin/dist/web",
+		"path-browserify": "^1.0.1",
+		"request": "^2.88.2",
+		"request-progress": "3.0.0",
+		"semver": "5.5.0",
+		"stream-browserify": "^3.0.0",
+		"tslib": "^2.0.0",
+		"vscode-nls": "4.1.1"
+	},
+	"extensionPack": [
+		"visualstudioexptteam.intellicode-api-usage-examples"
+	],
+	"__metadata": {
+		"id": "876e8f93-74d0-4f4f-91b7-34a09f19f444",
+		"publisherDisplayName": "Microsoft",
+		"publisherId": "e8db1608-52e8-4d8d-92a6-779c5db302a9",
+		"isPreReleaseVersion": false
+	}
+}

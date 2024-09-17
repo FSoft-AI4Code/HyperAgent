@@ -1,0 +1,129 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+  <file original="package" source-language="en" datatype="plaintext" target-language="it">
+    <body>
+      <trans-unit id="extension.description">
+        <source xml:lang="en">AI-assisted development</source>
+        <target state="translated">Sviluppo con supporto per intelligenza artificiale</target>
+      </trans-unit>
+      <trans-unit id="setting.modelDownloadPath">
+        <source xml:lang="en">Specifies the folder path where downloaded model files are stored. Defaults to the extension install directory if not specified.</source>
+        <target state="translated">Consente di specificare il percorso della cartella in cui vengono archiviati i file di modello scaricati. Se non è specificato, per impostazione predefinita viene usata la directory di installazione dell'estensione.</target>
+      </trans-unit>
+      <trans-unit id="setting.pythonEnabled">
+        <source xml:lang="en">Enable Visual Studio IntelliCode completions for Python</source>
+        <target state="translated">Abilita completamenti di Visual Studio IntelliCode per Python</target>
+      </trans-unit>
+      <trans-unit id="setting.javaEnabled">
+        <source xml:lang="en">Enable Visual Studio IntelliCode completions for Java</source>
+        <target state="translated">Abilita completamenti di Visual Studio IntelliCode per Java</target>
+      </trans-unit>
+      <trans-unit id="setting.typescriptEnabled">
+        <source xml:lang="en">Enable Visual Studio IntelliCode completions for TypeScript and JavaScript</source>
+        <target state="translated">Abilita completamenti di Visual Studio IntelliCode per TypeScript e JavaScript</target>
+      </trans-unit>
+      <trans-unit id="setting.sqlEnabled">
+        <source xml:lang="en">Enable Visual Studio IntelliCode completions for MSSQL</source>
+        <target state="translated">Abilita completamenti di Visual Studio IntelliCode per MSSSQL</target>
+      </trans-unit>
+      <trans-unit id="setting.suggestSelection.markdown">
+        <source xml:lang="en">Control whether Visual Studio IntelliCode will modify `editor.suggestSelection` if it is set to a value (`recentlyUsed`) that will result in IntelliCode suggested completion items not being visible.</source>
+        <target state="translated">Consente di controllare se Visual Studio IntelliCode modificherà l'impostazione `editor.suggestSelection` se è impostata su un valore (`recentlyUsed`) che impedirà la visualizzazione degli elementi di completamento suggeriti di IntelliCode.</target>
+      </trans-unit>
+      <trans-unit id="setting.suggestSelection.enabled">
+        <source xml:lang="en">Allows IntelliCode to modify the editor.suggestSelection setting on your behalf.</source>
+        <target state="translated">Consente a IntelliCode di modificare l'impostazione editor.suggestSelection per conto dell'utente.</target>
+      </trans-unit>
+      <trans-unit id="setting.suggestSelection.disabled">
+        <source xml:lang="en">You've explicitly opted out of having this configuration controlled by IntelliCode.</source>
+        <target state="translated">Si è scelto esplicitamente di disattivare il controllo IntelliCode su questa configurazione.</target>
+      </trans-unit>
+      <trans-unit id="setting.suggestSelection.automaticallyOverrodeDefaultValue">
+        <source xml:lang="en">(DO NOT SET THIS MANUALLY) IntelliCode will set this to record that configuration has been automatically modified to override a default value.</source>
+        <target state="translated">(NON IMPOSTARE MANUALMENTE) IntelliCode imposterà questa opzione per indicare che la configurazione è stata modificata automaticamente allo scopo di eseguire l'override di un valore predefinito.</target>
+      </trans-unit>
+      <trans-unit id="setting.suggestSelection.choseToUpdateConfiguration">
+        <source xml:lang="en">(DO NOT SET THIS MANUALLY) IntelliCode will set this to record that you've chosen to let IntelliCode change the configuration from a value that was explicitly set.</source>
+        <target state="translated">(NON IMPOSTARE MANUALMENTE) IntelliCode imposterà questa opzione per indicare che si è scelto di consentire a IntelliCode di modificare la configurazione da un valore impostato in modo esplicito.</target>
+      </trans-unit>
+      <trans-unit id="feature.apiExamples.markdown">
+        <source xml:lang="en">Promotes IntelliCode API Usage Examples extension to vscode intellicode python users.</source>
+        <target state="translated">Promuove l'estensione Esempi di utilizzo dell'API IntelliCode per gli utenti Python VSCode IntelliCode.</target>
+      </trans-unit>
+      <trans-unit id="feature.apiExamplests.markdown">
+        <source xml:lang="en">Promotes IntelliCode API Usage Examples extension to vscode intellicode typescript/javascript users.</source>
+        <target state="translated">Promuove l'estensione Esempi di utilizzo dell'API IntelliCode per gli utenti JavaScript/TypeScript VSCode IntelliCode.</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="out/extension" source-language="en" datatype="plaintext" target-language="it">
+    <body>
+      <trans-unit id="sqlErrorMessage">
+        <source xml:lang="en">Sorry, something went wrong activating IntelliCode support for SQL. Please check the "MSSQL" and "VS IntelliCode" output windows for details.</source>
+        <target state="translated">Si è verificato un errore durante l'attivazione del supporto IntelliCode per SQL. Per dettagli, vedere le finestre di output di "MSSQL" e "VS IntelliCode".</target>
+      </trans-unit>
+      <trans-unit id="typescriptErrorMessage">
+        <source xml:lang="en">Sorry, something went wrong activating IntelliCode support for TypeScript/JavaScript. Please check the "VS IntelliCode" output window for details.</source>
+        <target state="translated">Si è verificato un errore durante l'attivazione del supporto IntelliCode per TypeScript/JavaScript. Per dettagli, vedere la finestra di output di Visual Studio IntelliCode.</target>
+      </trans-unit>
+      <trans-unit id="javaErrorMessage">
+        <source xml:lang="en">Sorry, something went wrong activating IntelliCode support for Java. Please check the "Language Support for Java" and "VS IntelliCode" output windows for details.</source>
+        <target state="translated">Si è verificato un errore durante l'attivazione del supporto IntelliCode per Java. Per dettagli, vedere le finestre di output del supporto del linguaggio per Java e di Visual Studio IntelliCode.</target>
+      </trans-unit>
+      <trans-unit id="pythonErrorMessage">
+        <source xml:lang="en">Sorry, something went wrong activating IntelliCode support for Python. Please check the "Python" and "VS IntelliCode" output windows for details.</source>
+        <target state="translated">Si è verificato un errore durante l'attivazione del supporto IntelliCode per Python. Per dettagli, vedere le finestre di output di Python e di Visual Studio IntelliCode.</target>
+      </trans-unit>
+      <trans-unit id="missingExtensionMessage">
+        <source xml:lang="en">You can install the {0} extension to get an enhanced completion experience with IntelliCode</source>
+        <target state="translated">Per accedere a un'esperienza di completamento avanzata con IntelliCode, è possibile installare l'estensione {0}</target>
+      </trans-unit>
+      <trans-unit id="outOfDateExtensionMessage">
+        <source xml:lang="en">Please update the {0} extension to get an enhanced completion experience with IntelliCode.
+IntelliCode requires version {1} or newer.</source>
+        <target state="translated">Per accedere a un'esperienza di completamento avanzata con IntelliCode, aggiornare l'estensione {0}.
+IntelliCode richiede la versione {1} o successiva.</target>
+      </trans-unit>
+      <trans-unit id="viewDetails">
+        <source xml:lang="en">View details</source>
+        <target state="translated">Visualizza dettagli</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="out/models/BlobStore" source-language="en" datatype="plaintext" target-language="it">
+    <body>
+      <trans-unit id="downloadingStatusBarTitle">
+        <source xml:lang="en">Downloading IntelliCode models</source>
+        <target state="translated">Download dei modelli IntelliCode</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="out/models/ModelProvider" source-language="en" datatype="plaintext" target-language="it">
+    <body>
+      <trans-unit id="downloadModelError">
+        <source xml:lang="en">Couldn't download IntelliCode model. Please check your network connectivity or firewall settings.</source>
+        <target state="translated">Non è stato possibile scaricare il modello IntelliCode. Verificare la connettività di rete o le impostazioni del firewall.</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="out/util/config" source-language="en" datatype="plaintext" target-language="it">
+    <body>
+      <trans-unit id="applySettingFailure">
+        <source xml:lang="en">IntelliCode wasn't able to apply the user setting '{0}.{1}': '{2}' automatically, please manually set it.</source>
+        <target state="translated">IntelliCode non è riuscito ad applicare automaticamente l'impostazione utente '{0}.{1}': '{2}'. Impostarla manualmente.</target>
+      </trans-unit>
+      <trans-unit id="changeIncompatibleSetting">
+        <source xml:lang="en">Yes</source>
+        <target state="translated">Sì</target>
+      </trans-unit>
+      <trans-unit id="dontChangeIncompatibleSetting">
+        <source xml:lang="en">Don't ask again</source>
+        <target state="translated">Non chiedere più</target>
+      </trans-unit>
+      <trans-unit id="changeIncompatibleSettingsPrompt">
+        <source xml:lang="en">The configuration 'editor.{0}': '{1}' may cause you to not see IntelliCode completions. Would you like to change it?</source>
+        <target state="translated">La configurazione 'editor.{0}': '{1}' potrebbe impedire la visualizzazione dei completamenti di IntelliCode. Modificarla?</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

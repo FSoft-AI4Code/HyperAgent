@@ -1,0 +1,15 @@
+{
+	"extension.description": "Door AI ondersteunde ontwikkeling",
+	"setting.modelDownloadPath": "Hiermee geeft u het mappad op waar gedownloade modelbestanden worden opgeslagen. De standaardinstelling voor de installatiemap van de extensie is niet opgegeven.",
+	"setting.pythonEnabled": "IntelliCode-voltooiingen voor Visual Studio inschakelen voor Python",
+	"setting.javaEnabled": "IntelliCode-voltooiingen voor Visual Studio inschakelen voor Java",
+	"setting.typescriptEnabled": "Voltooiingen van Visual Studio IntelliCode inschakelen voor TypeScript en JavaScript",
+	"setting.sqlEnabled": "IntelliCode-voltooiingen voor Visual Studio inschakelen voor MSSQL",
+	"setting.suggestSelection.markdown": "Bepalen of Visual Studio IntelliCode `editor.suggestSelection` zal wijzigen als het is ingesteld op een waarde (`recentlyUsed`) die ertoe leidt dat door IntelliCode voorgestelde voltooiingsitems niet zichtbaar zijn.",
+	"setting.suggestSelection.enabled": "Hiermee kan IntelliCode namens u de instelling editor.suggestSelection wijzigen.",
+	"setting.suggestSelection.disabled": "U hebt zich expliciet afgemeld voor het laten beheren van deze configuratie door IntelliCode.",
+	"setting.suggestSelection.automaticallyOverrodeDefaultValue": "(STEL DIT NIET HANDMATIG IN) IntelliCode stelt dit in om vast te leggen dat de configuratie automatisch is gewijzigd om een standaardwaarde te overschrijven.",
+	"setting.suggestSelection.choseToUpdateConfiguration": "(STEL DIT NIET HANDMATIG IN) IntelliCode zal dit instellen om vast te leggen dat u ervoor hebt gekozen om IntelliCode de configuratie te laten wijzigen van een waarde die expliciet is ingesteld.",
+	"feature.apiExamples.markdown": "Bevordert de IntelliCode API Usage Examples-extensie voor vscode intellicode python-gebruikers.",
+	"feature.apiExamplests.markdown": "Bevordert de IntelliCode API Usage Examples-extensie voor vscode intellicode typescript/javascript-gebruikers."
+}

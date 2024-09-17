@@ -1,0 +1,129 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+  <file original="package" source-language="en" datatype="plaintext" target-language="hu">
+    <body>
+      <trans-unit id="extension.description">
+        <source xml:lang="en">AI-assisted development</source>
+        <target state="translated">AI által támogatott fejlesztés</target>
+      </trans-unit>
+      <trans-unit id="setting.modelDownloadPath">
+        <source xml:lang="en">Specifies the folder path where downloaded model files are stored. Defaults to the extension install directory if not specified.</source>
+        <target state="translated">Megadja a letöltött modellfájlok tárolására szolgáló mappa elérési útját. Alapértelmezés szerint a bővítmény telepítési könyvtára, ha nincs megadva.</target>
+      </trans-unit>
+      <trans-unit id="setting.pythonEnabled">
+        <source xml:lang="en">Enable Visual Studio IntelliCode completions for Python</source>
+        <target state="translated">Engedélyezze a Visual Studio IntelliCode-befejezéseket a Pythonhoz</target>
+      </trans-unit>
+      <trans-unit id="setting.javaEnabled">
+        <source xml:lang="en">Enable Visual Studio IntelliCode completions for Java</source>
+        <target state="translated">Engedélyezze a Visual Studio IntelliCode-befejezéseket a Javához</target>
+      </trans-unit>
+      <trans-unit id="setting.typescriptEnabled">
+        <source xml:lang="en">Enable Visual Studio IntelliCode completions for TypeScript and JavaScript</source>
+        <target state="translated">Engedélyezze a Visual Studio IntelliCode-befejezéseket a TypeScripthez és a JavaScripthez</target>
+      </trans-unit>
+      <trans-unit id="setting.sqlEnabled">
+        <source xml:lang="en">Enable Visual Studio IntelliCode completions for MSSQL</source>
+        <target state="translated">Engedélyezze a Visual Studio IntelliCode-befejezéseket az MSSQL-hez</target>
+      </trans-unit>
+      <trans-unit id="setting.suggestSelection.markdown">
+        <source xml:lang="en">Control whether Visual Studio IntelliCode will modify `editor.suggestSelection` if it is set to a value (`recentlyUsed`) that will result in IntelliCode suggested completion items not being visible.</source>
+        <target state="translated">Annak szabályozása, hogy Visual Studio IntelliCode módosítja-e az „editor.suggestSelection“ elemet, ha olyan értékre („recentlyUsed“) van beállítva, amely miatt az IntelliCode által javasolt befejezési elemek nem lesznek láthatók.</target>
+      </trans-unit>
+      <trans-unit id="setting.suggestSelection.enabled">
+        <source xml:lang="en">Allows IntelliCode to modify the editor.suggestSelection setting on your behalf.</source>
+        <target state="translated">Engedélyezi az IntelliCode számára, hogy az Ön nevében módosítsa az editor.suggestSelection beállítást.</target>
+      </trans-unit>
+      <trans-unit id="setting.suggestSelection.disabled">
+        <source xml:lang="en">You've explicitly opted out of having this configuration controlled by IntelliCode.</source>
+        <target state="translated">Kifejezetten elutasította, hogy ezt a konfigurációt az IntelliCode szabályozza.</target>
+      </trans-unit>
+      <trans-unit id="setting.suggestSelection.automaticallyOverrodeDefaultValue">
+        <source xml:lang="en">(DO NOT SET THIS MANUALLY) IntelliCode will set this to record that configuration has been automatically modified to override a default value.</source>
+        <target state="translated">(NE ÁLLÍTSA BE MANUÁLISAN) Az IntelliCode ezt úgy állítja be, hogy rögzíti, hogy a konfiguráció automatikusan módosult egy alapértelmezett érték felülbírálása érdekében.</target>
+      </trans-unit>
+      <trans-unit id="setting.suggestSelection.choseToUpdateConfiguration">
+        <source xml:lang="en">(DO NOT SET THIS MANUALLY) IntelliCode will set this to record that you've chosen to let IntelliCode change the configuration from a value that was explicitly set.</source>
+        <target state="translated">(NE ÁLLÍTSA BE MANUÁLISAN) Az IntelliCode ezt úgy állítja be, hogy rögzíti, amelyet választott, hogy az IntelliCode módosíthassa a konfigurációt az explicit módon beállított értékről.</target>
+      </trans-unit>
+      <trans-unit id="feature.apiExamples.markdown">
+        <source xml:lang="en">Promotes IntelliCode API Usage Examples extension to vscode intellicode python users.</source>
+        <target state="translated">Előlépteti az IntelliCode API-használati példák bővítményt a Vscode Intellicode Python felhasználói számára.</target>
+      </trans-unit>
+      <trans-unit id="feature.apiExamplests.markdown">
+        <source xml:lang="en">Promotes IntelliCode API Usage Examples extension to vscode intellicode typescript/javascript users.</source>
+        <target state="translated">Előlépteti az IntelliCode API-használati példák bővítményt a Vscode Intellicode Typescript/Javascript felhasználói számára.</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="out/extension" source-language="en" datatype="plaintext" target-language="hu">
+    <body>
+      <trans-unit id="sqlErrorMessage">
+        <source xml:lang="en">Sorry, something went wrong activating IntelliCode support for SQL. Please check the "MSSQL" and "VS IntelliCode" output windows for details.</source>
+        <target state="translated">Sajnáljuk, hiba történt az SQL IntelliCode-támogatásának aktiválása során. A részletekért tekintse meg a „MSSQL“ és a „VS IntelliCode“ kimeneti ablakot.</target>
+      </trans-unit>
+      <trans-unit id="typescriptErrorMessage">
+        <source xml:lang="en">Sorry, something went wrong activating IntelliCode support for TypeScript/JavaScript. Please check the "VS IntelliCode" output window for details.</source>
+        <target state="translated">Sajnáljuk, hiba történt a TypeScript/JavaScript IntelliCode-támogatásának aktiválása során. A részletekért tekintse meg a „VS IntelliCode“ kimeneti ablakot.</target>
+      </trans-unit>
+      <trans-unit id="javaErrorMessage">
+        <source xml:lang="en">Sorry, something went wrong activating IntelliCode support for Java. Please check the "Language Support for Java" and "VS IntelliCode" output windows for details.</source>
+        <target state="translated">Sajnáljuk, hiba történt a Java IntelliCode-támogatásának aktiválása során. A részletekért tekintse meg a „Nyelvi támogatás Javához“ és a „VS IntelliCode“ kimeneti ablakot.</target>
+      </trans-unit>
+      <trans-unit id="pythonErrorMessage">
+        <source xml:lang="en">Sorry, something went wrong activating IntelliCode support for Python. Please check the "Python" and "VS IntelliCode" output windows for details.</source>
+        <target state="translated">Sajnáljuk, hiba történt a Python IntelliCode-támogatásának aktiválása során. A részletekért tekintse meg a „Python“ és a „VS IntelliCode“ kimeneti ablakot.</target>
+      </trans-unit>
+      <trans-unit id="missingExtensionMessage">
+        <source xml:lang="en">You can install the {0} extension to get an enhanced completion experience with IntelliCode</source>
+        <target state="translated">Telepítheti a(z) {0} bővítményt, hogy bővített befejezési élményt kapjon az IntelliCode által</target>
+      </trans-unit>
+      <trans-unit id="outOfDateExtensionMessage">
+        <source xml:lang="en">Please update the {0} extension to get an enhanced completion experience with IntelliCode.
+IntelliCode requires version {1} or newer.</source>
+        <target state="translated">Frissítse a(z) {0} bővítményt, hogy bővített befejezési élményt kapjon az IntelliCode által.
+Az IntelliCode {1} vagy újabb verziót igényel.</target>
+      </trans-unit>
+      <trans-unit id="viewDetails">
+        <source xml:lang="en">View details</source>
+        <target state="translated">Részletek megtekintése</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="out/models/BlobStore" source-language="en" datatype="plaintext" target-language="hu">
+    <body>
+      <trans-unit id="downloadingStatusBarTitle">
+        <source xml:lang="en">Downloading IntelliCode models</source>
+        <target state="translated">IntelliCode-modellek letöltése</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="out/models/ModelProvider" source-language="en" datatype="plaintext" target-language="hu">
+    <body>
+      <trans-unit id="downloadModelError">
+        <source xml:lang="en">Couldn't download IntelliCode model. Please check your network connectivity or firewall settings.</source>
+        <target state="translated">Nem sikerült letölteni az IntelliCode-modellt. Ellenőrizze a hálózati kapcsolatot vagy a tűzfalbeállításokat.</target>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="out/util/config" source-language="en" datatype="plaintext" target-language="hu">
+    <body>
+      <trans-unit id="applySettingFailure">
+        <source xml:lang="en">IntelliCode wasn't able to apply the user setting '{0}.{1}': '{2}' automatically, please manually set it.</source>
+        <target state="translated">Az IntelliCode nem tudta alkalmazni a(z) „{0}.{1}“: „{2}“ felhasználói beállítást automatikusan. Kérjük, állítsa be manuálisan.</target>
+      </trans-unit>
+      <trans-unit id="changeIncompatibleSetting">
+        <source xml:lang="en">Yes</source>
+        <target state="translated">Igen</target>
+      </trans-unit>
+      <trans-unit id="dontChangeIncompatibleSetting">
+        <source xml:lang="en">Don't ask again</source>
+        <target state="translated">Ne jelenjen meg újra ez a kérdés</target>
+      </trans-unit>
+      <trans-unit id="changeIncompatibleSettingsPrompt">
+        <source xml:lang="en">The configuration 'editor.{0}': '{1}' may cause you to not see IntelliCode completions. Would you like to change it?</source>
+        <target state="translated">A konfiguráció „szerkesztője.{0}“: „{1}“ okozhatja, hogy nem látja az IntelliCode-befejezéseket. Szeretné módosítani?</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

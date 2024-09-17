@@ -1,0 +1,15 @@
+{
+    "extension.description": "AI-assisted development",
+    "setting.modelDownloadPath": "Specifies the folder path where downloaded model files are stored. Defaults to the extension install directory if not specified.",
+    "setting.pythonEnabled": "Enable Visual Studio IntelliCode completions for Python",
+    "setting.javaEnabled": "Enable Visual Studio IntelliCode completions for Java",
+    "setting.typescriptEnabled": "Enable Visual Studio IntelliCode completions for TypeScript and JavaScript",
+    "setting.sqlEnabled": "Enable Visual Studio IntelliCode completions for MSSQL",
+    "setting.suggestSelection.markdown": "Control whether Visual Studio IntelliCode will modify `editor.suggestSelection` if it is set to a value (`recentlyUsed`) that will result in IntelliCode suggested completion items not being visible.",
+    "setting.suggestSelection.enabled": "Allows IntelliCode to modify the editor.suggestSelection setting on your behalf.", 
+    "setting.suggestSelection.disabled": "You've explicitly opted out of having this configuration controlled by IntelliCode.",
+    "setting.suggestSelection.automaticallyOverrodeDefaultValue": "(DO NOT SET THIS MANUALLY) IntelliCode will set this to record that configuration has been automatically modified to override a default value.",
+    "setting.suggestSelection.choseToUpdateConfiguration": "(DO NOT SET THIS MANUALLY) IntelliCode will set this to record that you've chosen to let IntelliCode change the configuration from a value that was explicitly set.",
+    "feature.apiExamples.markdown": "Promotes IntelliCode API Usage Examples extension to vscode intellicode python users.",
+    "feature.apiExamplests.markdown": "Promotes IntelliCode API Usage Examples extension to vscode intellicode typescript/javascript users."
+}

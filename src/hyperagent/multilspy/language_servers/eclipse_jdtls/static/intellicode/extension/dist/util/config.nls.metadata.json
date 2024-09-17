@@ -1,0 +1,15 @@
+{
+	"messages": [
+		"IntelliCode wasn't able to apply the user setting '{0}.{1}': '{2}' automatically, please manually set it.",
+		"Yes",
+		"Don't ask again",
+		"The configuration 'editor.{0}': '{1}' may cause you to not see IntelliCode completions. Would you like to change it?"
+	],
+	"keys": [
+		"applySettingFailure",
+		"changeIncompatibleSetting",
+		"dontChangeIncompatibleSetting",
+		"changeIncompatibleSettingsPrompt"
+	],
+	"filePath": "util\\config"
+}

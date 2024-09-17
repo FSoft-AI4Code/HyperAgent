@@ -1,0 +1,9 @@
+{
+	"messages": [
+		"Downloading IntelliCode models"
+	],
+	"keys": [
+		"downloadingStatusBarTitle"
+	],
+	"filePath": "models\\BlobStore"
+}

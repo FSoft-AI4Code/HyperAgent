@@ -1,0 +1,15 @@
+{
+	"extension.description": "AI-assisterad utveckling",
+	"setting.modelDownloadPath": "Anger mappsökvägen där nedladdade modellfiler lagras. Standardvärdet är installationskatalogen för tillägget om inget anges.",
+	"setting.pythonEnabled": "Aktivera Visual Studio IntelliCode-slutföranden för Python",
+	"setting.javaEnabled": "Aktivera Visual Studio IntelliCode-slutföranden för Java",
+	"setting.typescriptEnabled": "Aktivera Visual Studio IntelliCode-slutföranden för TypeScript och JavaScript",
+	"setting.sqlEnabled": "Aktivera Visual Studio IntelliCode-slutföranden för MSSQL",
+	"setting.suggestSelection.markdown": "Kontrollera om Visual Studio IntelliCode ändrar editor.suggestSelection om det är inställt på ett värde (\"recentlyUsed\") som resulterar i att IntelliCode-föreslagna slutförandeobjekt inte visas.",
+	"setting.suggestSelection.enabled": "Tillåter IntelliCode att ändra inställningen editor.suggestSelection å dina vägnar.",
+	"setting.suggestSelection.disabled": "Du har uttryckligen avregistrerat dig från att låta den här konfigurationen styras av IntelliCode.",
+	"setting.suggestSelection.automaticallyOverrodeDefaultValue": "(ANGE INTE DETTA MANUELLT) IntelliCode anger att konfigurationen automatiskt har ändrats för att åsidosätta ett standardvärde.",
+	"setting.suggestSelection.choseToUpdateConfiguration": "(ANGE INTE DETTA MANUELLT) IntelliCode anger detta till att registrera att du har valt att låta IntelliCode ändra konfigurationen från ett värde som uttryckligen har angetts.",
+	"feature.apiExamples.markdown": "Erbjuder vscode intellicode python-användare tillägget IntelliCode API-användningsexempel.",
+	"feature.apiExamplests.markdown": "Erbjuder vscode intellicode typescript/javascript-användare tillägget IntelliCode API-användningsexempel."
+}
