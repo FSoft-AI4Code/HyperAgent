@@ -138,9 +138,9 @@ go install github.com/sourcegraph/zoekt/cmd/zoekt-webserver
 ```
 We also need to install universal-ctags for semantic code search. Please follow the instructions [here](https://github.com/sourcegraph/sourcegraph/blob/main/doc/dev/how-to/zoekt_local_dev.md#install-ctags). Remember to set the environment variable of CTAGS `CTAGS_COMMAND=universal-ctags`. 
 
-After installing Zoekt and universal-ctags, we can install HyperAgent by running the following command:
+After installing Zoekt and universal-ctags, we can install HyperAgent by running the following commands, notes that it's a must to create a new conda environment before installing HyperAgent named hyperagent, since the Executor uses jupyter kernel named hyperagent to execute the code:
 ```bash
-pip3 install -r requirements.txt
+conda create -n hyperagent python=3.10
 pip3 install -e .
 ```
 

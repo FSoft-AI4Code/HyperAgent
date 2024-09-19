@@ -13,7 +13,6 @@ setup(
         author_email="HuyPN16@fpt.com",
         packages=find_packages(where="src"),
         package_dir={'': 'src'},
-        install_reqs = required,
-        # needs to be installed along with your package. Eg: 'caer'
+        install_reqs=required,
         entry_points={"console_scripts": ['hyperagent = hyperagent.cli.cli:app',],},
 )

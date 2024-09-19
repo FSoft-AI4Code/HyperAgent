@@ -9,7 +9,7 @@ from hyperagent.prompts.editor import system_edit
 from hyperagent.prompts.executor import system_exec
 from hyperagent.prompts.planner import system_plan
 from hyperagent.build import initialize_tools
-from hyperagent.constants import DEFAULT_VERBOSE_LEVEL, DEFAULT_LLM_CONFIGS, DEFAULT_TRAJECTORIES_PATH, DEFAULT_IMAGE_NAME
+from hyperagent.constants import DEFAULT_VERBOSE_LEVEL, DEFAULT_LLM_CONFIGS, DEFAULT_TRAJECTORIES_PATH, DEFAULT_IMAGE_NAME, DEFAULT_PATCHES_DIR
         
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -27,6 +27,8 @@ def Setup(
     llm_configs: Optional[dict] = None,
     image_name: Optional[str] = DEFAULT_IMAGE_NAME,
 ):
+    if not os.path.exists(DEFAULT_PATCHES_DIR):
+        os.makedirs(DEFAULT_PATCHES_DIR)
     
     # initialize the github repository
     gh_token = os.environ.get("GITHUB_TOKEN", None)
@@ -64,7 +66,7 @@ def Setup(
         llm_configs["edit"],
         jupyter_executor,
         system_edit,
-        summarizer
+        repo_dir
     )
     
     executor = load_agent_executor(

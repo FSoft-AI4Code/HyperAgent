@@ -1,10 +1,11 @@
 from autogen import UserProxyAgent, AssistantAgent, GroupChat, GroupChatManager, Agent, ConversableAgent
 from autogen.agentchat.contrib.society_of_mind_agent import SocietyOfMindAgent 
 from hyperagent.agents.llms import LocalLLM
-from hyperagent.prompts.utils import react_prompt_message
+from hyperagent.utils import extract_patch
+from hyperagent.prompts.utils import react_prompt_message, react_exec_prompt_message
 
 def load_summarizer():
-    config = {"model": "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo", "system_prompt": "Summarize the analysis, while remain details such as code snippet or found classes or functions that is important for query.", "max_tokens": 128000}
+    config = {"model": "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo", "system_prompt": "You're a helpful assistant", "max_tokens": 128000}
     summarizer = LocalLLM(config)
     return summarizer
 
@@ -18,7 +19,7 @@ def load_agent_navigator(
     def response_preparer(self, messages):
         plain_messages = [message["content"] for message in messages]
         query = plain_messages[0].split("Query: ")[-1].strip()
-        analysis = summarizer(f"Summarize the analysis for following {query} in the codebase. Analysis: {' '.join(plain_messages[1:-1])}")
+        analysis = summarizer(f"Contexts: {' '.join(plain_messages[1:-1])}. Selectively choose the right context and answer the following `{query}`. You should remain the key code snippets.")
         analysis += plain_messages[-1].replace("Final Answer:", "")
         return analysis
     
@@ -43,7 +44,7 @@ def load_agent_navigator(
     groupchat_nav = GroupChat(
         agents=[navigator_assistant, navigator_interpreter],
         messages=[],
-        speaker_selection_method="round_robin",  # With two agents, this is equivalent to a 1:1 conversation.
+        speaker_selection_method="round_robin", 
         allow_repeat_speaker=False,
         max_round=15,
     )
@@ -72,13 +73,14 @@ def load_agent_editor(
     llm_config,
     jupyter_executor,
     sys_prompt,
-    summarizer
+    repo_dir
 ):
     terminate_condition = lambda x: x.get("content", "").find("Final Answer:") > 0 or "_run" not in x.get("content", "")
     def response_preparer(self, messages):
         plain_messages = [message["content"] for message in messages]
         query = plain_messages[0].split("Query: ")[-1].strip()
-        analysis = summarizer(f"Summarize the analysis for following {query} in the codebase. Analysis: {' '.join(plain_messages[1:-1])}")
+        # analysis = summarizer(f"Summarize the analysis for following {query} in the codebase. Analysis: {' '.join(plain_messages[1:-1])}")
+        analysis = f"Here is the current edit patch: {extract_patch(repo_dir)}"
         analysis += plain_messages[-1].replace("Final Answer:", "")
         return analysis
     
@@ -103,7 +105,7 @@ def load_agent_editor(
     groupchat_edit = GroupChat(
         agents=[editor_assistant, editor_interpreter],
         messages=[],
-        speaker_selection_method="round_robin",  # With two agents, this is equivalent to a 1:1 conversation.
+        speaker_selection_method="round_robin", 
         allow_repeat_speaker=False,
         max_round=15,
     )
@@ -164,7 +166,7 @@ def load_agent_executor(
     groupchat_exec = GroupChat(
         agents=[executor_assistant, executor_interpreter],
         messages=[],
-        speaker_selection_method="round_robin",  # With two agents, this is equivalent to a 1:1 conversation.
+        speaker_selection_method="round_robin", 
         allow_repeat_speaker=False,
         max_round=15,
     )
@@ -185,7 +187,7 @@ def load_agent_executor(
     
     executor.register_hook(
         "process_last_received_message",
-        lambda content: react_prompt_message(content),
+        lambda content: react_exec_prompt_message(content),
     )
     return executor
 
@@ -211,9 +213,6 @@ def load_manager(user_proxy, planner, navigator, editor, executor, llm_config):
             Return an `Agent` class or a string from ['auto', 'manual', 'random', 'round_robin'] to select a default method to use.
         """
         messages = groupchat.messages
-
-        # if len(messages) <= 1:
-        #     return simple
         if llm_config["type"] == "patch":
             if last_speaker is user_proxy:
                 return planner

@@ -67,11 +67,55 @@ result = open_file._run(relative_file_path="astropy/modeling/separable.py", keyw
 print(result)
 ```
 
-
-
 Begin!
 Query: {input}""" 
 
+Exec_ReAct_prompt = """Use the following format:
+
+Thought: you should always think about what to do
+Action: the action as block of code to take 
+Observation: the result of the action
+... (this process can repeat multiple times)
+Thought: I now know the final answer
+Final Answer: the final answer to the original input question
+
+For example:
+
+Query: Reproduce the bug by running the provided code snippet and verify that the exception message is indeed misleading. Please run the following code and report the output:        
+```python                                                                                                                                                                      
+from astropy.time import Time                                                                                                                                                  
+from astropy.timeseries import TimeSeries                                                                                                                                      
+import numpy as np                                                                                                                                                             
+                                                                                                                                                                            
+time = Time(np.arange(100000, 100003), format='jd')                                                                                                                            
+ts = TimeSeries(time=time, data={"flux": [99.9, 99.8, 99.7]})                                                                                                                  
+ts._required_columns = ["time", "flux"]                                                                                                                                        
+try:                                                                                                                                                                           
+    ts.remove_column("flux")                                                                                                                                                   
+except ValueError as e:                                                                                                                                                        
+    print(e)                                                                                                                                                                   
+```                     
+Thought: We're gonna create a new reproduce.py file and run the provided code snippet to verify the exception message.
+Action: ```bash
+echo "from astropy.time import Time
+from astropy.timeseries import TimeSeries
+import numpy as np
+
+time = Time(np.arange(100000, 100003), format='jd')
+ts = TimeSeries(time=time, data={'flux': [99.9, 99.8, 99.7]})
+ts._required_columns = ['time', 'flux']
+try:
+    ts.remove_column('flux')
+except ValueError as e:
+    print('DIT CON ME NO CHU')" > reproduce.py && python reproduce.py
+```
+Observation:
+TimeSeries object is invalid - expected 'time' as the first columns but found 'time'  
+Thought: I know the final answer
+Final Answer: The provided code return `TimeSeries object is invalid - expected 'time' as the first columns but found 'time'` message.
+
+Begin!
+Query: {input}"""
 
 jupyter_prompt = """from hyperagent.tools.tools import *
 repo_dir = "{repo_dir}"
@@ -95,8 +139,9 @@ editor = EditorTool(repo_dir, language=language)
 open_file_gen = OpenFileToolForGenerator(repo_dir, language=language)"""
 
 def react_prompt_message(content):
-   request = content.split("Request:")[-1]
-   request = request.split("Navigator:")[-1]
-   request = request.split("Editor:")[-1]
-   request = request.split("Executor:")[-1]
+   request = content.split("Subgoal:")[-1]
    return ReAct_prompt.format(input=request)
+
+def react_exec_prompt_message(content):
+    request = content.split("Subgoal:")[-1]
+    return Exec_ReAct_prompt.format(input=request)

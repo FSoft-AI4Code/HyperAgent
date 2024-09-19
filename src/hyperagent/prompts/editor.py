@@ -61,4 +61,4 @@ Always think step-by-step carefully before decision. You should aware about the 
    print(result)
    ```
    
-Always replay with Thought and Action with python code."""
+Always reply with Thought and Action with python code."""
