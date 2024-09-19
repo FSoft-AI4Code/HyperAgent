@@ -56,6 +56,10 @@ class EditorTool(BaseTool):
             abs_path = find_matching_file_path(self.path, relative_file_path)
             if abs_path is None:
                 return "File not found, please check the path again"
+        else:
+            # create new file
+            with open(abs_path, 'w') as file:
+                file.write("")
         
         with open(abs_path, 'r') as file:
             lines = file.readlines()

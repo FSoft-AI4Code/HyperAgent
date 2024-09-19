@@ -15,7 +15,7 @@ if __name__ == "__main__":
     logger.info("Start!")
     repo = input("Please provide a valid folder path or GitHub URL: ")
     commit = input("Please provide a commit: (default: HEAD if enter)")
-    language = input("Please provide a programming language: (default: python if enter)")
+    language = input("Please provide a programming language: (for example: python)")
     question = input("Please provide a question: ")
     pilot = HyperAgent(repo, commit=commit, language=language, clone_dir="data/repos")
     logger.info("Setup done!")
