@@ -1,23 +1,25 @@
 import logging
 from hyperagent import HyperAgent
+from argparse import ArgumentParser
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
-logging.getLogger('codetext').setLevel(logging.WARNING)
 logging.getLogger('hyperagent').setLevel(logging.WARNING)
-logging.getLogger("httpx").setLevel(logging.WARNING)
-logging.getLogger("multilspy").setLevel(logging.WARNING)
-
 logger = logging.getLogger(__name__)
 
+def parse():
+    args = ArgumentParser()
+    args.add_argument("--repo", type=str, required=True)
+    args.add_argument("--commit", type=str, default="")
+    args.add_argument("--language", type=str, default="python")
+    args.add_argument("--prompt", type=str, default="How to add new memory efficient fine-tuning technique to the project?")
+    return args.parse_args()
+    
 if __name__ == "__main__":
     logger.info("Start!")
-    repo = input("Please provide a valid folder path or GitHub URL: ")
-    commit = input("Please provide a commit: (default: HEAD if enter)")
-    language = input("Please provide a programming language: (for example: python)")
-    question = input("Please provide a question: ")
-    pilot = HyperAgent(repo, commit=commit, language=language, clone_dir="data/repos")
+    args = parse()
+    pilot = HyperAgent(args.repo, commit=args.commit, language=args.language, clone_dir="data/repos")
     logger.info("Setup done!")
     
-    print(pilot.query_codebase(question))
+    print(pilot.query_codebase(args.question))

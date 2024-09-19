@@ -144,6 +144,11 @@ conda create -n hyperagent python=3.10
 pip3 install -e .
 ```
 
+### Quick Test
+To test the hyperagent with general prompt, you can run the following command:
+```bash
+python3 main.py --repo "your/path/to/repo" --commit "commit_hash" --language "python" --clone_dir "data/repos" --prompt "I want to create an FastAPI app to handle GET request from OpenAI API"
+```
 ### General usage
 ```python
 from hyperagent import HyperAgent
