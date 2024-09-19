@@ -1,13 +1,13 @@
 data/repos/*
 data/indexes/*
-repopilot.egg-info
+hyperagent.egg-info
 */__pycache__/*
 **/*.pyc
 **/__pycache__/*
 **/__pycache__/
-src/repopilot/multilspy/language_servers/rust_analyzer/static
-src/repopilot/multilspy/language_servers/eclipse_jdtls/static
-src/repopilot/tree-sitter
+src/hyperagent/multilspy/language_servers/rust_analyzer/static
+src/hyperagent/multilspy/language_servers/eclipse_jdtls/static
+src/hyperagent/tree-sitter
 evaluation_benchmark/bug_reproduction/defects4j/*
 evaluation_benchmark/bug_reproduction/Defects4J/gen_tests/*
 evaluation_benchmark/bug_reproduction/Defects4J/repos/*
@@ -23,8 +23,6 @@ data/agent_trajectories/*
 swe_bench.zip
 .aider*
 .cache/*
-<<<<<<< HEAD
-log.txt
-=======
 .history/*
->>>>>>> 9bc97d1de934675aa46339a11bbce918eca094fc
+logs/*
+outputs/*

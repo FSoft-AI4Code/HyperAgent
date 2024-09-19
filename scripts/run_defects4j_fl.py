@@ -1,7 +1,7 @@
-from repopilot import RepoPilot
-from datasets import load_dataset
+from hyperagent import HyperAgent
 from argparse import ArgumentParser
-from repopilot.tasks.fault_localization import FaultLocalization
+from hyperagent.tasks.fault_localization import FaultLocalization
+from hyperagent.constants import D4J_FOLDER
 import os
 import yaml
 
@@ -10,21 +10,11 @@ def load_yaml_config(file_path):
         config = yaml.safe_load(file)
     return config
 
-def get_args():
-    parser = ArgumentParser()
-    parser.add_argument("--split", type=str, default="test")
-    parser.add_argument("--config", type=str, default="configs/gpt4o.yaml")
-    return parser.parse_args()
-
 def main():
-    args = get_args()
-    # config = load_yaml_config(args.config)
-    
     config = {
         "name": "claude",
         "nav": [{
             "model": "claude-3-haiku-20240307",
-            # "model": "claude-3-5-sonnet-20240620",
             "api_type": os.environ.get("ANTHROPIC_API_KEY"),
             "stop_sequences": ["\nObservation:"],
             "base_url": "https://api.anthropic.com",
@@ -56,11 +46,11 @@ def main():
         "type": "pred"
     }
     
-    task = FaultLocalization("results/defects4j_fl", "test", max_repetitions=1, max_num_tests=2, defects4j="/datadrive5/huypn16/defects4j")
+    task = FaultLocalization("results/defects4j_fl", "test", max_repetitions=1, max_num_tests=2, defects4j=D4J_FOLDER)
     result_list = []
-    for idx in range(20, 300):
+    for idx in range(len(task)):
         repo_dir = task[idx]
-        pilot = RepoPilot(
+        pilot = HyperAgent(
             repo_path=repo_dir,
             commit="",
             language="java",

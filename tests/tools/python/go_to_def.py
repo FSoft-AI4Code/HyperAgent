@@ -1,4 +1,4 @@
-from repopilot.tools.tools import GoToDefinitionTool
+from hyperagent.tools.tools import GoToDefinitionTool
 
 def get_all_symbols():
     gst = GoToDefinitionTool("/datadrive05/huypn16/focalcoder/data/repos/repo__TempleRAIL__drl_vo_nav__commit__", language="python")

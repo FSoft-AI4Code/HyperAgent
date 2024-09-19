@@ -36,13 +36,13 @@ RUN apt-get update && \
 ENV CTAGS_COMMAND=universal-ctags
 
 # Create our conda env - copied from https://github.com/huggingface/accelerate/blob/main/docker/accelerate-gpu/Dockerfile
-RUN conda create --name repopilot python=${PYTHON_VERSION} ipython jupyter pip
+RUN conda create --name hyperagent python=${PYTHON_VERSION} ipython jupyter pip
 RUN python3 -m pip install --no-cache-dir --upgrade pip
 
 # Below is copied from https://github.com/huggingface/accelerate/blob/main/docker/accelerate-gpu/Dockerfile
 # We don't install pytorch here yet since CUDA isn't available
 # instead we use the direct torch wheel
-ENV PATH /opt/conda/envs/repopilot/bin:$PATH
+ENV PATH /opt/conda/envs/hyperagent/bin:$PATH
 # Activate our bash shell
 RUN chsh -s /bin/bash
 SHELL ["/bin/bash", "-c"]
@@ -55,13 +55,13 @@ ENV PATH /opt/conda/bin:$PATH
 RUN chsh -s /bin/bash
 COPY requirements.txt .
 SHELL ["/bin/bash", "-c"]
-RUN source activate repopilot && \ 
+RUN source activate hyperagent && \ 
     python3 -m pip install --no-cache-dir -r requirements.txt
 
-COPY . /repopilot
-WORKDIR /repopilot
+COPY . /hyperagent
+WORKDIR /hyperagent
 
-RUN source activate repopilot && \
+RUN source activate hyperagent && \
     python3 -m pip install --no-cache-dir -e .
 
 # Activate the virtualenv

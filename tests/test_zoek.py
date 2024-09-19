@@ -1,6 +1,6 @@
 from codetext.utils import build_language
-from repopilot.code_search import search_elements_inside_project
-from repopilot.zoekt.zoekt_server import ZoektServer
+from hyperagent.code_search import search_elements_inside_project
+from hyperagent.zoekt.zoekt_server import ZoektServer
 language = "rust"
 path = "data/repos/tokenizers"
 backend = ZoektServer(language)

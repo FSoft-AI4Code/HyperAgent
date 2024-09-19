@@ -34,7 +34,7 @@ def get_data():
         text_row = f"""<s>[INST] <</SYS>>\\nSystem: {system_instruction}\\n<</SYS>>\\n\\nHuman: {input}[/INST] \nAssistant: \n{output}</s>"""
         return text_row
 
-    with open("data/repopilot_traces.jsonl", "w") as f:
+    with open("data/hyperagent_traces.jsonl", "w") as f:
         for prompt, input, output in zip(system, chat, responses):
             object = {
                 "text": create_text_row(prompt, input, output)
@@ -69,7 +69,7 @@ def main():
     tokenizer.add_eos_token = True
 
 
-    project = "repopilot"
+    project = "hyperagent"
     # base_model_name = "mistral"
     base_model_name = "codellama"
     run_name = base_model_name + "_" + project

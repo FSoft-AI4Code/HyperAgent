@@ -1,8 +1,8 @@
-from repopilot import RepoPilot
+from hyperagent import HyperAgent
 from datasets import load_dataset
 from argparse import ArgumentParser
-from repopilot.tasks.automated_program_repair import AutomatedProgramRepair
-
+from hyperagent.tasks.automated_program_repair import AutomatedProgramRepair
+from hyperagent.constants import D4J_FOLDER
 import os
 import yaml
 
@@ -19,13 +19,11 @@ def get_args():
 
 def main():
     args = get_args()
-    # config = load_yaml_config(args.config)
     
     config = {
         "name": "claude",
         "nav": [{
             "model": "claude-3-haiku-20240307",
-            # "model": "claude-3-5-sonnet-20240620",
             "api_type": os.environ.get("ANTHROPIC_API_KEY"),
             "stop_sequences": ["\nObservation:"],
             "base_url": "https://api.anthropic.com",
@@ -57,11 +55,11 @@ def main():
         "type": "patch"
     }
     
-    task = AutomatedProgramRepair(logdir="results/defects4j_apr", split="test", max_repetitions=1, max_num_tests=2, defects4j="/datadrive5/huypn16/defects4j")
+    task = AutomatedProgramRepair(logdir="results/defects4j_apr", split="test", max_repetitions=1, max_num_tests=2, defects4j=D4J_FOLDER)
     result_list = []
-    for idx in range(1, 25):
+    for idx in range(len(task)):
         repo_dir = task[idx]
-        pilot = RepoPilot(
+        pilot = HyperAgent(
             repo_path=repo_dir,
             commit="",
             language="java",
