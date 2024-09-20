@@ -127,7 +127,7 @@ def run(self, system, idx) -> Result:
 
 If you want to use HyperAgent to solve other tasks and systematically evaluate the results, you can create a new task class and implement the `run` method. The `run` method should return the result of the task. 
 
-## Reproduction
+## Reproduce Evaluation Results
 To reproduce the results, please follow the instructions in the `scripts` folder. We provide the scripts to reproduce the results on SWE-Bench, RepoExec, and Defects4J datasets.
 
 ### SWE-Bench
