@@ -25,7 +25,7 @@ HyperAgent is a generalist multi-agent system designed to tackle a wide spectrum
 
 HyperAgent demonstrates state-of-the-art performance in:
 
-- GitHub issue resolution ([SWE-Bench-Python](https://www.swebench.com/)): 31.4% on Resolved Rate on SWE-Bench Verified and 25% on SWE-Bench Lite.
+- GitHub issue resolution ([SWE-Bench-Python](https://www.swebench.com/)): 31.4% on Resolved Rate on SWE-Bench Verified and 25% on SWE-Bench Lite. The results has currently been verifing on swe-bench (https://github.com/swe-bench/experiments/pull/80)
 - Repository-level code generation ([RepoExec-Python](https://github.com/FSoft-AI4Code/RepoExec)): 53.3% on Pass@5.
 - Fault localization and program repair ([Defects4J-Java](https://github.com/rjust/defects4j)): 249 bugs fixed.
 
