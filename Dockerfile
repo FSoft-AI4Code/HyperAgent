@@ -6,7 +6,7 @@ FROM continuumio/miniconda3:latest AS compile-image
 ENV PYTHON_VERSION=3.10
 
 RUN apt-get update && \
-    apt-get install -y curl git wget software-properties-common git-lfs && \
+    apt-get install -y curl git wget git-lfs && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists*
 
@@ -49,6 +49,10 @@ SHELL ["/bin/bash", "-c"]
 
 # Stage 2
 FROM nvidia/cuda:12.2.2-devel-ubuntu22.04 AS build-image
+RUN apt-get update && \
+    apt-get install -y git && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists*
 COPY --from=compile-image /opt/conda /opt/conda
 ENV PATH /opt/conda/bin:$PATH
 

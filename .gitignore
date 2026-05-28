@@ -28,3 +28,9 @@ logs/*
 outputs/*
 .cache/*
 build/*
+.env
+.env.local
+.venv/*
+# SWE-bench harness writes per-run report files to CWD; keep them out of git
+hyperagent-*.json
+gold.*.json

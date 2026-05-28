@@ -139,9 +139,12 @@ editor = EditorTool(repo_dir, language=language)
 open_file_gen = OpenFileToolForGenerator(repo_dir, language=language)"""
 
 def react_prompt_message(content):
+   # str.replace, not str.format — the prompt body contains literal `{...}`
+   # examples (e.g. Python dict literals like `{"flux": [...]}`) that .format
+   # would parse as placeholders and raise KeyError on.
    request = content.split("Subgoal:")[-1]
-   return ReAct_prompt.format(input=request)
+   return ReAct_prompt.replace("{input}", request)
 
 def react_exec_prompt_message(content):
     request = content.split("Subgoal:")[-1]
-    return Exec_ReAct_prompt.format(input=request)
+    return Exec_ReAct_prompt.replace("{input}", request)
