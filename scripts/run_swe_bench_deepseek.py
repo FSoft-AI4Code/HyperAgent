@@ -155,31 +155,43 @@ def classify_outcome(resolved, patch_present, agent_error, eval_report, instance
     return "llm_tests_failed", "no eval report available; treating as test failure"
 
 
-def summarize_tool_usage(node, _agg=None):
-    """Walk a trace node and count tool invocations per agent name.
+TOOL_CALL_WITH_ARGS_RE = re.compile(
+    r"\b([A-Za-z_][A-Za-z0-9_]*)\._run\s*\((.*?)\)", re.DOTALL
+)
 
-    Tools are invoked ReAct-style: the agent emits an ``Action:`` block whose
-    body calls ``<tool>._run(...)``. We also count any structured
-    ``tool_calls`` payloads autogen may attach to a message.
+
+def annotate_tool_invocations(node):
+    """Attach a ``tool_invocations`` list to each LLM message that issued tool calls.
+
+    Tools are invoked ReAct-style: an agent's message content contains one or
+    more ``<tool>._run(...)`` calls. The interpreter agent's next message holds
+    the output. Walking the trace in-place leaves the natural message order
+    intact and just makes each LLM turn's tool calls discoverable as structured
+    entries next to the LLM message that issued them — so the trace itself
+    captures the order between LLM invocations and tool invocations.
     """
-    if _agg is None:
-        _agg = {}
     for msg in node.get("messages", []):
-        name = msg.get("name") or msg.get("role") or "(unknown)"
-        bucket = _agg.setdefault(name, {"messages": 0, "tool_calls": 0, "tools": {}})
-        bucket["messages"] += 1
+        invocations = []
         content = msg.get("content")
         if isinstance(content, str):
-            for tool in TOOL_CALL_RE.findall(content):
-                bucket["tool_calls"] += 1
-                bucket["tools"][tool] = bucket["tools"].get(tool, 0) + 1
+            for match in TOOL_CALL_WITH_ARGS_RE.finditer(content):
+                invocations.append({
+                    "tool": match.group(1),
+                    "args": match.group(2).strip(),
+                    "source": "react_code_block",
+                })
         for tc in msg.get("tool_calls") or []:
-            bucket["tool_calls"] += 1
             fn = (tc.get("function") or {}).get("name", "(unknown)")
-            bucket["tools"][fn] = bucket["tools"].get(fn, 0) + 1
+            args = (tc.get("function") or {}).get("arguments", "")
+            invocations.append({
+                "tool": fn,
+                "args": args,
+                "source": "structured_tool_calls",
+            })
+        if invocations:
+            msg["tool_invocations"] = invocations
     for sub in node.get("sub_chats", []) or []:
-        summarize_tool_usage(sub, _agg)
-    return _agg
+        annotate_tool_invocations(sub)
 
 
 def run_swebench_eval(predictions_path, instance_id, split, model_nick_name):
@@ -253,6 +265,16 @@ def get_args():
     parser.add_argument("--traces_folder", type=str, default="outputs/traces")
     parser.add_argument("--model_nick_name", type=str, default="deepseek")
     parser.add_argument("--deepseek_model", type=str, default="deepseek-chat")
+    parser.add_argument("--reasoning_effort", type=str, default=None,
+                        help="When set, enable DeepSeek thinking and pass this as the "
+                             "reasoning_effort. Typical values: low, medium, high, max. "
+                             "Requires a thinking-capable model (e.g. deepseek-v4-pro).")
+    parser.add_argument("--max_tokens", type=int, default=None,
+                        help="Cap on output tokens per LLM call. On reasoning models the "
+                             "cap covers reasoning + visible content combined, so size it "
+                             "generously when --reasoning_effort is set (e.g. 32768 for "
+                             "'max', 16384 for 'high'). When omitted, DeepSeek's server-side "
+                             "default (low single-digit thousands) applies.")
     parser.add_argument("--instance_id", type=str, default=None,
                         help="Specific SWE-bench instance to run. Defaults to the easiest task.")
     parser.add_argument("--difficulty", type=str, default=EASIEST_DIFFICULTY,
@@ -282,6 +304,15 @@ def main():
         "stop": ["\nObservation:"],
         "price": [0.00027, 0.0011],
     }
+    if args.reasoning_effort:
+        deepseek_entry["extra_body"] = {
+            "thinking": {"type": "enabled"},
+            "reasoning_effort": args.reasoning_effort,
+        }
+        print(f"[run] DeepSeek thinking enabled, reasoning_effort={args.reasoning_effort}")
+    if args.max_tokens is not None:
+        deepseek_entry["max_tokens"] = args.max_tokens
+        print(f"[run] max_tokens={args.max_tokens}")
 
     config = {
         "name": "deepseek",
@@ -365,7 +396,7 @@ def main():
     traces["eval_report_path"] = report_path
     traces["failure_class"] = failure_class
     traces["failure_reason"] = failure_reason
-    traces["tool_usage"] = summarize_tool_usage(traces)
+    annotate_tool_invocations(traces)
     traces_file = os.path.join(args.traces_folder, f"{instance_id}.json")
     with open(traces_file, "w") as f:
         json.dump(traces, f, indent=2, default=str)

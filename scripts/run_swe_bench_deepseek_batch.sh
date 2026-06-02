@@ -2,11 +2,22 @@
 # Run scripts/run_swe_bench_deepseek.py N times in a row on the same instance.
 #
 # Usage:
-#   scripts/run_swe_bench_deepseek_batch.sh [N] [INSTANCE_ID] [MODEL]
-#     N            number of runs (default: 10)
-#     INSTANCE_ID  optional; if omitted, the script picks the easiest task each time
-#     MODEL        optional DeepSeek model id (default: deepseek-chat).
-#                  Use "deepseek-reasoner" for the stronger R1 reasoning model.
+#   scripts/run_swe_bench_deepseek_batch.sh [N] [INSTANCE_ID] [MODEL] [REASONING_EFFORT] [DIFFICULTY] [MAX_TOKENS]
+#     N                 number of runs (default: 10)
+#     INSTANCE_ID       optional; if omitted, the script picks one task per
+#                       DIFFICULTY bucket each run.
+#     MODEL             optional DeepSeek model id (default: deepseek-chat).
+#                       Use "deepseek-v4-pro" with REASONING_EFFORT to engage the
+#                       v4-pro reasoner with thinking enabled.
+#     REASONING_EFFORT  optional; when set, enables DeepSeek thinking and passes
+#                       this as reasoning_effort (e.g. low|medium|high|max).
+#     DIFFICULTY        optional SWE-bench Verified difficulty bucket. One of:
+#                       "<15 min fix", "15 min - 1 hour", "1-4 hours", ">4 hours".
+#                       Only used when INSTANCE_ID is empty. Default: "<15 min fix".
+#     MAX_TOKENS        optional cap on per-call output tokens. On reasoning models
+#                       this covers reasoning + visible content combined; size it
+#                       generously (e.g. 32768 for max, 16384 for high). When
+#                       omitted, DeepSeek's server-side default applies.
 #
 # Per-run output goes to outputs/batch_<timestamp>/run_NN/ (predictions, traces, log).
 #
@@ -31,6 +42,9 @@ cd "$(dirname "$0")/.."
 N="${1:-10}"
 INSTANCE_ID="${2:-}"
 MODEL="${3:-deepseek-chat}"
+REASONING_EFFORT="${4:-}"
+DIFFICULTY="${5:-}"
+MAX_TOKENS="${6:-}"
 IDLE_TIMEOUT="${IDLE_TIMEOUT:-300}"     # seconds of zero log growth -> kill
 WATCHDOG_INTERVAL=15                     # seconds between checks
 ROOT="outputs/batch_$(date +%Y%m%d_%H%M%S)"
@@ -156,6 +170,15 @@ for i in $(seq 1 "$N"); do
     args=(--output_folder "$RUN_DIR" --traces_folder "$RUN_DIR/traces" --deepseek_model "$MODEL")
     if [[ -n "$INSTANCE_ID" ]]; then
         args+=(--instance_id "$INSTANCE_ID")
+    fi
+    if [[ -n "$REASONING_EFFORT" ]]; then
+        args+=(--reasoning_effort "$REASONING_EFFORT")
+    fi
+    if [[ -n "$DIFFICULTY" ]]; then
+        args+=(--difficulty "$DIFFICULTY")
+    fi
+    if [[ -n "$MAX_TOKENS" ]]; then
+        args+=(--max_tokens "$MAX_TOKENS")
     fi
 
     GOPATH="$HOME/go" PATH="$HOME/go/bin:$PATH" \
