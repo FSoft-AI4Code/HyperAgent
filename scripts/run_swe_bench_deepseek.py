@@ -303,6 +303,11 @@ def main():
         "api_type": "openai",
         "stop": ["\nObservation:"],
         "price": [0.00027, 0.0011],
+        # autogen caches LLM responses by (cache_seed, message_hash). Without
+        # an explicit cache_seed it uses LEGACY_DEFAULT_CACHE_SEED, so rerunning
+        # the same task yields byte-identical responses across runs. Per-run
+        # unique seed forces fresh API calls every invocation.
+        "cache_seed": time.time_ns(),
     }
     if args.reasoning_effort:
         deepseek_entry["extra_body"] = {
